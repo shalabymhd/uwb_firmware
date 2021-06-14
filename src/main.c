@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include<stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -94,6 +94,7 @@ int main(void)
   while (1)
   { HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
     HAL_Delay(100);
+    printf("Test");
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
