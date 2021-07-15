@@ -107,6 +107,7 @@ cubemx-out
 │   ├── usbd_conf.h
 │   ├── usbd_desc.h
 │   └── usb_device.h
+├── Makefile
 ├── Middlewares
 │   ├── ST
 │   │   └── STM32_USB_Device_Library
@@ -179,6 +180,7 @@ cubemx-out
 │   └── usb_device.c
 ├── startup
 │   └── startup_stm32f405xx.s
+├── startup_stm32f405xx.s
 └── STM32F405RGTx_FLASH.ld
 ```
 
