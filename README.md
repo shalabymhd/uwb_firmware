@@ -183,5 +183,44 @@ cubemx-out
 ├── startup_stm32f405xx.s
 └── STM32F405RGTx_FLASH.ld
 ```
+## Compiling the code
+In the project directory,
 
+    make all
 
+This will produce an `.elf` file in the same directory.
+
+## Uploading with openocd
+First, install OpenOCD
+
+    sudo apt-get install openocd
+
+One command to flash:
+
+    openocd -f board/stm32f4discovery.cfg -c "program config_stm32f4.elf verify reset exit"
+
+## Debugging with openocd and GDB
+
+First, start OpenOCD
+
+    openocd -f board/stm32f4discovery.cfg
+
+In a new terminal, 
+
+     arm-none-eabi-gdb firmware_file.elf
+
+and you will enter a GDB command line. To connect to the openocd server 
+
+    (gdb) target remote :3333
+
+Then at this point you can use whatever GDB commands. You can directly load the firmware from here
+
+    (gdb) load
+    
+Or you can also use `continue` or `step` to navigate.
+
+## Steven's Magic Links
+
+Makefile tutorial: https://cs.colby.edu/maxwell/courses/tutorials/maketutor/
+
+FreeRTOS tutorial: https://freertos.org/fr-content-src/uploads/2018/07/161204_Mastering_the_FreeRTOS_Real_Time_Kernel-A_Hands-On_Tutorial_Guide.pdf 
