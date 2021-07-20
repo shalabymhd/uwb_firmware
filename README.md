@@ -1,16 +1,29 @@
 # UWB Module Firmware
-A nice tutorial on getting started with STM32 and Eclipsed, created by Mohammed Shalaby, can be found [here](./doc/stm32_tutorial.md).
+A nice tutorial on getting started with STM32 and Eclipse, created by Mohammed Shalaby, can be found [here](./doc/stm32_tutorial.md).
 
-In this branch, we will attempt to make the workflow editor-independent. This will involve
+Historically, and as also covered in that tutorial, development on an STM32 chip consists of first configuring the chip according to your specific PCB in CubeMX, followed by setting up a configuration within the Eclipse IDE to build and debug the project. However, it turns out that Eclipse is simply just generating a `makefile` and running a `make` command to build the project. To upload and debug, the fundamental tool involved is actually `openocd`, and GDB is the debugger.
 
-1. Creating a `makefile` and running the make command to compile the code.
-2. Launching `openocd`
-3. Connecting GDB to openocd.
+In this branch, we will be using all those tools directly. That is, we will build, upload, and debug the code without involving any editor, doing it all through the terminal. Then, we can use any editor we want to view and edit the code, as well as getting it to run the terminal commands for us. We will still be using CubeMX to generate the HAL code, and as it turns out, the makefile as well! 
 
-All of which can be done from the terminal.
+The benefits of this editor-independent approach consist of a much more fundamental understanding of what is happening, as well as the ability for each developer to use whatever IDE they want on the same code base. 
+
+If you would like to start from the absolute beginning, switch to the `blank` branch, which contains nothing other than the `config_stm32f4.ioc` file as well as this README.
 
 ## Generating the starter code with CubeMX
-Inside the directory `./cubemx-out/` there is a `.ioc` file. This file can be loaded inside the CubeMX software, after which one simply has to click on the __GENERATE CODE__ button and it will populate the entire `./cubemx-out/` directory with the following files. 
+Assuming you are on the `blank` branch, you will have only the following in your directory
+
+```
+uwb_firmware
+├── config_stm32f4.ioc
+├── README.md
+```
+
+1. Open the CubeMX software.
+2. Use __File > Load Project...__ to load the `config_stm32f4.ioc` file.
+3. Under the __Project Manager__ tab, in the __Project__ section, you should see a field called `Toolchain / IDE`.  Here, you can choose __Makefile__!
+4. Leave everything else as-is, and click on __GENERATE CODE__.
+
+This should populate the current directory with the following files. 
 
 ```
 uwb_firmware
@@ -166,6 +179,7 @@ uwb_firmware
 │               ├── stream_buffer.c
 │               ├── tasks.c
 │               └── timers.c
+├── README.md
 ├── Src
 │   ├── freertos.c
 │   ├── main.c
@@ -183,41 +197,188 @@ uwb_firmware
 ├── startup_stm32f405xx.s
 └── STM32F405RGTx_FLASH.ld
 ```
+Notice the presence of a `Makefile`. Feel free to open this file and check it out. 
+
+
 ## Compiling the code
 In the project directory,
 
     make all
 
-This will produce an `.elf` file under the `./build/` directory.
+and thats it. This will create a `./build` directory, with a bunch of stuff, including a `.elf` file, which is the compiled firmware that we will be uploading to our board. 
 
-## Uploading with openocd
-First, install OpenOCD
+Steven suggests the following very basic tutorial on using `make`: https://cs.colby.edu/maxwell/courses/tutorials/maketutor/.
+
+## Uploading with OpenOCD
+Although OpenOCD can be downloaded explicitly, it is also possible to install it as a regular package
 
     sudo apt-get install openocd
 
-One command to flash:
+This will allow take care of creating a symbolic link to the `openocd` command, allowing us to just use the `openocd` command from any directory. Assuming you have built the code with `make`, that you are still in the `uwb_firmware` directory, and that the discovery board is plugged in with the appropriate jumpers removed, we can upload our firmware in one command:
 
-    openocd -f board/stm32f4discovery.cfg -c "program config_stm32f4.elf verify reset exit"
+    openocd -f board/stm32f4discovery.cfg -c "program ./build/config_stm32f4.elf verify reset exit"
 
-## Debugging with openocd and GDB
+## Debugging with OpenOCD and GDB
 
-First, start OpenOCD
+First, make sure the board is connected by USB and start OpenOCD
 
     openocd -f board/stm32f4discovery.cfg
 
-In a new terminal, 
+In a new terminal in the current `uwb_firmware` directory
 
-     arm-none-eabi-gdb firmware_file.elf
+     arm-none-eabi-gdb ./build/config_stm32f4discovery.elf
 
-and you will enter a GDB command line. To connect to the openocd server 
+and you will enter a GDB command line. The above step assumes that you have installed the `arm-none-eabi-gcc` toolchain as per Mohammed's tutorial. To connect to the openocd server 
 
-    (gdb) target remote :3333
+    (gdb) target remote localhost:3333
 
 Then at this point you can use whatever GDB commands. You can directly load the firmware from here
 
     (gdb) load
     
-Or you can also use `continue` or `step` to navigate.
+You can then use `list` to see where you are in the code, as well as `continue` or `step`. Theres a way to set breakpoints from the GDB terminal, but at this point, we will move to using the VSCode editor for debugging.
+
+## Setting up the same workflow in VS Code
+
+At a minimum, you just need to open the `uwb_firmware` folder in VS Code and you can start editting the source code with some basic syntax highlighting already. However, it will probably be full of red warnings as a result of Intellisense not finding all the files. We will need to configure intellisense properly.
+
+### Configuring Intellisense
+ Create a `./.vscode/` subdirectory. Create a `c_cpp_properties.json` file and insert the following
+
+```json
+{
+	"version": 4,
+	"configurations":
+	[
+		{	
+			"name": "Linux: Embedded Development",
+			"intelliSenseMode": "gcc-arm",
+			"cStandard": "c99",
+			"cppStandard": "c++17",
+			"compilerPath": "/opt/gcc-arm-none-eabi-9-2020-q2-update/bin/arm-none-eabi-gcc"
+			,
+			"defines":
+			[
+				"USE_HAL_DRIVER", 
+				"STM32F405xx"
+			],
+			"includePath":
+			[
+				"${workspaceFolder}/**",
+				"/opt/gcc-arm-none-eabi-9-2020-q2-update/lib/gcc/arm-none-eabi/9.3.1/include",
+				"Inc", 
+				"Drivers/STM32F4xx_HAL_Driver/Inc", 
+				"Drivers/STM32F4xx_HAL_Driver/Inc/Legacy", 
+				"Middlewares/Third_Party/FreeRTOS/Source/include", 
+				"Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS", 
+				"Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F", 
+				"Middlewares/ST/STM32_USB_Device_Library/Core/Inc", 
+				"Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc", 
+				"Drivers/CMSIS/Device/ST/STM32F4xx/Include", 
+				"Drivers/CMSIS/Include"
+			]
+		}
+	]
+}
+```
+Now you should have the full amazing code navigation/editting functionality of VS Code, including syntax highlighting, Go to Definition, Go to References, code peeking and more. 
+
+### Building from VS Code
+VS Code provides functionality to run whatever terminal command as a "task" from within the editor. In the `./.vscode/` folder, create a `tasks.json` file with the following
+
+```json
+{
+	"version": "2.0.0",
+	"tasks":
+	[
+		{
+			"label": "Build Firmware",
+			"group":
+			{
+				"kind": "build",
+				"isDefault": true
+			},
+			"type": "shell",
+			"command": "make all",
+			"args":
+			[
+				
+			],
+			"problemMatcher":
+			[
+				"$gcc"
+			],
+			"presentation":
+			{
+				"focus": true
+			}
+		}
+	]
+}
+
+```
+The line `"isDefault": true` sets this task is the default build task. This means that all we need to do is press `CTRL + SHIFT + B` to run the same make command as before.
+
+Alternatively, press `CTRL + SHIFT + P` to open the command palette, and select __Run Task__, it will then ask you which one to choose. 
+
+### Uploading from VS Code
+Just as before, we just need to create a VS Code task to run the upload command for us. Open `tasks.json` and add the following task just after the build task (seperated by a comma)
+
+```json
+{
+    "label": "Upload Firmware",
+    "type": "shell",
+    "command": "openocd",
+    "args":
+    [
+        "-f","board/stm32f4discovery.cfg",
+        "-c","'program build/config_stm32f4.elf verify reset exit'"
+        
+    ]
+}
+
+```
+And thats it! You can run this from the command palette by pressing `CTRL + SHIFT + P` and typing in __Run Task__, after which the suggestions will prompt you for which task to choose.
+
+## Debugging with VS Code
+For this step, the easiest thing to do is to install the [Cortex-Debug](https://marketplace.visualstudio.com/items?itemName=marus25.cortex-debug) extension for VS Code. 
+
+Then, create a `launch.json` file inside the `.vscode` folder with the following contents.
+
+```json
+{
+	"version": "0.2.0",
+	"configurations":
+	[
+		{
+			"name": "Build and Debug",
+			"type": "cortex-debug",
+			"request": "launch",
+			"servertype": "openocd",
+			"cwd": "${workspaceFolder}",
+			"executable": "build/config_stm32f4.elf",
+			"configFiles":
+			[
+				"/usr/share/openocd/scripts/board/stm32f4discovery.cfg"
+			],
+			"preLaunchTask": "Build Firmware"
+		}
+	]
+}
+```
+
+Create a `settings.json` file inside the `.vscode` folder with the following contents.
+
+```json
+{
+	"cortex-debug.armToolchainPath": "",
+	"cortex-debug.openocdPath": "/usr/bin/openocd"
+}
+```
+
+
+You should now be able to go to the debug tab in VS Code and see a `Build and Debug` option.
+
 
 ## Steven's Magic Links
 
