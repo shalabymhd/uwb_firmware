@@ -16,8 +16,9 @@
 				
 			],
 			"problemMatcher":
-			{
-			},
+			[
+				"$gcc"
+			],
 			"presentation":
 			{
 				"focus": true
@@ -32,11 +33,7 @@
 				"-f","board/stm32f4discovery.cfg",
 				"-c","'program build/config_stm32f4.elf verify reset exit'"
 				
-			],
-			"presentation":
-			{
-				"focus": true
-			}
+			]
 		}
 	]
 }
