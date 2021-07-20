@@ -1,4 +1,4 @@
-ARM GAS  /tmp/ccDxBb1Z.s 			page 1
+ARM GAS  /tmp/ccZhtuJw.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -58,7 +58,7 @@ ARM GAS  /tmp/ccDxBb1Z.s 			page 1
   27:Src/gpio.c    **** /*----------------------------------------------------------------------------*/
   28:Src/gpio.c    **** /* Configure GPIO                                                             */
   29:Src/gpio.c    **** /*----------------------------------------------------------------------------*/
-ARM GAS  /tmp/ccDxBb1Z.s 			page 2
+ARM GAS  /tmp/ccZhtuJw.s 			page 2
 
 
   30:Src/gpio.c    **** /* USER CODE BEGIN 1 */
@@ -118,7 +118,7 @@ ARM GAS  /tmp/ccDxBb1Z.s 			page 1
   63              		.loc 1 47 3 view .LVU9
   64              		.loc 1 47 3 view .LVU10
   65 0016 1A6B     		ldr	r2, [r3, #48]
-ARM GAS  /tmp/ccDxBb1Z.s 			page 3
+ARM GAS  /tmp/ccZhtuJw.s 			page 3
 
 
   66              	.LBE3:
@@ -178,7 +178,7 @@ ARM GAS  /tmp/ccDxBb1Z.s 			page 1
   98 0042 019A     		ldr	r2, [sp, #4]
   99              	.LBE5:
   48:Src/gpio.c    ****   __HAL_RCC_GPIOA_CLK_ENABLE();
-ARM GAS  /tmp/ccDxBb1Z.s 			page 4
+ARM GAS  /tmp/ccZhtuJw.s 			page 4
 
 
  100              		.loc 1 48 3 view .LVU23
@@ -238,7 +238,7 @@ ARM GAS  /tmp/ccDxBb1Z.s 			page 1
  139 0070 42F00802 		orr	r2, r2, #8
  140 0074 1A63     		str	r2, [r3, #48]
   51:Src/gpio.c    **** 
-ARM GAS  /tmp/ccDxBb1Z.s 			page 5
+ARM GAS  /tmp/ccZhtuJw.s 			page 5
 
 
  141              		.loc 1 51 3 view .LVU39
@@ -298,7 +298,7 @@ ARM GAS  /tmp/ccDxBb1Z.s 			page 1
  180 00aa CDE90537 		strd	r3, r7, [sp, #20]
   65:Src/gpio.c    ****   GPIO_InitStruct.Pull = GPIO_NOPULL;
  181              		.loc 1 65 3 is_stmt 1 view .LVU52
-ARM GAS  /tmp/ccDxBb1Z.s 			page 6
+ARM GAS  /tmp/ccZhtuJw.s 			page 6
 
 
   66:Src/gpio.c    ****   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -358,7 +358,7 @@ ARM GAS  /tmp/ccDxBb1Z.s 			page 1
  213 00d2 0593     		str	r3, [sp, #20]
   78:Src/gpio.c    ****   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
  214              		.loc 1 78 3 is_stmt 1 view .LVU70
-ARM GAS  /tmp/ccDxBb1Z.s 			page 7
+ARM GAS  /tmp/ccZhtuJw.s 			page 7
 
 
   79:Src/gpio.c    ****   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -418,7 +418,7 @@ ARM GAS  /tmp/ccDxBb1Z.s 			page 1
  247              		.loc 1 90 23 view .LVU89
  248 00f6 0593     		str	r3, [sp, #20]
   91:Src/gpio.c    ****   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-ARM GAS  /tmp/ccDxBb1Z.s 			page 8
+ARM GAS  /tmp/ccZhtuJw.s 			page 8
 
 
  249              		.loc 1 91 3 is_stmt 1 view .LVU90
@@ -478,7 +478,7 @@ ARM GAS  /tmp/ccDxBb1Z.s 			page 1
  290              	.Letext0:
  291              		.file 2 "/opt/gcc-arm-none-eabi-9-2020-q2-update/arm-none-eabi/include/machine/_default_types.h"
  292              		.file 3 "/opt/gcc-arm-none-eabi-9-2020-q2-update/arm-none-eabi/include/sys/_stdint.h"
-ARM GAS  /tmp/ccDxBb1Z.s 			page 9
+ARM GAS  /tmp/ccZhtuJw.s 			page 9
 
 
  293              		.file 4 "Drivers/CMSIS/Include/core_cm4.h"
@@ -486,14 +486,14 @@ ARM GAS  /tmp/ccDxBb1Z.s 			page 1
  295              		.file 6 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f405xx.h"
  296              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h"
  297              		.file 8 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
-ARM GAS  /tmp/ccDxBb1Z.s 			page 10
+ARM GAS  /tmp/ccZhtuJw.s 			page 10
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 gpio.c
-     /tmp/ccDxBb1Z.s:18     .text.MX_GPIO_Init:0000000000000000 $t
-     /tmp/ccDxBb1Z.s:27     .text.MX_GPIO_Init:0000000000000000 MX_GPIO_Init
-     /tmp/ccDxBb1Z.s:281    .text.MX_GPIO_Init:0000000000000118 $d
+     /tmp/ccZhtuJw.s:18     .text.MX_GPIO_Init:0000000000000000 $t
+     /tmp/ccZhtuJw.s:27     .text.MX_GPIO_Init:0000000000000000 MX_GPIO_Init
+     /tmp/ccZhtuJw.s:281    .text.MX_GPIO_Init:0000000000000118 $d
 
 UNDEFINED SYMBOLS
 HAL_GPIO_WritePin
