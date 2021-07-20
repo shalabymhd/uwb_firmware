@@ -13,7 +13,7 @@ All of which can be done from the terminal.
 Inside the directory `./cubemx-out/` there is a `.ioc` file. This file can be loaded inside the CubeMX software, after which one simply has to click on the __GENERATE CODE__ button and it will populate the entire `./cubemx-out/` directory with the following files. 
 
 ```
-cubemx-out
+uwb_firmware
 ├── config_stm32f4.ioc
 ├── config_stm32f4.xml
 ├── Drivers
@@ -188,7 +188,7 @@ In the project directory,
 
     make all
 
-This will produce an `.elf` file in the same directory.
+This will produce an `.elf` file under the `./build/` directory.
 
 ## Uploading with openocd
 First, install OpenOCD

@@ -3,20 +3,17 @@
 	"configurations":
 	[
 		{
-			"name": "Cortex debug",
+			"name": "Build and Debug",
 			"type": "cortex-debug",
 			"request": "launch",
 			"servertype": "openocd",
 			"cwd": "${workspaceFolder}",
-			"armToolchainPath": "home/charles/.vscode/extensions/buzzyelectronics.stm-helper-1.2.9/ArmGcc/bin",
-			"executable": "build/cubemx-out.elf",
-			"svdFile": "home/charles/.vscode/extensions/buzzyelectronics.stm-helper-1.2.9/SvdTools/STM32F4/STM32F40x.svd",
+			"executable": "build/config_stm32f4.elf",
 			"configFiles":
 			[
-				"home/charles/.vscode/extensions/buzzyelectronics.stm-helper-1.2.9/OpenOCD/scripts/interface/stlink.cfg",
-				"home/charles/.vscode/extensions/buzzyelectronics.stm-helper-1.2.9/OpenOCD/scripts/target/stm32f4x.cfg"
+				"/usr/share/openocd/scripts/board/stm32f4discovery.cfg"
 			],
-			"preLaunchTask": "Build project"
+			"preLaunchTask": "Build Firmware"
 		}
 	]
 }
