@@ -26,7 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,9 +46,12 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+uint8_t *data = "Hello World from USB CDC\n";
 /* USER CODE END Variables */
+
 osThreadId defaultTaskHandle;
+osThreadId blinkTaskHandle;
+osThreadId usbTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -56,6 +59,8 @@ osThreadId defaultTaskHandle;
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
+void StartBlinking(void const * argument);
+void StartUsbTransmit(void const * argument);
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -104,11 +109,15 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityIdle, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
+  osThreadDef(blink, StartBlinking, osPriorityNormal, 0, 128);
+  blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
+
+  osThreadDef(usb, StartUsbTransmit, osPriorityHigh, 0, 128);
+  usbTaskHandle = osThreadCreate(osThread(usb), NULL);
   /* USER CODE END RTOS_THREADS */
 
 }
@@ -135,7 +144,21 @@ void StartDefaultTask(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+void StartBlinking(void const *argument){
+  while (1){
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
+    osDelay(1000);
+  }
+}
 
+void StartUsbTransmit(void const *argument){
+  // To read the transmitted data on a computer, execute in a terminal
+  // >> cat /dev/ttyACMx
+  while (1){
+    CDC_Transmit_FS(data, strlen(data));
+    osDelay(1000);    
+  }
+}
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
