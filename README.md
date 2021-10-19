@@ -216,17 +216,17 @@ Although OpenOCD can be downloaded explicitly, it is also possible to install it
 
 This will allow take care of creating a symbolic link to the `openocd` command, allowing us to just use the `openocd` command from any directory. Assuming you have built the code with `make`, that you are still in the `uwb_firmware` directory, and that the discovery board is plugged in with the appropriate jumpers removed, we can upload our firmware in one command:
 
-    openocd -f board/stm32f4discovery.cfg -c "program ./build/config_stm32f4.elf verify reset exit"
+    openocd -f interface/stlink-v2-1.cfg -f target/stm32f4x.cfg -c "program ./build/config_stm32f4.elf verify reset exit"
 
 ## Debugging with OpenOCD and GDB
 
 First, make sure the board is connected by USB and start OpenOCD
 
-    openocd -f board/stm32f4discovery.cfg
+    openocd -f interface/stlink-v2-1.cfg -f target/stm32f4x.cfg
 
 In a new terminal in the current `uwb_firmware` directory
 
-     arm-none-eabi-gdb ./build/config_stm32f4discovery.elf
+    arm-none-eabi-gdb ./build/config_stm32f4.elf
 
 and you will enter a GDB command line. The above step assumes that you have installed the `arm-none-eabi-gcc` toolchain as per Mohammed's tutorial. To connect to the openocd server 
 
@@ -330,11 +330,11 @@ Just as before, we just need to create a VS Code task to run the upload command 
     "type": "shell",
     "command": "openocd",
     "args":
-    [
-        "-f","board/stm32f4discovery.cfg",
-        "-c","'program build/config_stm32f4.elf verify reset exit'"
-        
-    ]
+		[
+			"-f","interface/stlink-v2-1.cfg",
+			"-f","target/stm32f4x.cfg",
+			"-c","'program build/config_stm32f4.elf verify reset exit'"
+		]
 }
 
 ```

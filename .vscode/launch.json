@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations":
+    [
+        {
+            "name": "Build and Debug",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "cwd": "${workspaceFolder}",
+            "executable": "./build/config_stm32f4.elf",
+            "configFiles":
+            [
+                "/usr/share/openocd/scripts/interface/stlink-v2-1.cfg",
+                "/usr/share/openocd/scripts/target/stm32f4x.cfg"
+            ],
+            "preLaunchTask": "Build Firmware"
+        }
+    ]
+}

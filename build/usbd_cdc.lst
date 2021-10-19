@@ -1,0 +1,2695 @@
+ARM GAS  /tmp/cctOeuTT.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 2
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"usbd_cdc.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.USBD_CDC_EP0_RxReady,"ax",%progbits
+  18              		.align	1
+  19              		.p2align 2,,3
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv4-sp-d16
+  26              	USBD_CDC_EP0_RxReady:
+  27              	.LVL0:
+  28              	.LFB139:
+  29              		.file 1 "Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c"
+   1:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+   2:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   ******************************************************************************
+   3:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @file    usbd_cdc.c
+   4:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @author  MCD Application Team
+   5:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief   This file provides the high layer firmware functions to manage the
+   6:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *          following functionalities of the USB CDC Class:
+   7:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *           - Initialization and Configuration of high and low layer
+   8:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *           - Enumeration as CDC Device (and enumeration for each implemented memory interface)
+   9:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *           - OUT/IN data transfer
+  10:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *           - Command IN transfer (class requests management)
+  11:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *           - Error management
+  12:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *
+  13:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *  @verbatim
+  14:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *
+  15:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *          ===================================================================
+  16:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *                                CDC Class Driver Description
+  17:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *          ===================================================================
+  18:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *           This driver manages the "Universal Serial Bus Class Definitions for Communications De
+  19:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *           Revision 1.2 November 16, 2007" and the sub-protocol specification of "Universal Seri
+  20:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *           Communications Class Subclass Specification for PSTN Devices Revision 1.2 February 9,
+  21:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *           This driver implements the following aspects of the specification:
+  22:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *             - Device descriptor management
+  23:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *             - Configuration descriptor management
+  24:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *             - Enumeration as CDC device with 2 data endpoints (IN and OUT) and 1 command endpoi
+  25:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *             - Requests management (as described in section 6.2 in specification)
+  26:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *             - Abstract Control Model compliant
+  27:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *             - Union Functional collection (using 1 IN endpoint for control)
+  28:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *             - Data interface class
+  29:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *
+ARM GAS  /tmp/cctOeuTT.s 			page 2
+
+
+  30:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *           These aspects may be enriched or modified for a specific user application.
+  31:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *
+  32:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *            This driver doesn't implement the following aspects of the specification
+  33:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *            (but it is possible to manage these features with some modifications on this driver)
+  34:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *             - Any class-specific aspect relative to communication classes should be managed by 
+  35:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *             - All communication classes other than PSTN are not managed
+  36:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *
+  37:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *  @endverbatim
+  38:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *
+  39:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   ******************************************************************************
+  40:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @attention
+  41:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *
+  42:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
+  43:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * All rights reserved.</center></h2>
+  44:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *
+  45:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * This software component is licensed by ST under Ultimate Liberty license
+  46:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * SLA0044, the "License"; You may not use this file except in compliance with
+  47:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * the License. You may obtain a copy of the License at:
+  48:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *                      www.st.com/SLA0044
+  49:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *
+  50:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   ******************************************************************************
+  51:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+  52:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  53:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /* BSPDependencies
+  54:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** - "stm32xxxxx_{eval}{discovery}{nucleo_144}.c"
+  55:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** - "stm32xxxxx_{eval}{discovery}_io.c"
+  56:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** EndBSPDependencies */
+  57:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  58:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /* Includes ------------------------------------------------------------------*/
+  59:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** #include "usbd_cdc.h"
+  60:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** #include "usbd_ctlreq.h"
+  61:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  62:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  63:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /** @addtogroup STM32_USB_DEVICE_LIBRARY
+  64:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @{
+  65:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+  66:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  67:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  68:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /** @defgroup USBD_CDC
+  69:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief usbd core module
+  70:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @{
+  71:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+  72:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  73:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /** @defgroup USBD_CDC_Private_TypesDefinitions
+  74:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @{
+  75:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+  76:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+  77:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @}
+  78:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+  79:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  80:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  81:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /** @defgroup USBD_CDC_Private_Defines
+  82:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @{
+  83:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+  84:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+  85:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @}
+  86:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ARM GAS  /tmp/cctOeuTT.s 			page 3
+
+
+  87:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  88:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  89:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /** @defgroup USBD_CDC_Private_Macros
+  90:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @{
+  91:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+  92:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  93:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+  94:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @}
+  95:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+  96:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  97:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+  98:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /** @defgroup USBD_CDC_Private_FunctionPrototypes
+  99:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @{
+ 100:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 101:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 102:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx);
+ 103:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx);
+ 104:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t USBD_CDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
+ 105:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum);
+ 106:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum);
+ 107:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev);
+ 108:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 109:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t *USBD_CDC_GetFSCfgDesc(uint16_t *length);
+ 110:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t *USBD_CDC_GetHSCfgDesc(uint16_t *length);
+ 111:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t *USBD_CDC_GetOtherSpeedCfgDesc(uint16_t *length);
+ 112:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t *USBD_CDC_GetOtherSpeedCfgDesc(uint16_t *length);
+ 113:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** uint8_t *USBD_CDC_GetDeviceQualifierDescriptor(uint16_t *length);
+ 114:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 115:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /* USB Standard Device Descriptor */
+ 116:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** __ALIGN_BEGIN static uint8_t USBD_CDC_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] __ALIGN_END =
+ 117:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 118:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_LEN_DEV_QUALIFIER_DESC,
+ 119:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_DEVICE_QUALIFIER,
+ 120:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,
+ 121:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,
+ 122:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,
+ 123:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,
+ 124:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,
+ 125:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x40,
+ 126:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,
+ 127:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,
+ 128:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** };
+ 129:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 130:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 131:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @}
+ 132:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 133:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 134:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /** @defgroup USBD_CDC_Private_Variables
+ 135:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @{
+ 136:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 137:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 138:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 139:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /* CDC interface class callbacks structure */
+ 140:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** USBD_ClassTypeDef  USBD_CDC =
+ 141:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 142:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_Init,
+ 143:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_DeInit,
+ARM GAS  /tmp/cctOeuTT.s 			page 4
+
+
+ 144:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_Setup,
+ 145:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   NULL,                 /* EP0_TxSent, */
+ 146:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_EP0_RxReady,
+ 147:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_DataIn,
+ 148:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_DataOut,
+ 149:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   NULL,
+ 150:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   NULL,
+ 151:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   NULL,
+ 152:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_GetHSCfgDesc,
+ 153:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_GetFSCfgDesc,
+ 154:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_GetOtherSpeedCfgDesc,
+ 155:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_GetDeviceQualifierDescriptor,
+ 156:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** };
+ 157:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 158:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /* USB CDC device Configuration Descriptor */
+ 159:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** __ALIGN_BEGIN static uint8_t USBD_CDC_CfgHSDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
+ 160:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 161:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Configuration Descriptor */
+ 162:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x09,                                       /* bLength: Configuration Descriptor size */
+ 163:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_CONFIGURATION,                /* bDescriptorType: Configuration */
+ 164:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_CDC_CONFIG_DESC_SIZ,                    /* wTotalLength:no of returned bytes */
+ 165:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,
+ 166:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bNumInterfaces: 2 interface */
+ 167:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bConfigurationValue: Configuration value */
+ 168:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* iConfiguration: Index of string descriptor describ
+ 169:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** #if (USBD_SELF_POWERED == 1U)
+ 170:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0xC0,                                       /* bmAttributes: Bus Powered according to user config
+ 171:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** #else
+ 172:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x80,                                       /* bmAttributes: Bus Powered according to user config
+ 173:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** #endif
+ 174:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_MAX_POWER,                             /* MaxPower 100 mA */
+ 175:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 176:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*---------------------------------------------------------------------------*/
+ 177:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 178:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Interface Descriptor */
+ 179:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x09,                                       /* bLength: Interface Descriptor size */
+ 180:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_INTERFACE,                    /* bDescriptorType: Interface */
+ 181:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bInterfaceNumber: Number of Interface */
+ 182:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bAlternateSetting: Alternate setting */
+ 183:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bNumEndpoints: One endpoints used */
+ 184:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bInterfaceClass: Communication Interface Class */
+ 185:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bInterfaceSubClass: Abstract Control Model */
+ 186:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bInterfaceProtocol: Common AT commands */
+ 187:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* iInterface: */
+ 188:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 189:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Header Functional Descriptor */
+ 190:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x05,                                       /* bLength: Endpoint Descriptor size */
+ 191:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x24,                                       /* bDescriptorType: CS_INTERFACE */
+ 192:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bDescriptorSubtype: Header Func Desc */
+ 193:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x10,                                       /* bcdCDC: spec release number */
+ 194:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,
+ 195:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 196:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Call Management Functional Descriptor */
+ 197:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x05,                                       /* bFunctionLength */
+ 198:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x24,                                       /* bDescriptorType: CS_INTERFACE */
+ 199:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bDescriptorSubtype: Call Management Func Desc */
+ 200:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bmCapabilities: D0+D1 */
+ARM GAS  /tmp/cctOeuTT.s 			page 5
+
+
+ 201:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bDataInterface: 1 */
+ 202:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 203:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* ACM Functional Descriptor */
+ 204:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x04,                                       /* bFunctionLength */
+ 205:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x24,                                       /* bDescriptorType: CS_INTERFACE */
+ 206:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bDescriptorSubtype: Abstract Control Management de
+ 207:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bmCapabilities */
+ 208:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 209:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Union Functional Descriptor */
+ 210:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x05,                                       /* bFunctionLength */
+ 211:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x24,                                       /* bDescriptorType: CS_INTERFACE */
+ 212:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x06,                                       /* bDescriptorSubtype: Union func desc */
+ 213:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bMasterInterface: Communication class interface */
+ 214:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bSlaveInterface0: Data Class Interface */
+ 215:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 216:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Endpoint 2 Descriptor */
+ 217:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x07,                                       /* bLength: Endpoint Descriptor size */
+ 218:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_ENDPOINT,                     /* bDescriptorType: Endpoint */
+ 219:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   CDC_CMD_EP,                                 /* bEndpointAddress */
+ 220:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x03,                                       /* bmAttributes: Interrupt */
+ 221:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   LOBYTE(CDC_CMD_PACKET_SIZE),                /* wMaxPacketSize: */
+ 222:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   HIBYTE(CDC_CMD_PACKET_SIZE),
+ 223:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   CDC_HS_BINTERVAL,                           /* bInterval: */
+ 224:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*---------------------------------------------------------------------------*/
+ 225:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 226:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Data class interface descriptor */
+ 227:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x09,                                       /* bLength: Endpoint Descriptor size */
+ 228:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_INTERFACE,                    /* bDescriptorType: */
+ 229:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bInterfaceNumber: Number of Interface */
+ 230:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bAlternateSetting: Alternate setting */
+ 231:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bNumEndpoints: Two endpoints used */
+ 232:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x0A,                                       /* bInterfaceClass: CDC */
+ 233:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bInterfaceSubClass: */
+ 234:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bInterfaceProtocol: */
+ 235:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* iInterface: */
+ 236:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 237:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Endpoint OUT Descriptor */
+ 238:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x07,                                       /* bLength: Endpoint Descriptor size */
+ 239:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_ENDPOINT,                     /* bDescriptorType: Endpoint */
+ 240:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   CDC_OUT_EP,                                 /* bEndpointAddress */
+ 241:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bmAttributes: Bulk */
+ 242:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   LOBYTE(CDC_DATA_HS_MAX_PACKET_SIZE),        /* wMaxPacketSize: */
+ 243:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   HIBYTE(CDC_DATA_HS_MAX_PACKET_SIZE),
+ 244:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bInterval: ignore for Bulk transfer */
+ 245:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 246:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Endpoint IN Descriptor */
+ 247:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x07,                                       /* bLength: Endpoint Descriptor size */
+ 248:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_ENDPOINT,                     /* bDescriptorType: Endpoint */
+ 249:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   CDC_IN_EP,                                  /* bEndpointAddress */
+ 250:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bmAttributes: Bulk */
+ 251:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   LOBYTE(CDC_DATA_HS_MAX_PACKET_SIZE),        /* wMaxPacketSize: */
+ 252:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   HIBYTE(CDC_DATA_HS_MAX_PACKET_SIZE),
+ 253:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00                                        /* bInterval: ignore for Bulk transfer */
+ 254:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** };
+ 255:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 256:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 257:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /* USB CDC device Configuration Descriptor */
+ARM GAS  /tmp/cctOeuTT.s 			page 6
+
+
+ 258:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** __ALIGN_BEGIN static uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
+ 259:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 260:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Configuration Descriptor */
+ 261:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x09,                                       /* bLength: Configuration Descriptor size */
+ 262:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_CONFIGURATION,                /* bDescriptorType: Configuration */
+ 263:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_CDC_CONFIG_DESC_SIZ,                    /* wTotalLength:no of returned bytes */
+ 264:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,
+ 265:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bNumInterfaces: 2 interface */
+ 266:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bConfigurationValue: Configuration value */
+ 267:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* iConfiguration: Index of string descriptor describ
+ 268:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** #if (USBD_SELF_POWERED == 1U)
+ 269:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0xC0,                                       /* bmAttributes: Bus Powered according to user config
+ 270:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** #else
+ 271:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x80,                                       /* bmAttributes: Bus Powered according to user config
+ 272:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** #endif
+ 273:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_MAX_POWER,                             /* MaxPower 100 mA */
+ 274:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 275:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*---------------------------------------------------------------------------*/
+ 276:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 277:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Interface Descriptor */
+ 278:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x09,                                       /* bLength: Interface Descriptor size */
+ 279:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_INTERFACE,                    /* bDescriptorType: Interface */
+ 280:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Interface descriptor type */
+ 281:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bInterfaceNumber: Number of Interface */
+ 282:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bAlternateSetting: Alternate setting */
+ 283:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bNumEndpoints: One endpoints used */
+ 284:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bInterfaceClass: Communication Interface Class */
+ 285:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bInterfaceSubClass: Abstract Control Model */
+ 286:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bInterfaceProtocol: Common AT commands */
+ 287:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* iInterface: */
+ 288:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 289:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Header Functional Descriptor */
+ 290:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x05,                                       /* bLength: Endpoint Descriptor size */
+ 291:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x24,                                       /* bDescriptorType: CS_INTERFACE */
+ 292:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bDescriptorSubtype: Header Func Desc */
+ 293:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x10,                                       /* bcdCDC: spec release number */
+ 294:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,
+ 295:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 296:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Call Management Functional Descriptor */
+ 297:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x05,                                       /* bFunctionLength */
+ 298:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x24,                                       /* bDescriptorType: CS_INTERFACE */
+ 299:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bDescriptorSubtype: Call Management Func Desc */
+ 300:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bmCapabilities: D0+D1 */
+ 301:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bDataInterface: 1 */
+ 302:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 303:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* ACM Functional Descriptor */
+ 304:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x04,                                       /* bFunctionLength */
+ 305:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x24,                                       /* bDescriptorType: CS_INTERFACE */
+ 306:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bDescriptorSubtype: Abstract Control Management de
+ 307:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bmCapabilities */
+ 308:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 309:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Union Functional Descriptor */
+ 310:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x05,                                       /* bFunctionLength */
+ 311:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x24,                                       /* bDescriptorType: CS_INTERFACE */
+ 312:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x06,                                       /* bDescriptorSubtype: Union func desc */
+ 313:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bMasterInterface: Communication class interface */
+ 314:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bSlaveInterface0: Data Class Interface */
+ARM GAS  /tmp/cctOeuTT.s 			page 7
+
+
+ 315:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 316:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Endpoint 2 Descriptor */
+ 317:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x07,                                       /* bLength: Endpoint Descriptor size */
+ 318:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_ENDPOINT,                     /* bDescriptorType: Endpoint */
+ 319:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   CDC_CMD_EP,                                 /* bEndpointAddress */
+ 320:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x03,                                       /* bmAttributes: Interrupt */
+ 321:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   LOBYTE(CDC_CMD_PACKET_SIZE),                /* wMaxPacketSize: */
+ 322:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   HIBYTE(CDC_CMD_PACKET_SIZE),
+ 323:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   CDC_FS_BINTERVAL,                           /* bInterval: */
+ 324:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*---------------------------------------------------------------------------*/
+ 325:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 326:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Data class interface descriptor */
+ 327:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x09,                                       /* bLength: Endpoint Descriptor size */
+ 328:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_INTERFACE,                    /* bDescriptorType: */
+ 329:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bInterfaceNumber: Number of Interface */
+ 330:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bAlternateSetting: Alternate setting */
+ 331:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bNumEndpoints: Two endpoints used */
+ 332:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x0A,                                       /* bInterfaceClass: CDC */
+ 333:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bInterfaceSubClass: */
+ 334:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bInterfaceProtocol: */
+ 335:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* iInterface: */
+ 336:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 337:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Endpoint OUT Descriptor */
+ 338:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x07,                                       /* bLength: Endpoint Descriptor size */
+ 339:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_ENDPOINT,                     /* bDescriptorType: Endpoint */
+ 340:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   CDC_OUT_EP,                                 /* bEndpointAddress */
+ 341:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bmAttributes: Bulk */
+ 342:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   LOBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),        /* wMaxPacketSize: */
+ 343:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   HIBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),
+ 344:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bInterval: ignore for Bulk transfer */
+ 345:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 346:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Endpoint IN Descriptor */
+ 347:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x07,                                       /* bLength: Endpoint Descriptor size */
+ 348:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_ENDPOINT,                     /* bDescriptorType: Endpoint */
+ 349:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   CDC_IN_EP,                                  /* bEndpointAddress */
+ 350:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bmAttributes: Bulk */
+ 351:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   LOBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),        /* wMaxPacketSize: */
+ 352:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   HIBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),
+ 353:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00                                        /* bInterval: ignore for Bulk transfer */
+ 354:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** };
+ 355:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 356:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** __ALIGN_BEGIN static uint8_t USBD_CDC_OtherSpeedCfgDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
+ 357:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 358:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x09,                                       /* bLength: Configuration Descriptor size */
+ 359:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION,
+ 360:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_CDC_CONFIG_DESC_SIZ,
+ 361:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,
+ 362:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bNumInterfaces: 2 interfaces */
+ 363:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bConfigurationValue: */
+ 364:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x04,                                       /* iConfiguration: */
+ 365:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** #if (USBD_SELF_POWERED == 1U)
+ 366:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0xC0,                                       /* bmAttributes: Bus Powered according to user config
+ 367:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** #else
+ 368:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x80,                                       /* bmAttributes: Bus Powered according to user config
+ 369:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** #endif
+ 370:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_MAX_POWER,                             /* MaxPower 100 mA */
+ 371:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ARM GAS  /tmp/cctOeuTT.s 			page 8
+
+
+ 372:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*Interface Descriptor */
+ 373:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x09,                                       /* bLength: Interface Descriptor size */
+ 374:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_INTERFACE,                    /* bDescriptorType: Interface */
+ 375:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Interface descriptor type */
+ 376:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bInterfaceNumber: Number of Interface */
+ 377:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bAlternateSetting: Alternate setting */
+ 378:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bNumEndpoints: One endpoints used */
+ 379:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bInterfaceClass: Communication Interface Class */
+ 380:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bInterfaceSubClass: Abstract Control Model */
+ 381:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bInterfaceProtocol: Common AT commands */
+ 382:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* iInterface: */
+ 383:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 384:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Header Functional Descriptor */
+ 385:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x05,                                       /* bLength: Endpoint Descriptor size */
+ 386:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x24,                                       /* bDescriptorType: CS_INTERFACE */
+ 387:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bDescriptorSubtype: Header Func Desc */
+ 388:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x10,                                       /* bcdCDC: spec release number */
+ 389:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,
+ 390:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 391:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*Call Management Functional Descriptor*/
+ 392:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x05,                                       /* bFunctionLength */
+ 393:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x24,                                       /* bDescriptorType: CS_INTERFACE */
+ 394:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bDescriptorSubtype: Call Management Func Desc */
+ 395:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bmCapabilities: D0+D1 */
+ 396:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bDataInterface: 1 */
+ 397:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 398:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*ACM Functional Descriptor*/
+ 399:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x04,                                       /* bFunctionLength */
+ 400:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x24,                                       /* bDescriptorType: CS_INTERFACE */
+ 401:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bDescriptorSubtype: Abstract Control Management de
+ 402:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bmCapabilities */
+ 403:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 404:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*Union Functional Descriptor*/
+ 405:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x05,                                       /* bFunctionLength */
+ 406:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x24,                                       /* bDescriptorType: CS_INTERFACE */
+ 407:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x06,                                       /* bDescriptorSubtype: Union func desc */
+ 408:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bMasterInterface: Communication class interface */
+ 409:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bSlaveInterface0: Data Class Interface */
+ 410:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 411:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*Endpoint 2 Descriptor*/
+ 412:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x07,                                       /* bLength: Endpoint Descriptor size */
+ 413:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_ENDPOINT,                     /* bDescriptorType: Endpoint */
+ 414:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   CDC_CMD_EP,                                 /* bEndpointAddress */
+ 415:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x03,                                       /* bmAttributes: Interrupt */
+ 416:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   LOBYTE(CDC_CMD_PACKET_SIZE),                /* wMaxPacketSize: */
+ 417:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   HIBYTE(CDC_CMD_PACKET_SIZE),
+ 418:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   CDC_FS_BINTERVAL,                           /* bInterval: */
+ 419:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 420:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*---------------------------------------------------------------------------*/
+ 421:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 422:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*Data class interface descriptor*/
+ 423:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x09,                                       /* bLength: Endpoint Descriptor size */
+ 424:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_INTERFACE,                    /* bDescriptorType: */
+ 425:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x01,                                       /* bInterfaceNumber: Number of Interface */
+ 426:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bAlternateSetting: Alternate setting */
+ 427:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bNumEndpoints: Two endpoints used */
+ 428:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x0A,                                       /* bInterfaceClass: CDC */
+ARM GAS  /tmp/cctOeuTT.s 			page 9
+
+
+ 429:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bInterfaceSubClass: */
+ 430:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bInterfaceProtocol: */
+ 431:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* iInterface: */
+ 432:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 433:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*Endpoint OUT Descriptor*/
+ 434:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x07,                                       /* bLength: Endpoint Descriptor size */
+ 435:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_ENDPOINT,                     /* bDescriptorType: Endpoint */
+ 436:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   CDC_OUT_EP,                                 /* bEndpointAddress */
+ 437:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bmAttributes: Bulk */
+ 438:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x40,                                       /* wMaxPacketSize: */
+ 439:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,
+ 440:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,                                       /* bInterval: ignore for Bulk transfer */
+ 441:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 442:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /*Endpoint IN Descriptor*/
+ 443:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x07,                                       /* bLength: Endpoint Descriptor size */
+ 444:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USB_DESC_TYPE_ENDPOINT,                     /* bDescriptorType: Endpoint */
+ 445:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   CDC_IN_EP,                                  /* bEndpointAddress */
+ 446:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x02,                                       /* bmAttributes: Bulk */
+ 447:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x40,                                       /* wMaxPacketSize: */
+ 448:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00,
+ 449:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   0x00                                        /* bInterval */
+ 450:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** };
+ 451:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 452:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 453:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @}
+ 454:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 455:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 456:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /** @defgroup USBD_CDC_Private_Functions
+ 457:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @{
+ 458:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 459:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 460:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 461:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_Init
+ 462:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *         Initialize the CDC interface
+ 463:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pdev: device instance
+ 464:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  cfgidx: Configuration index
+ 465:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval status
+ 466:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 467:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
+ 468:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 469:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   UNUSED(cfgidx);
+ 470:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc;
+ 471:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 472:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   hcdc = USBD_malloc(sizeof(USBD_CDC_HandleTypeDef));
+ 473:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 474:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (hcdc == NULL)
+ 475:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 476:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     pdev->pClassData = NULL;
+ 477:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     return (uint8_t)USBD_EMEM;
+ 478:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 479:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 480:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->pClassData = (void *)hcdc;
+ 481:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 482:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (pdev->dev_speed == USBD_SPEED_HIGH)
+ 483:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 484:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Open EP IN */
+ 485:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_LL_OpenEP(pdev, CDC_IN_EP, USBD_EP_TYPE_BULK,
+ARM GAS  /tmp/cctOeuTT.s 			page 10
+
+
+ 486:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_HS_IN_PACKET_SIZE);
+ 487:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 488:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     pdev->ep_in[CDC_IN_EP & 0xFU].is_used = 1U;
+ 489:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 490:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Open EP OUT */
+ 491:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_LL_OpenEP(pdev, CDC_OUT_EP, USBD_EP_TYPE_BULK,
+ 492:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_HS_OUT_PACKET_SIZE);
+ 493:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 494:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     pdev->ep_out[CDC_OUT_EP & 0xFU].is_used = 1U;
+ 495:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 496:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Set bInterval for CDC CMD Endpoint */
+ 497:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     pdev->ep_in[CDC_CMD_EP & 0xFU].bInterval = CDC_HS_BINTERVAL;
+ 498:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 499:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   else
+ 500:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 501:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Open EP IN */
+ 502:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_LL_OpenEP(pdev, CDC_IN_EP, USBD_EP_TYPE_BULK,
+ 503:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_FS_IN_PACKET_SIZE);
+ 504:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 505:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     pdev->ep_in[CDC_IN_EP & 0xFU].is_used = 1U;
+ 506:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 507:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Open EP OUT */
+ 508:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_LL_OpenEP(pdev, CDC_OUT_EP, USBD_EP_TYPE_BULK,
+ 509:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_FS_OUT_PACKET_SIZE);
+ 510:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 511:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     pdev->ep_out[CDC_OUT_EP & 0xFU].is_used = 1U;
+ 512:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 513:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Set bInterval for CMD Endpoint */
+ 514:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     pdev->ep_in[CDC_CMD_EP & 0xFU].bInterval = CDC_FS_BINTERVAL;
+ 515:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 516:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 517:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Open Command IN EP */
+ 518:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   (void)USBD_LL_OpenEP(pdev, CDC_CMD_EP, USBD_EP_TYPE_INTR, CDC_CMD_PACKET_SIZE);
+ 519:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_CMD_EP & 0xFU].is_used = 1U;
+ 520:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 521:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Init  physical Interface components */
+ 522:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->Init();
+ 523:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 524:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Init Xfer states */
+ 525:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   hcdc->TxState = 0U;
+ 526:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   hcdc->RxState = 0U;
+ 527:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 528:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (pdev->dev_speed == USBD_SPEED_HIGH)
+ 529:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 530:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Prepare Out endpoint to receive next packet */
+ 531:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, hcdc->RxBuffer,
+ 532:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_HS_OUT_PACKET_SIZE);
+ 533:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 534:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   else
+ 535:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 536:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Prepare Out endpoint to receive next packet */
+ 537:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, hcdc->RxBuffer,
+ 538:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_FS_OUT_PACKET_SIZE);
+ 539:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 540:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 541:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return (uint8_t)USBD_OK;
+ 542:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ARM GAS  /tmp/cctOeuTT.s 			page 11
+
+
+ 543:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 544:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 545:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_Init
+ 546:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *         DeInitialize the CDC layer
+ 547:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pdev: device instance
+ 548:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  cfgidx: Configuration index
+ 549:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval status
+ 550:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 551:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
+ 552:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 553:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   UNUSED(cfgidx);
+ 554:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 555:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Close EP IN */
+ 556:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   (void)USBD_LL_CloseEP(pdev, CDC_IN_EP);
+ 557:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_IN_EP & 0xFU].is_used = 0U;
+ 558:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 559:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Close EP OUT */
+ 560:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   (void)USBD_LL_CloseEP(pdev, CDC_OUT_EP);
+ 561:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_out[CDC_OUT_EP & 0xFU].is_used = 0U;
+ 562:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 563:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Close Command IN EP */
+ 564:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   (void)USBD_LL_CloseEP(pdev, CDC_CMD_EP);
+ 565:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_CMD_EP & 0xFU].is_used = 0U;
+ 566:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_CMD_EP & 0xFU].bInterval = 0U;
+ 567:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 568:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* DeInit  physical Interface components */
+ 569:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (pdev->pClassData != NULL)
+ 570:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 571:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->DeInit();
+ 572:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_free(pdev->pClassData);
+ 573:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     pdev->pClassData = NULL;
+ 574:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 575:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 576:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return (uint8_t)USBD_OK;
+ 577:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 578:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 579:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 580:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_Setup
+ 581:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *         Handle the CDC specific requests
+ 582:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pdev: instance
+ 583:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  req: usb requests
+ 584:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval status
+ 585:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 586:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t USBD_CDC_Setup(USBD_HandleTypeDef *pdev,
+ 587:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                               USBD_SetupReqTypedef *req)
+ 588:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 589:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 590:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   uint16_t len;
+ 591:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   uint8_t ifalt = 0U;
+ 592:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   uint16_t status_info = 0U;
+ 593:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_StatusTypeDef ret = USBD_OK;
+ 594:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 595:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (hcdc == NULL)
+ 596:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 597:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     return (uint8_t)USBD_FAIL;
+ 598:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 599:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ARM GAS  /tmp/cctOeuTT.s 			page 12
+
+
+ 600:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   switch (req->bmRequest & USB_REQ_TYPE_MASK)
+ 601:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 602:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     case USB_REQ_TYPE_CLASS:
+ 603:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       if (req->wLength != 0U)
+ 604:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       {
+ 605:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         if ((req->bmRequest & 0x80U) != 0U)
+ 606:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         {
+ 607:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->Control(req->bRequest,
+ 608:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                             (uint8_t *)hcdc->data,
+ 609:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                             req->wLength);
+ 610:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 611:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           len = MIN(CDC_REQ_MAX_DATA_SIZE, req->wLength);
+ 612:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           (void)USBD_CtlSendData(pdev, (uint8_t *)hcdc->data, len);
+ 613:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         }
+ 614:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         else
+ 615:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         {
+ 616:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           hcdc->CmdOpCode = req->bRequest;
+ 617:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           hcdc->CmdLength = (uint8_t)req->wLength;
+ 618:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 619:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           (void)USBD_CtlPrepareRx(pdev, (uint8_t *)hcdc->data, req->wLength);
+ 620:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         }
+ 621:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       }
+ 622:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       else
+ 623:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       {
+ 624:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->Control(req->bRequest,
+ 625:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                           (uint8_t *)req, 0U);
+ 626:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       }
+ 627:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       break;
+ 628:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 629:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     case USB_REQ_TYPE_STANDARD:
+ 630:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       switch (req->bRequest)
+ 631:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       {
+ 632:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         case USB_REQ_GET_STATUS:
+ 633:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           if (pdev->dev_state == USBD_STATE_CONFIGURED)
+ 634:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 635:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****             (void)USBD_CtlSendData(pdev, (uint8_t *)&status_info, 2U);
+ 636:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 637:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           else
+ 638:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 639:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****             USBD_CtlError(pdev, req);
+ 640:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****             ret = USBD_FAIL;
+ 641:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 642:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           break;
+ 643:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 644:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         case USB_REQ_GET_INTERFACE:
+ 645:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           if (pdev->dev_state == USBD_STATE_CONFIGURED)
+ 646:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 647:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****             (void)USBD_CtlSendData(pdev, &ifalt, 1U);
+ 648:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 649:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           else
+ 650:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 651:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****             USBD_CtlError(pdev, req);
+ 652:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****             ret = USBD_FAIL;
+ 653:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 654:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           break;
+ 655:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 656:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         case USB_REQ_SET_INTERFACE:
+ARM GAS  /tmp/cctOeuTT.s 			page 13
+
+
+ 657:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           if (pdev->dev_state != USBD_STATE_CONFIGURED)
+ 658:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 659:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****             USBD_CtlError(pdev, req);
+ 660:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****             ret = USBD_FAIL;
+ 661:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 662:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           break;
+ 663:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 664:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         case USB_REQ_CLEAR_FEATURE:
+ 665:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           break;
+ 666:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 667:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         default:
+ 668:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           USBD_CtlError(pdev, req);
+ 669:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           ret = USBD_FAIL;
+ 670:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           break;
+ 671:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       }
+ 672:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       break;
+ 673:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 674:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     default:
+ 675:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       USBD_CtlError(pdev, req);
+ 676:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       ret = USBD_FAIL;
+ 677:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       break;
+ 678:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 679:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 680:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return (uint8_t)ret;
+ 681:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 682:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 683:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 684:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_DataIn
+ 685:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *         Data sent on non-control IN endpoint
+ 686:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pdev: device instance
+ 687:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  epnum: endpoint number
+ 688:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval status
+ 689:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 690:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum)
+ 691:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 692:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc;
+ 693:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   PCD_HandleTypeDef *hpcd = pdev->pData;
+ 694:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 695:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (pdev->pClassData == NULL)
+ 696:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 697:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     return (uint8_t)USBD_FAIL;
+ 698:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 699:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 700:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 701:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 702:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if ((pdev->ep_in[epnum].total_length > 0U) &&
+ 703:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       ((pdev->ep_in[epnum].total_length % hpcd->IN_ep[epnum].maxpacket) == 0U))
+ 704:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 705:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Update the packet total length */
+ 706:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     pdev->ep_in[epnum].total_length = 0U;
+ 707:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 708:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Send ZLP */
+ 709:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_LL_Transmit(pdev, epnum, NULL, 0U);
+ 710:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 711:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   else
+ 712:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 713:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     hcdc->TxState = 0U;
+ARM GAS  /tmp/cctOeuTT.s 			page 14
+
+
+ 714:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 715:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     if (((USBD_CDC_ItfTypeDef *)pdev->pUserData)->TransmitCplt != NULL)
+ 716:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     {
+ 717:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->TransmitCplt(hcdc->TxBuffer, &hcdc->TxLength, epnum
+ 718:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     }
+ 719:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 720:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 721:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return (uint8_t)USBD_OK;
+ 722:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 723:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 724:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 725:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_DataOut
+ 726:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *         Data received on non-control Out endpoint
+ 727:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pdev: device instance
+ 728:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  epnum: endpoint number
+ 729:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval status
+ 730:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 731:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
+ 732:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 733:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 734:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 735:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (pdev->pClassData == NULL)
+ 736:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 737:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     return (uint8_t)USBD_FAIL;
+ 738:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 739:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 740:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* Get the received data length */
+ 741:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   hcdc->RxLength = USBD_LL_GetRxDataSize(pdev, epnum);
+ 742:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 743:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   /* USB data will be immediately processed, this allow next USB traffic being
+ 744:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   NAKed till the end of the application Xfer */
+ 745:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 746:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->Receive(hcdc->RxBuffer, &hcdc->RxLength);
+ 747:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 748:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return (uint8_t)USBD_OK;
+ 749:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 750:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 751:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 752:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_EP0_RxReady
+ 753:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *         Handle EP0 Rx Ready event
+ 754:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pdev: device instance
+ 755:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval status
+ 756:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 757:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
+ 758:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+  30              		.loc 1 758 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+ 759:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+  34              		.loc 1 759 3 view .LVU1
+ 758:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+  35              		.loc 1 758 1 is_stmt 0 view .LVU2
+  36 0000 10B5     		push	{r4, lr}
+  37              	.LCFI0:
+  38              		.cfi_def_cfa_offset 8
+  39              		.cfi_offset 4, -8
+ARM GAS  /tmp/cctOeuTT.s 			page 15
+
+
+  40              		.cfi_offset 14, -4
+  41              		.loc 1 759 27 view .LVU3
+  42 0002 D0F8BC42 		ldr	r4, [r0, #700]
+  43              	.LVL1:
+ 760:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 761:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (hcdc == NULL)
+  44              		.loc 1 761 3 is_stmt 1 view .LVU4
+  45              		.loc 1 761 6 is_stmt 0 view .LVU5
+  46 0006 84B1     		cbz	r4, .L3
+ 762:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 763:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     return (uint8_t)USBD_FAIL;
+ 764:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 765:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 766:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if ((pdev->pUserData != NULL) && (hcdc->CmdOpCode != 0xFFU))
+  47              		.loc 1 766 3 is_stmt 1 view .LVU6
+  48              		.loc 1 766 12 is_stmt 0 view .LVU7
+  49 0008 D0F8C032 		ldr	r3, [r0, #704]
+  50              		.loc 1 766 6 view .LVU8
+  51 000c 5BB1     		cbz	r3, .L5
+  52              		.loc 1 766 41 discriminator 1 view .LVU9
+  53 000e 94F80002 		ldrb	r0, [r4, #512]	@ zero_extendqisi2
+  54              	.LVL2:
+  55              		.loc 1 766 33 discriminator 1 view .LVU10
+  56 0012 FF28     		cmp	r0, #255
+  57 0014 07D0     		beq	.L5
+ 767:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 768:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->Control(hcdc->CmdOpCode,
+  58              		.loc 1 768 5 is_stmt 1 view .LVU11
+  59              		.loc 1 768 6 is_stmt 0 view .LVU12
+  60 0016 9B68     		ldr	r3, [r3, #8]
+  61 0018 94F80122 		ldrb	r2, [r4, #513]	@ zero_extendqisi2
+  62 001c 2146     		mov	r1, r4
+  63 001e 9847     		blx	r3
+  64              	.LVL3:
+ 769:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                       (uint8_t *)hcdc->data,
+ 770:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                       (uint16_t)hcdc->CmdLength);
+ 771:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     hcdc->CmdOpCode = 0xFFU;
+  65              		.loc 1 771 5 is_stmt 1 view .LVU13
+  66              		.loc 1 771 21 is_stmt 0 view .LVU14
+  67 0020 FF23     		movs	r3, #255
+  68 0022 84F80032 		strb	r3, [r4, #512]
+  69              	.L5:
+ 772:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 773:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 774:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return (uint8_t)USBD_OK;
+  70              		.loc 1 774 10 view .LVU15
+  71 0026 0020     		movs	r0, #0
+ 775:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+  72              		.loc 1 775 1 view .LVU16
+  73 0028 10BD     		pop	{r4, pc}
+  74              	.LVL4:
+  75              	.L3:
+ 763:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+  76              		.loc 1 763 12 view .LVU17
+  77 002a 0320     		movs	r0, #3
+  78              	.LVL5:
+  79              		.loc 1 775 1 view .LVU18
+ARM GAS  /tmp/cctOeuTT.s 			page 16
+
+
+  80 002c 10BD     		pop	{r4, pc}
+  81              		.loc 1 775 1 view .LVU19
+  82              		.cfi_endproc
+  83              	.LFE139:
+  85 002e 00BF     		.section	.text.USBD_CDC_GetFSCfgDesc,"ax",%progbits
+  86              		.align	1
+  87              		.p2align 2,,3
+  88              		.syntax unified
+  89              		.thumb
+  90              		.thumb_func
+  91              		.fpu fpv4-sp-d16
+  93              	USBD_CDC_GetFSCfgDesc:
+  94              	.LVL6:
+  95              	.LFB140:
+ 776:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 777:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 778:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_GetFSCfgDesc
+ 779:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *         Return configuration descriptor
+ 780:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  speed : current device speed
+ 781:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  length : pointer data length
+ 782:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval pointer to descriptor buffer
+ 783:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 784:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t *USBD_CDC_GetFSCfgDesc(uint16_t *length)
+ 785:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+  96              		.loc 1 785 1 is_stmt 1 view -0
+  97              		.cfi_startproc
+  98              		@ args = 0, pretend = 0, frame = 0
+  99              		@ frame_needed = 0, uses_anonymous_args = 0
+ 100              		@ link register save eliminated.
+ 786:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *length = (uint16_t)sizeof(USBD_CDC_CfgFSDesc);
+ 101              		.loc 1 786 3 view .LVU21
+ 102              		.loc 1 786 11 is_stmt 0 view .LVU22
+ 103 0000 4323     		movs	r3, #67
+ 104 0002 0380     		strh	r3, [r0]	@ movhi
+ 787:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 788:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return USBD_CDC_CfgFSDesc;
+ 105              		.loc 1 788 3 is_stmt 1 view .LVU23
+ 789:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 106              		.loc 1 789 1 is_stmt 0 view .LVU24
+ 107 0004 0048     		ldr	r0, .L10
+ 108              	.LVL7:
+ 109              		.loc 1 789 1 view .LVU25
+ 110 0006 7047     		bx	lr
+ 111              	.L11:
+ 112              		.align	2
+ 113              	.L10:
+ 114 0008 00000000 		.word	.LANCHOR0
+ 115              		.cfi_endproc
+ 116              	.LFE140:
+ 118              		.section	.text.USBD_CDC_GetHSCfgDesc,"ax",%progbits
+ 119              		.align	1
+ 120              		.p2align 2,,3
+ 121              		.syntax unified
+ 122              		.thumb
+ 123              		.thumb_func
+ 124              		.fpu fpv4-sp-d16
+ 126              	USBD_CDC_GetHSCfgDesc:
+ARM GAS  /tmp/cctOeuTT.s 			page 17
+
+
+ 127              	.LVL8:
+ 128              	.LFB141:
+ 790:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 791:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 792:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_GetHSCfgDesc
+ 793:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *         Return configuration descriptor
+ 794:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  speed : current device speed
+ 795:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  length : pointer data length
+ 796:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval pointer to descriptor buffer
+ 797:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 798:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t *USBD_CDC_GetHSCfgDesc(uint16_t *length)
+ 799:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 129              		.loc 1 799 1 is_stmt 1 view -0
+ 130              		.cfi_startproc
+ 131              		@ args = 0, pretend = 0, frame = 0
+ 132              		@ frame_needed = 0, uses_anonymous_args = 0
+ 133              		@ link register save eliminated.
+ 800:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *length = (uint16_t)sizeof(USBD_CDC_CfgHSDesc);
+ 134              		.loc 1 800 3 view .LVU27
+ 135              		.loc 1 800 11 is_stmt 0 view .LVU28
+ 136 0000 4323     		movs	r3, #67
+ 137 0002 0380     		strh	r3, [r0]	@ movhi
+ 801:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 802:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return USBD_CDC_CfgHSDesc;
+ 138              		.loc 1 802 3 is_stmt 1 view .LVU29
+ 803:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 139              		.loc 1 803 1 is_stmt 0 view .LVU30
+ 140 0004 0048     		ldr	r0, .L13
+ 141              	.LVL9:
+ 142              		.loc 1 803 1 view .LVU31
+ 143 0006 7047     		bx	lr
+ 144              	.L14:
+ 145              		.align	2
+ 146              	.L13:
+ 147 0008 00000000 		.word	.LANCHOR1
+ 148              		.cfi_endproc
+ 149              	.LFE141:
+ 151              		.section	.text.USBD_CDC_GetOtherSpeedCfgDesc,"ax",%progbits
+ 152              		.align	1
+ 153              		.p2align 2,,3
+ 154              		.syntax unified
+ 155              		.thumb
+ 156              		.thumb_func
+ 157              		.fpu fpv4-sp-d16
+ 159              	USBD_CDC_GetOtherSpeedCfgDesc:
+ 160              	.LVL10:
+ 161              	.LFB142:
+ 804:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 805:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 806:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_GetOtherSpeedCfgDesc
+ 807:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *         Return configuration descriptor
+ 808:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  speed : current device speed
+ 809:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  length : pointer data length
+ 810:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval pointer to descriptor buffer
+ 811:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 812:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** static uint8_t *USBD_CDC_GetOtherSpeedCfgDesc(uint16_t *length)
+ 813:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ARM GAS  /tmp/cctOeuTT.s 			page 18
+
+
+ 162              		.loc 1 813 1 is_stmt 1 view -0
+ 163              		.cfi_startproc
+ 164              		@ args = 0, pretend = 0, frame = 0
+ 165              		@ frame_needed = 0, uses_anonymous_args = 0
+ 166              		@ link register save eliminated.
+ 814:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *length = (uint16_t)sizeof(USBD_CDC_OtherSpeedCfgDesc);
+ 167              		.loc 1 814 3 view .LVU33
+ 168              		.loc 1 814 11 is_stmt 0 view .LVU34
+ 169 0000 4323     		movs	r3, #67
+ 170 0002 0380     		strh	r3, [r0]	@ movhi
+ 815:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 816:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return USBD_CDC_OtherSpeedCfgDesc;
+ 171              		.loc 1 816 3 is_stmt 1 view .LVU35
+ 817:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 172              		.loc 1 817 1 is_stmt 0 view .LVU36
+ 173 0004 0048     		ldr	r0, .L16
+ 174              	.LVL11:
+ 175              		.loc 1 817 1 view .LVU37
+ 176 0006 7047     		bx	lr
+ 177              	.L17:
+ 178              		.align	2
+ 179              	.L16:
+ 180 0008 00000000 		.word	.LANCHOR2
+ 181              		.cfi_endproc
+ 182              	.LFE142:
+ 184              		.section	.text.USBD_CDC_GetDeviceQualifierDescriptor,"ax",%progbits
+ 185              		.align	1
+ 186              		.p2align 2,,3
+ 187              		.global	USBD_CDC_GetDeviceQualifierDescriptor
+ 188              		.syntax unified
+ 189              		.thumb
+ 190              		.thumb_func
+ 191              		.fpu fpv4-sp-d16
+ 193              	USBD_CDC_GetDeviceQualifierDescriptor:
+ 194              	.LVL12:
+ 195              	.LFB143:
+ 818:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 819:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 820:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_GetDeviceQualifierDescriptor
+ 821:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *         return Device Qualifier descriptor
+ 822:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  length : pointer data length
+ 823:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval pointer to descriptor buffer
+ 824:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 825:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** uint8_t *USBD_CDC_GetDeviceQualifierDescriptor(uint16_t *length)
+ 826:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 196              		.loc 1 826 1 is_stmt 1 view -0
+ 197              		.cfi_startproc
+ 198              		@ args = 0, pretend = 0, frame = 0
+ 199              		@ frame_needed = 0, uses_anonymous_args = 0
+ 200              		@ link register save eliminated.
+ 827:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *length = (uint16_t)sizeof(USBD_CDC_DeviceQualifierDesc);
+ 201              		.loc 1 827 3 view .LVU39
+ 202              		.loc 1 827 11 is_stmt 0 view .LVU40
+ 203 0000 0A23     		movs	r3, #10
+ 204 0002 0380     		strh	r3, [r0]	@ movhi
+ 828:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 829:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return USBD_CDC_DeviceQualifierDesc;
+ARM GAS  /tmp/cctOeuTT.s 			page 19
+
+
+ 205              		.loc 1 829 3 is_stmt 1 view .LVU41
+ 830:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 206              		.loc 1 830 1 is_stmt 0 view .LVU42
+ 207 0004 0048     		ldr	r0, .L19
+ 208              	.LVL13:
+ 209              		.loc 1 830 1 view .LVU43
+ 210 0006 7047     		bx	lr
+ 211              	.L20:
+ 212              		.align	2
+ 213              	.L19:
+ 214 0008 00000000 		.word	.LANCHOR3
+ 215              		.cfi_endproc
+ 216              	.LFE143:
+ 218              		.section	.text.USBD_CDC_DataOut,"ax",%progbits
+ 219              		.align	1
+ 220              		.p2align 2,,3
+ 221              		.syntax unified
+ 222              		.thumb
+ 223              		.thumb_func
+ 224              		.fpu fpv4-sp-d16
+ 226              	USBD_CDC_DataOut:
+ 227              	.LVL14:
+ 228              	.LFB138:
+ 732:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 229              		.loc 1 732 1 is_stmt 1 view -0
+ 230              		.cfi_startproc
+ 231              		@ args = 0, pretend = 0, frame = 0
+ 232              		@ frame_needed = 0, uses_anonymous_args = 0
+ 733:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 233              		.loc 1 733 3 view .LVU45
+ 732:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 234              		.loc 1 732 1 is_stmt 0 view .LVU46
+ 235 0000 38B5     		push	{r3, r4, r5, lr}
+ 236              	.LCFI1:
+ 237              		.cfi_def_cfa_offset 16
+ 238              		.cfi_offset 3, -16
+ 239              		.cfi_offset 4, -12
+ 240              		.cfi_offset 5, -8
+ 241              		.cfi_offset 14, -4
+ 733:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 242              		.loc 1 733 27 view .LVU47
+ 243 0002 D0F8BC52 		ldr	r5, [r0, #700]
+ 244              	.LVL15:
+ 735:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 245              		.loc 1 735 3 is_stmt 1 view .LVU48
+ 735:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 246              		.loc 1 735 6 is_stmt 0 view .LVU49
+ 247 0006 75B1     		cbz	r5, .L23
+ 741:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 248              		.loc 1 741 3 is_stmt 1 view .LVU50
+ 249 0008 0446     		mov	r4, r0
+ 741:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 250              		.loc 1 741 20 is_stmt 0 view .LVU51
+ 251 000a FFF7FEFF 		bl	USBD_LL_GetRxDataSize
+ 252              	.LVL16:
+ 746:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 253              		.loc 1 746 43 view .LVU52
+ARM GAS  /tmp/cctOeuTT.s 			page 20
+
+
+ 254 000e D4F8C032 		ldr	r3, [r4, #704]
+ 741:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 255              		.loc 1 741 18 view .LVU53
+ 256 0012 C5F80C02 		str	r0, [r5, #524]
+ 746:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 257              		.loc 1 746 3 is_stmt 1 view .LVU54
+ 746:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 258              		.loc 1 746 4 is_stmt 0 view .LVU55
+ 259 0016 DB68     		ldr	r3, [r3, #12]
+ 260 0018 D5F80402 		ldr	r0, [r5, #516]
+ 261 001c 05F50371 		add	r1, r5, #524
+ 262 0020 9847     		blx	r3
+ 263              	.LVL17:
+ 748:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 264              		.loc 1 748 3 is_stmt 1 view .LVU56
+ 748:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 265              		.loc 1 748 10 is_stmt 0 view .LVU57
+ 266 0022 0020     		movs	r0, #0
+ 749:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 267              		.loc 1 749 1 view .LVU58
+ 268 0024 38BD     		pop	{r3, r4, r5, pc}
+ 269              	.LVL18:
+ 270              	.L23:
+ 737:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 271              		.loc 1 737 12 view .LVU59
+ 272 0026 0320     		movs	r0, #3
+ 273              	.LVL19:
+ 749:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 274              		.loc 1 749 1 view .LVU60
+ 275 0028 38BD     		pop	{r3, r4, r5, pc}
+ 749:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 276              		.loc 1 749 1 view .LVU61
+ 277              		.cfi_endproc
+ 278              	.LFE138:
+ 280 002a 00BF     		.section	.text.USBD_CDC_DataIn,"ax",%progbits
+ 281              		.align	1
+ 282              		.p2align 2,,3
+ 283              		.syntax unified
+ 284              		.thumb
+ 285              		.thumb_func
+ 286              		.fpu fpv4-sp-d16
+ 288              	USBD_CDC_DataIn:
+ 289              	.LVL20:
+ 290              	.LFB137:
+ 691:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc;
+ 291              		.loc 1 691 1 is_stmt 1 view -0
+ 292              		.cfi_startproc
+ 293              		@ args = 0, pretend = 0, frame = 0
+ 294              		@ frame_needed = 0, uses_anonymous_args = 0
+ 692:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   PCD_HandleTypeDef *hpcd = pdev->pData;
+ 295              		.loc 1 692 3 view .LVU63
+ 693:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 296              		.loc 1 693 3 view .LVU64
+ 695:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 297              		.loc 1 695 3 view .LVU65
+ 691:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc;
+ 298              		.loc 1 691 1 is_stmt 0 view .LVU66
+ARM GAS  /tmp/cctOeuTT.s 			page 21
+
+
+ 299 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 300              	.LCFI2:
+ 301              		.cfi_def_cfa_offset 24
+ 302              		.cfi_offset 3, -24
+ 303              		.cfi_offset 4, -20
+ 304              		.cfi_offset 5, -16
+ 305              		.cfi_offset 6, -12
+ 306              		.cfi_offset 7, -8
+ 307              		.cfi_offset 14, -4
+ 695:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 308              		.loc 1 695 11 view .LVU67
+ 309 0002 D0F8BC72 		ldr	r7, [r0, #700]
+ 695:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 310              		.loc 1 695 6 view .LVU68
+ 311 0006 67B3     		cbz	r7, .L28
+ 700:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 312              		.loc 1 700 3 is_stmt 1 view .LVU69
+ 313              	.LVL21:
+ 702:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       ((pdev->ep_in[epnum].total_length % hpcd->IN_ep[epnum].maxpacket) == 0U))
+ 314              		.loc 1 702 3 view .LVU70
+ 702:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       ((pdev->ep_in[epnum].total_length % hpcd->IN_ep[epnum].maxpacket) == 0U))
+ 315              		.loc 1 702 26 is_stmt 0 view .LVU71
+ 316 0008 01EB8106 		add	r6, r1, r1, lsl #2
+ 317 000c 00EB8606 		add	r6, r0, r6, lsl #2
+ 318 0010 0546     		mov	r5, r0
+ 319 0012 B369     		ldr	r3, [r6, #24]
+ 320 0014 0A46     		mov	r2, r1
+ 702:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       ((pdev->ep_in[epnum].total_length % hpcd->IN_ep[epnum].maxpacket) == 0U))
+ 321              		.loc 1 702 6 view .LVU72
+ 322 0016 6BB9     		cbnz	r3, .L34
+ 323              	.L27:
+ 713:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 324              		.loc 1 713 5 is_stmt 1 view .LVU73
+ 715:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     {
+ 325              		.loc 1 715 49 is_stmt 0 view .LVU74
+ 326 0018 D5F8C032 		ldr	r3, [r5, #704]
+ 327 001c 1B69     		ldr	r3, [r3, #16]
+ 713:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 328              		.loc 1 713 19 view .LVU75
+ 329 001e 0024     		movs	r4, #0
+ 330 0020 C7F81442 		str	r4, [r7, #532]
+ 715:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     {
+ 331              		.loc 1 715 5 is_stmt 1 view .LVU76
+ 715:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     {
+ 332              		.loc 1 715 8 is_stmt 0 view .LVU77
+ 333 0024 DBB1     		cbz	r3, .L29
+ 717:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     }
+ 334              		.loc 1 717 7 is_stmt 1 view .LVU78
+ 717:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     }
+ 335              		.loc 1 717 8 is_stmt 0 view .LVU79
+ 336 0026 D7F80802 		ldr	r0, [r7, #520]
+ 337              	.LVL22:
+ 717:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     }
+ 338              		.loc 1 717 8 view .LVU80
+ 339 002a 07F50471 		add	r1, r7, #528
+ 340              	.LVL23:
+ 717:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     }
+ARM GAS  /tmp/cctOeuTT.s 			page 22
+
+
+ 341              		.loc 1 717 8 view .LVU81
+ 342 002e 9847     		blx	r3
+ 343              	.LVL24:
+ 721:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 344              		.loc 1 721 10 view .LVU82
+ 345 0030 2046     		mov	r0, r4
+ 722:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 346              		.loc 1 722 1 view .LVU83
+ 347 0032 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 348              	.LVL25:
+ 349              	.L34:
+ 703:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 350              		.loc 1 703 61 discriminator 1 view .LVU84
+ 351 0034 D0F8C442 		ldr	r4, [r0, #708]
+ 352 0038 C1EBC10C 		rsb	ip, r1, r1, lsl #3
+ 353 003c 04EB8C04 		add	r4, r4, ip, lsl #2
+ 703:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 354              		.loc 1 703 41 discriminator 1 view .LVU85
+ 355 0040 D4F844C0 		ldr	ip, [r4, #68]
+ 356 0044 B3FBFCF4 		udiv	r4, r3, ip
+ 357 0048 0CFB1434 		mls	r4, ip, r4, r3
+ 702:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       ((pdev->ep_in[epnum].total_length % hpcd->IN_ep[epnum].maxpacket) == 0U))
+ 358              		.loc 1 702 46 discriminator 1 view .LVU86
+ 359 004c 002C     		cmp	r4, #0
+ 360 004e E3D1     		bne	.L27
+ 706:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 361              		.loc 1 706 5 is_stmt 1 view .LVU87
+ 706:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 362              		.loc 1 706 37 is_stmt 0 view .LVU88
+ 363 0050 B461     		str	r4, [r6, #24]
+ 709:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 364              		.loc 1 709 5 is_stmt 1 view .LVU89
+ 709:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 365              		.loc 1 709 11 is_stmt 0 view .LVU90
+ 366 0052 2346     		mov	r3, r4
+ 367 0054 2246     		mov	r2, r4
+ 368 0056 FFF7FEFF 		bl	USBD_LL_Transmit
+ 369              	.LVL26:
+ 721:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 370              		.loc 1 721 10 view .LVU91
+ 371 005a 2046     		mov	r0, r4
+ 722:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 372              		.loc 1 722 1 view .LVU92
+ 373 005c F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 374              	.LVL27:
+ 375              	.L29:
+ 721:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 376              		.loc 1 721 10 view .LVU93
+ 377 005e 1846     		mov	r0, r3
+ 378              	.LVL28:
+ 722:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 379              		.loc 1 722 1 view .LVU94
+ 380 0060 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 381              	.LVL29:
+ 382              	.L28:
+ 697:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 383              		.loc 1 697 12 view .LVU95
+ARM GAS  /tmp/cctOeuTT.s 			page 23
+
+
+ 384 0062 0320     		movs	r0, #3
+ 385              	.LVL30:
+ 722:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 386              		.loc 1 722 1 view .LVU96
+ 387 0064 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 388              		.cfi_endproc
+ 389              	.LFE137:
+ 391 0066 00BF     		.section	.text.USBD_CDC_Setup,"ax",%progbits
+ 392              		.align	1
+ 393              		.p2align 2,,3
+ 394              		.syntax unified
+ 395              		.thumb
+ 396              		.thumb_func
+ 397              		.fpu fpv4-sp-d16
+ 399              	USBD_CDC_Setup:
+ 400              	.LVL31:
+ 401              	.LFB136:
+ 588:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 402              		.loc 1 588 1 is_stmt 1 view -0
+ 403              		.cfi_startproc
+ 404              		@ args = 0, pretend = 0, frame = 8
+ 405              		@ frame_needed = 0, uses_anonymous_args = 0
+ 589:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   uint16_t len;
+ 406              		.loc 1 589 3 view .LVU98
+ 588:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 407              		.loc 1 588 1 is_stmt 0 view .LVU99
+ 408 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 409              	.LCFI3:
+ 410              		.cfi_def_cfa_offset 24
+ 411              		.cfi_offset 4, -24
+ 412              		.cfi_offset 5, -20
+ 413              		.cfi_offset 6, -16
+ 414              		.cfi_offset 7, -12
+ 415              		.cfi_offset 8, -8
+ 416              		.cfi_offset 14, -4
+ 589:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   uint16_t len;
+ 417              		.loc 1 589 27 view .LVU100
+ 418 0004 D0F8BC82 		ldr	r8, [r0, #700]
+ 419              	.LVL32:
+ 590:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   uint8_t ifalt = 0U;
+ 420              		.loc 1 590 3 is_stmt 1 view .LVU101
+ 591:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   uint16_t status_info = 0U;
+ 421              		.loc 1 591 3 view .LVU102
+ 588:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 422              		.loc 1 588 1 is_stmt 0 view .LVU103
+ 423 0008 82B0     		sub	sp, sp, #8
+ 424              	.LCFI4:
+ 425              		.cfi_def_cfa_offset 32
+ 591:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   uint16_t status_info = 0U;
+ 426              		.loc 1 591 11 view .LVU104
+ 427 000a 0027     		movs	r7, #0
+ 428 000c 8DF80570 		strb	r7, [sp, #5]
+ 592:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_StatusTypeDef ret = USBD_OK;
+ 429              		.loc 1 592 3 is_stmt 1 view .LVU105
+ 592:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_StatusTypeDef ret = USBD_OK;
+ 430              		.loc 1 592 12 is_stmt 0 view .LVU106
+ 431 0010 ADF80670 		strh	r7, [sp, #6]	@ movhi
+ARM GAS  /tmp/cctOeuTT.s 			page 24
+
+
+ 593:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 432              		.loc 1 593 3 is_stmt 1 view .LVU107
+ 433              	.LVL33:
+ 595:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 434              		.loc 1 595 3 view .LVU108
+ 595:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 435              		.loc 1 595 6 is_stmt 0 view .LVU109
+ 436 0014 B8F1000F 		cmp	r8, #0
+ 437 0018 68D0     		beq	.L46
+ 600:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 438              		.loc 1 600 3 is_stmt 1 view .LVU110
+ 600:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 439              		.loc 1 600 14 is_stmt 0 view .LVU111
+ 440 001a 0B78     		ldrb	r3, [r1]	@ zero_extendqisi2
+ 600:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 441              		.loc 1 600 3 view .LVU112
+ 442 001c 13F06005 		ands	r5, r3, #96
+ 443 0020 0646     		mov	r6, r0
+ 444 0022 0C46     		mov	r4, r1
+ 445 0024 1FD0     		beq	.L37
+ 446 0026 202D     		cmp	r5, #32
+ 447 0028 08D0     		beq	.L48
+ 448              	.L38:
+ 668:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           ret = USBD_FAIL;
+ 449              		.loc 1 668 11 is_stmt 1 view .LVU113
+ 450 002a 2146     		mov	r1, r4
+ 451              	.LVL34:
+ 668:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           ret = USBD_FAIL;
+ 452              		.loc 1 668 11 is_stmt 0 view .LVU114
+ 453 002c 3046     		mov	r0, r6
+ 454              	.LVL35:
+ 668:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           ret = USBD_FAIL;
+ 455              		.loc 1 668 11 view .LVU115
+ 456 002e FFF7FEFF 		bl	USBD_CtlError
+ 457              	.LVL36:
+ 669:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           break;
+ 458              		.loc 1 669 11 is_stmt 1 view .LVU116
+ 670:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       }
+ 459              		.loc 1 670 11 view .LVU117
+ 669:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           break;
+ 460              		.loc 1 669 15 is_stmt 0 view .LVU118
+ 461 0032 0325     		movs	r5, #3
+ 462              	.LVL37:
+ 463              	.L36:
+ 681:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 464              		.loc 1 681 1 view .LVU119
+ 465 0034 2846     		mov	r0, r5
+ 466 0036 02B0     		add	sp, sp, #8
+ 467              	.LCFI5:
+ 468              		.cfi_remember_state
+ 469              		.cfi_def_cfa_offset 24
+ 470              		@ sp needed
+ 471 0038 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 472              	.LVL38:
+ 473              	.L48:
+ 474              	.LCFI6:
+ 475              		.cfi_restore_state
+ARM GAS  /tmp/cctOeuTT.s 			page 25
+
+
+ 603:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       {
+ 476              		.loc 1 603 7 is_stmt 1 view .LVU120
+ 603:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       {
+ 477              		.loc 1 603 14 is_stmt 0 view .LVU121
+ 478 003c CD88     		ldrh	r5, [r1, #6]
+ 603:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       {
+ 479              		.loc 1 603 10 view .LVU122
+ 480 003e 8DB3     		cbz	r5, .L39
+ 605:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         {
+ 481              		.loc 1 605 9 is_stmt 1 view .LVU123
+ 605:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         {
+ 482              		.loc 1 605 12 is_stmt 0 view .LVU124
+ 483 0040 1B06     		lsls	r3, r3, #24
+ 484 0042 58D5     		bpl	.L40
+ 607:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                             (uint8_t *)hcdc->data,
+ 485              		.loc 1 607 11 is_stmt 1 view .LVU125
+ 607:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                             (uint8_t *)hcdc->data,
+ 486              		.loc 1 607 51 is_stmt 0 view .LVU126
+ 487 0044 D0F8C032 		ldr	r3, [r0, #704]
+ 607:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                             (uint8_t *)hcdc->data,
+ 488              		.loc 1 607 12 view .LVU127
+ 489 0048 4878     		ldrb	r0, [r1, #1]	@ zero_extendqisi2
+ 490              	.LVL39:
+ 607:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                             (uint8_t *)hcdc->data,
+ 491              		.loc 1 607 12 view .LVU128
+ 492 004a 9B68     		ldr	r3, [r3, #8]
+ 493 004c 2A46     		mov	r2, r5
+ 494 004e 4146     		mov	r1, r8
+ 495              	.LVL40:
+ 607:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                             (uint8_t *)hcdc->data,
+ 496              		.loc 1 607 12 view .LVU129
+ 497 0050 9847     		blx	r3
+ 498              	.LVL41:
+ 611:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           (void)USBD_CtlSendData(pdev, (uint8_t *)hcdc->data, len);
+ 499              		.loc 1 611 11 is_stmt 1 view .LVU130
+ 612:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         }
+ 500              		.loc 1 612 11 view .LVU131
+ 611:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           (void)USBD_CtlSendData(pdev, (uint8_t *)hcdc->data, len);
+ 501              		.loc 1 611 15 is_stmt 0 view .LVU132
+ 502 0052 E288     		ldrh	r2, [r4, #6]
+ 612:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         }
+ 503              		.loc 1 612 17 view .LVU133
+ 504 0054 072A     		cmp	r2, #7
+ 505 0056 4146     		mov	r1, r8
+ 506 0058 28BF     		it	cs
+ 507 005a 0722     		movcs	r2, #7
+ 508 005c 3046     		mov	r0, r6
+ 593:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 509              		.loc 1 593 22 view .LVU134
+ 510 005e 3D46     		mov	r5, r7
+ 612:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         }
+ 511              		.loc 1 612 17 view .LVU135
+ 512 0060 FFF7FEFF 		bl	USBD_CtlSendData
+ 513              	.LVL42:
+ 612:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         }
+ 514              		.loc 1 612 17 view .LVU136
+ 515 0064 E6E7     		b	.L36
+ARM GAS  /tmp/cctOeuTT.s 			page 26
+
+
+ 516              	.LVL43:
+ 517              	.L37:
+ 630:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       {
+ 518              		.loc 1 630 7 is_stmt 1 view .LVU137
+ 630:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****       {
+ 519              		.loc 1 630 18 is_stmt 0 view .LVU138
+ 520 0066 4B78     		ldrb	r3, [r1, #1]	@ zero_extendqisi2
+ 521 0068 0B2B     		cmp	r3, #11
+ 522 006a DED8     		bhi	.L38
+ 523 006c 01A2     		adr	r2, .L42
+ 524 006e 52F823F0 		ldr	pc, [r2, r3, lsl #2]
+ 525 0072 00BF     		.p2align 2
+ 526              	.L42:
+ 527 0074 D7000000 		.word	.L44+1
+ 528 0078 35000000 		.word	.L36+1
+ 529 007c 2B000000 		.word	.L38+1
+ 530 0080 2B000000 		.word	.L38+1
+ 531 0084 2B000000 		.word	.L38+1
+ 532 0088 2B000000 		.word	.L38+1
+ 533 008c 2B000000 		.word	.L38+1
+ 534 0090 2B000000 		.word	.L38+1
+ 535 0094 2B000000 		.word	.L38+1
+ 536 0098 2B000000 		.word	.L38+1
+ 537 009c C3000000 		.word	.L43+1
+ 538 00a0 B9000000 		.word	.L41+1
+ 539              		.p2align 1
+ 540              	.L39:
+ 624:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                           (uint8_t *)req, 0U);
+ 541              		.loc 1 624 9 is_stmt 1 view .LVU139
+ 624:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                           (uint8_t *)req, 0U);
+ 542              		.loc 1 624 49 is_stmt 0 view .LVU140
+ 543 00a4 D0F8C032 		ldr	r3, [r0, #704]
+ 624:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                           (uint8_t *)req, 0U);
+ 544              		.loc 1 624 10 view .LVU141
+ 545 00a8 4878     		ldrb	r0, [r1, #1]	@ zero_extendqisi2
+ 546              	.LVL44:
+ 624:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                                           (uint8_t *)req, 0U);
+ 547              		.loc 1 624 10 view .LVU142
+ 548 00aa 9B68     		ldr	r3, [r3, #8]
+ 549 00ac 2A46     		mov	r2, r5
+ 550 00ae 9847     		blx	r3
+ 551              	.LVL45:
+ 681:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 552              		.loc 1 681 1 view .LVU143
+ 553 00b0 2846     		mov	r0, r5
+ 554 00b2 02B0     		add	sp, sp, #8
+ 555              	.LCFI7:
+ 556              		.cfi_remember_state
+ 557              		.cfi_def_cfa_offset 24
+ 558              		@ sp needed
+ 559 00b4 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 560              	.LVL46:
+ 561              	.L41:
+ 562              	.LCFI8:
+ 563              		.cfi_restore_state
+ 657:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 564              		.loc 1 657 11 is_stmt 1 view .LVU144
+ARM GAS  /tmp/cctOeuTT.s 			page 27
+
+
+ 657:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 565              		.loc 1 657 19 is_stmt 0 view .LVU145
+ 566 00b8 90F89C32 		ldrb	r3, [r0, #668]	@ zero_extendqisi2
+ 657:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 567              		.loc 1 657 14 view .LVU146
+ 568 00bc 032B     		cmp	r3, #3
+ 569 00be B9D0     		beq	.L36
+ 570 00c0 B3E7     		b	.L38
+ 571              	.L43:
+ 645:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 572              		.loc 1 645 11 is_stmt 1 view .LVU147
+ 645:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 573              		.loc 1 645 19 is_stmt 0 view .LVU148
+ 574 00c2 90F89C32 		ldrb	r3, [r0, #668]	@ zero_extendqisi2
+ 645:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 575              		.loc 1 645 14 view .LVU149
+ 576 00c6 032B     		cmp	r3, #3
+ 577 00c8 AFD1     		bne	.L38
+ 647:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 578              		.loc 1 647 13 is_stmt 1 view .LVU150
+ 647:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 579              		.loc 1 647 19 is_stmt 0 view .LVU151
+ 580 00ca 0122     		movs	r2, #1
+ 581 00cc 0DF10501 		add	r1, sp, #5
+ 582              	.LVL47:
+ 647:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 583              		.loc 1 647 19 view .LVU152
+ 584 00d0 FFF7FEFF 		bl	USBD_CtlSendData
+ 585              	.LVL48:
+ 647:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 586              		.loc 1 647 19 view .LVU153
+ 587 00d4 AEE7     		b	.L36
+ 588              	.LVL49:
+ 589              	.L44:
+ 633:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 590              		.loc 1 633 11 is_stmt 1 view .LVU154
+ 633:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 591              		.loc 1 633 19 is_stmt 0 view .LVU155
+ 592 00d6 90F89C22 		ldrb	r2, [r0, #668]	@ zero_extendqisi2
+ 633:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           {
+ 593              		.loc 1 633 14 view .LVU156
+ 594 00da 032A     		cmp	r2, #3
+ 595 00dc A5D1     		bne	.L38
+ 635:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 596              		.loc 1 635 13 is_stmt 1 view .LVU157
+ 635:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 597              		.loc 1 635 19 is_stmt 0 view .LVU158
+ 598 00de 0222     		movs	r2, #2
+ 599 00e0 0DF10601 		add	r1, sp, #6
+ 600              	.LVL50:
+ 593:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 601              		.loc 1 593 22 view .LVU159
+ 602 00e4 1D46     		mov	r5, r3
+ 635:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 603              		.loc 1 635 19 view .LVU160
+ 604 00e6 FFF7FEFF 		bl	USBD_CtlSendData
+ 605              	.LVL51:
+ARM GAS  /tmp/cctOeuTT.s 			page 28
+
+
+ 635:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           }
+ 606              		.loc 1 635 19 view .LVU161
+ 607 00ea A3E7     		b	.L36
+ 608              	.LVL52:
+ 609              	.L46:
+ 597:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 610              		.loc 1 597 12 view .LVU162
+ 611 00ec 0325     		movs	r5, #3
+ 612              	.LVL53:
+ 681:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 613              		.loc 1 681 1 view .LVU163
+ 614 00ee 2846     		mov	r0, r5
+ 615              	.LVL54:
+ 681:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 616              		.loc 1 681 1 view .LVU164
+ 617 00f0 02B0     		add	sp, sp, #8
+ 618              	.LCFI9:
+ 619              		.cfi_remember_state
+ 620              		.cfi_def_cfa_offset 24
+ 621              		@ sp needed
+ 622 00f2 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 623              	.LVL55:
+ 624              	.L40:
+ 625              	.LCFI10:
+ 626              		.cfi_restore_state
+ 616:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           hcdc->CmdLength = (uint8_t)req->wLength;
+ 627              		.loc 1 616 11 is_stmt 1 view .LVU165
+ 616:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****           hcdc->CmdLength = (uint8_t)req->wLength;
+ 628              		.loc 1 616 27 is_stmt 0 view .LVU166
+ 629 00f6 4B78     		ldrb	r3, [r1, #1]	@ zero_extendqisi2
+ 630 00f8 88F80032 		strb	r3, [r8, #512]
+ 617:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 631              		.loc 1 617 11 is_stmt 1 view .LVU167
+ 617:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 632              		.loc 1 617 29 is_stmt 0 view .LVU168
+ 633 00fc 88F80152 		strb	r5, [r8, #513]
+ 619:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         }
+ 634              		.loc 1 619 11 is_stmt 1 view .LVU169
+ 619:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         }
+ 635              		.loc 1 619 17 is_stmt 0 view .LVU170
+ 636 0100 2A46     		mov	r2, r5
+ 637 0102 4146     		mov	r1, r8
+ 638              	.LVL56:
+ 619:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****         }
+ 639              		.loc 1 619 17 view .LVU171
+ 640 0104 FFF7FEFF 		bl	USBD_CtlPrepareRx
+ 641              	.LVL57:
+ 593:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 642              		.loc 1 593 22 view .LVU172
+ 643 0108 3D46     		mov	r5, r7
+ 644 010a 93E7     		b	.L36
+ 645              		.cfi_endproc
+ 646              	.LFE136:
+ 648              		.section	.text.USBD_CDC_DeInit,"ax",%progbits
+ 649              		.align	1
+ 650              		.p2align 2,,3
+ 651              		.syntax unified
+ARM GAS  /tmp/cctOeuTT.s 			page 29
+
+
+ 652              		.thumb
+ 653              		.thumb_func
+ 654              		.fpu fpv4-sp-d16
+ 656              	USBD_CDC_DeInit:
+ 657              	.LVL58:
+ 658              	.LFB135:
+ 552:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   UNUSED(cfgidx);
+ 659              		.loc 1 552 1 is_stmt 1 view -0
+ 660              		.cfi_startproc
+ 661              		@ args = 0, pretend = 0, frame = 0
+ 662              		@ frame_needed = 0, uses_anonymous_args = 0
+ 553:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 663              		.loc 1 553 3 view .LVU174
+ 556:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_IN_EP & 0xFU].is_used = 0U;
+ 664              		.loc 1 556 3 view .LVU175
+ 552:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   UNUSED(cfgidx);
+ 665              		.loc 1 552 1 is_stmt 0 view .LVU176
+ 666 0000 38B5     		push	{r3, r4, r5, lr}
+ 667              	.LCFI11:
+ 668              		.cfi_def_cfa_offset 16
+ 669              		.cfi_offset 3, -16
+ 670              		.cfi_offset 4, -12
+ 671              		.cfi_offset 5, -8
+ 672              		.cfi_offset 14, -4
+ 552:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   UNUSED(cfgidx);
+ 673              		.loc 1 552 1 view .LVU177
+ 674 0002 0446     		mov	r4, r0
+ 557:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 675              		.loc 1 557 41 view .LVU178
+ 676 0004 0025     		movs	r5, #0
+ 556:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_IN_EP & 0xFU].is_used = 0U;
+ 677              		.loc 1 556 9 view .LVU179
+ 678 0006 8121     		movs	r1, #129
+ 679              	.LVL59:
+ 556:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_IN_EP & 0xFU].is_used = 0U;
+ 680              		.loc 1 556 9 view .LVU180
+ 681 0008 FFF7FEFF 		bl	USBD_LL_CloseEP
+ 682              	.LVL60:
+ 557:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 683              		.loc 1 557 3 is_stmt 1 view .LVU181
+ 560:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_out[CDC_OUT_EP & 0xFU].is_used = 0U;
+ 684              		.loc 1 560 9 is_stmt 0 view .LVU182
+ 685 000c 0121     		movs	r1, #1
+ 557:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 686              		.loc 1 557 41 view .LVU183
+ 687 000e 2587     		strh	r5, [r4, #56]	@ movhi
+ 560:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_out[CDC_OUT_EP & 0xFU].is_used = 0U;
+ 688              		.loc 1 560 3 is_stmt 1 view .LVU184
+ 560:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_out[CDC_OUT_EP & 0xFU].is_used = 0U;
+ 689              		.loc 1 560 9 is_stmt 0 view .LVU185
+ 690 0010 2046     		mov	r0, r4
+ 691 0012 FFF7FEFF 		bl	USBD_LL_CloseEP
+ 692              	.LVL61:
+ 561:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 693              		.loc 1 561 3 is_stmt 1 view .LVU186
+ 561:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 694              		.loc 1 561 43 is_stmt 0 view .LVU187
+ARM GAS  /tmp/cctOeuTT.s 			page 30
+
+
+ 695 0016 A4F87851 		strh	r5, [r4, #376]	@ movhi
+ 564:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_CMD_EP & 0xFU].is_used = 0U;
+ 696              		.loc 1 564 3 is_stmt 1 view .LVU188
+ 564:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_CMD_EP & 0xFU].is_used = 0U;
+ 697              		.loc 1 564 9 is_stmt 0 view .LVU189
+ 698 001a 2046     		mov	r0, r4
+ 699 001c 8221     		movs	r1, #130
+ 700 001e FFF7FEFF 		bl	USBD_LL_CloseEP
+ 701              	.LVL62:
+ 565:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_CMD_EP & 0xFU].bInterval = 0U;
+ 702              		.loc 1 565 3 is_stmt 1 view .LVU190
+ 566:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 703              		.loc 1 566 3 view .LVU191
+ 569:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 704              		.loc 1 569 6 is_stmt 0 view .LVU192
+ 705 0022 D4F8BC32 		ldr	r3, [r4, #700]
+ 565:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_CMD_EP & 0xFU].bInterval = 0U;
+ 706              		.loc 1 565 42 view .LVU193
+ 707 0026 E564     		str	r5, [r4, #76]
+ 569:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 708              		.loc 1 569 3 is_stmt 1 view .LVU194
+ 569:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 709              		.loc 1 569 6 is_stmt 0 view .LVU195
+ 710 0028 4BB1     		cbz	r3, .L50
+ 571:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_free(pdev->pClassData);
+ 711              		.loc 1 571 5 is_stmt 1 view .LVU196
+ 571:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_free(pdev->pClassData);
+ 712              		.loc 1 571 45 is_stmt 0 view .LVU197
+ 713 002a D4F8C032 		ldr	r3, [r4, #704]
+ 571:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_free(pdev->pClassData);
+ 714              		.loc 1 571 6 view .LVU198
+ 715 002e 5B68     		ldr	r3, [r3, #4]
+ 716 0030 9847     		blx	r3
+ 717              	.LVL63:
+ 572:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     pdev->pClassData = NULL;
+ 718              		.loc 1 572 5 is_stmt 1 view .LVU199
+ 719 0032 D4F8BC02 		ldr	r0, [r4, #700]
+ 720 0036 FFF7FEFF 		bl	USBD_static_free
+ 721              	.LVL64:
+ 573:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 722              		.loc 1 573 5 view .LVU200
+ 573:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 723              		.loc 1 573 22 is_stmt 0 view .LVU201
+ 724 003a C4F8BC52 		str	r5, [r4, #700]
+ 725              	.L50:
+ 576:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 726              		.loc 1 576 3 is_stmt 1 view .LVU202
+ 577:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 727              		.loc 1 577 1 is_stmt 0 view .LVU203
+ 728 003e 0020     		movs	r0, #0
+ 729 0040 38BD     		pop	{r3, r4, r5, pc}
+ 577:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 730              		.loc 1 577 1 view .LVU204
+ 731              		.cfi_endproc
+ 732              	.LFE135:
+ 734 0042 00BF     		.section	.text.USBD_CDC_Init,"ax",%progbits
+ 735              		.align	1
+ARM GAS  /tmp/cctOeuTT.s 			page 31
+
+
+ 736              		.p2align 2,,3
+ 737              		.syntax unified
+ 738              		.thumb
+ 739              		.thumb_func
+ 740              		.fpu fpv4-sp-d16
+ 742              	USBD_CDC_Init:
+ 743              	.LVL65:
+ 744              	.LFB134:
+ 468:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   UNUSED(cfgidx);
+ 745              		.loc 1 468 1 is_stmt 1 view -0
+ 746              		.cfi_startproc
+ 747              		@ args = 0, pretend = 0, frame = 0
+ 748              		@ frame_needed = 0, uses_anonymous_args = 0
+ 469:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc;
+ 749              		.loc 1 469 3 view .LVU206
+ 470:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 750              		.loc 1 470 3 view .LVU207
+ 472:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 751              		.loc 1 472 3 view .LVU208
+ 468:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   UNUSED(cfgidx);
+ 752              		.loc 1 468 1 is_stmt 0 view .LVU209
+ 753 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 754              	.LCFI12:
+ 755              		.cfi_def_cfa_offset 24
+ 756              		.cfi_offset 4, -24
+ 757              		.cfi_offset 5, -20
+ 758              		.cfi_offset 6, -16
+ 759              		.cfi_offset 7, -12
+ 760              		.cfi_offset 8, -8
+ 761              		.cfi_offset 14, -4
+ 468:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   UNUSED(cfgidx);
+ 762              		.loc 1 468 1 view .LVU210
+ 763 0004 0446     		mov	r4, r0
+ 472:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 764              		.loc 1 472 10 view .LVU211
+ 765 0006 4FF40770 		mov	r0, #540
+ 766              	.LVL66:
+ 472:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 767              		.loc 1 472 10 view .LVU212
+ 768 000a FFF7FEFF 		bl	USBD_static_malloc
+ 769              	.LVL67:
+ 474:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 770              		.loc 1 474 3 is_stmt 1 view .LVU213
+ 474:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 771              		.loc 1 474 6 is_stmt 0 view .LVU214
+ 772 000e 0546     		mov	r5, r0
+ 773 0010 0028     		cmp	r0, #0
+ 774 0012 4AD0     		beq	.L63
+ 480:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 775              		.loc 1 480 3 is_stmt 1 view .LVU215
+ 482:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 776              		.loc 1 482 6 is_stmt 0 view .LVU216
+ 777 0014 237C     		ldrb	r3, [r4, #16]	@ zero_extendqisi2
+ 480:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 778              		.loc 1 480 20 view .LVU217
+ 779 0016 C4F8BC02 		str	r0, [r4, #700]
+ 482:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ARM GAS  /tmp/cctOeuTT.s 			page 32
+
+
+ 780              		.loc 1 482 3 is_stmt 1 view .LVU218
+ 482:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 781              		.loc 1 482 6 is_stmt 0 view .LVU219
+ 782 001a 93B3     		cbz	r3, .L64
+ 502:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_FS_IN_PACKET_SIZE);
+ 783              		.loc 1 502 5 is_stmt 1 view .LVU220
+ 502:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_FS_IN_PACKET_SIZE);
+ 784              		.loc 1 502 11 is_stmt 0 view .LVU221
+ 785 001c 4023     		movs	r3, #64
+ 786 001e 8121     		movs	r1, #129
+ 505:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 787              		.loc 1 505 43 view .LVU222
+ 788 0020 0126     		movs	r6, #1
+ 502:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_FS_IN_PACKET_SIZE);
+ 789              		.loc 1 502 11 view .LVU223
+ 790 0022 0222     		movs	r2, #2
+ 791 0024 2046     		mov	r0, r4
+ 792              	.LVL68:
+ 502:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_FS_IN_PACKET_SIZE);
+ 793              		.loc 1 502 11 view .LVU224
+ 794 0026 FFF7FEFF 		bl	USBD_LL_OpenEP
+ 795              	.LVL69:
+ 505:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 796              		.loc 1 505 5 is_stmt 1 view .LVU225
+ 505:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 797              		.loc 1 505 43 is_stmt 0 view .LVU226
+ 798 002a 2687     		strh	r6, [r4, #56]	@ movhi
+ 508:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_FS_OUT_PACKET_SIZE);
+ 799              		.loc 1 508 5 is_stmt 1 view .LVU227
+ 508:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_FS_OUT_PACKET_SIZE);
+ 800              		.loc 1 508 11 is_stmt 0 view .LVU228
+ 801 002c 3146     		mov	r1, r6
+ 802 002e 4023     		movs	r3, #64
+ 803              	.L62:
+ 804 0030 0222     		movs	r2, #2
+ 805 0032 2046     		mov	r0, r4
+ 806 0034 FFF7FEFF 		bl	USBD_LL_OpenEP
+ 807              	.LVL70:
+ 511:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 808              		.loc 1 511 5 is_stmt 1 view .LVU229
+ 514:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 809              		.loc 1 514 46 is_stmt 0 view .LVU230
+ 810 0038 1023     		movs	r3, #16
+ 518:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_CMD_EP & 0xFU].is_used = 1U;
+ 811              		.loc 1 518 9 view .LVU231
+ 812 003a 0322     		movs	r2, #3
+ 813 003c 8221     		movs	r1, #130
+ 511:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 814              		.loc 1 511 45 view .LVU232
+ 815 003e A4F87861 		strh	r6, [r4, #376]	@ movhi
+ 514:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 816              		.loc 1 514 5 is_stmt 1 view .LVU233
+ 518:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_CMD_EP & 0xFU].is_used = 1U;
+ 817              		.loc 1 518 3 view .LVU234
+ 514:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 818              		.loc 1 514 46 is_stmt 0 view .LVU235
+ 819 0042 A4F84E30 		strh	r3, [r4, #78]	@ movhi
+ARM GAS  /tmp/cctOeuTT.s 			page 33
+
+
+ 518:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->ep_in[CDC_CMD_EP & 0xFU].is_used = 1U;
+ 820              		.loc 1 518 9 view .LVU236
+ 821 0046 2046     		mov	r0, r4
+ 822 0048 0823     		movs	r3, #8
+ 823 004a FFF7FEFF 		bl	USBD_LL_OpenEP
+ 824              	.LVL71:
+ 519:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 825              		.loc 1 519 3 is_stmt 1 view .LVU237
+ 522:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 826              		.loc 1 522 43 is_stmt 0 view .LVU238
+ 827 004e D4F8C032 		ldr	r3, [r4, #704]
+ 519:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 828              		.loc 1 519 42 view .LVU239
+ 829 0052 4FF00108 		mov	r8, #1
+ 522:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 830              		.loc 1 522 4 view .LVU240
+ 831 0056 1B68     		ldr	r3, [r3]
+ 519:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 832              		.loc 1 519 42 view .LVU241
+ 833 0058 A4F84C80 		strh	r8, [r4, #76]	@ movhi
+ 522:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 834              		.loc 1 522 3 is_stmt 1 view .LVU242
+ 525:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   hcdc->RxState = 0U;
+ 835              		.loc 1 525 17 is_stmt 0 view .LVU243
+ 836 005c 0027     		movs	r7, #0
+ 522:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 837              		.loc 1 522 4 view .LVU244
+ 838 005e 9847     		blx	r3
+ 839              	.LVL72:
+ 525:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   hcdc->RxState = 0U;
+ 840              		.loc 1 525 3 is_stmt 1 view .LVU245
+ 525:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   hcdc->RxState = 0U;
+ 841              		.loc 1 525 17 is_stmt 0 view .LVU246
+ 842 0060 C5F81472 		str	r7, [r5, #532]
+ 526:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 843              		.loc 1 526 3 is_stmt 1 view .LVU247
+ 526:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 844              		.loc 1 526 17 is_stmt 0 view .LVU248
+ 845 0064 C5F81872 		str	r7, [r5, #536]
+ 528:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 846              		.loc 1 528 3 is_stmt 1 view .LVU249
+ 528:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 847              		.loc 1 528 11 is_stmt 0 view .LVU250
+ 848 0068 267C     		ldrb	r6, [r4, #16]	@ zero_extendqisi2
+ 531:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_HS_OUT_PACKET_SIZE);
+ 849              		.loc 1 531 11 view .LVU251
+ 850 006a D5F80422 		ldr	r2, [r5, #516]
+ 851 006e 4146     		mov	r1, r8
+ 852 0070 2046     		mov	r0, r4
+ 528:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 853              		.loc 1 528 6 view .LVU252
+ 854 0072 9EB9     		cbnz	r6, .L60
+ 855              	.LVL73:
+ 531:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_HS_OUT_PACKET_SIZE);
+ 856              		.loc 1 531 5 is_stmt 1 view .LVU253
+ 531:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_HS_OUT_PACKET_SIZE);
+ 857              		.loc 1 531 11 is_stmt 0 view .LVU254
+ARM GAS  /tmp/cctOeuTT.s 			page 34
+
+
+ 858 0074 4FF40073 		mov	r3, #512
+ 859 0078 FFF7FEFF 		bl	USBD_LL_PrepareReceive
+ 860              	.LVL74:
+ 542:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 861              		.loc 1 542 1 view .LVU255
+ 862 007c 3046     		mov	r0, r6
+ 863 007e BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 864              	.LVL75:
+ 865              	.L64:
+ 485:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_HS_IN_PACKET_SIZE);
+ 866              		.loc 1 485 5 is_stmt 1 view .LVU256
+ 485:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_HS_IN_PACKET_SIZE);
+ 867              		.loc 1 485 11 is_stmt 0 view .LVU257
+ 868 0082 4FF40073 		mov	r3, #512
+ 869 0086 8121     		movs	r1, #129
+ 488:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 870              		.loc 1 488 43 view .LVU258
+ 871 0088 0126     		movs	r6, #1
+ 485:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_HS_IN_PACKET_SIZE);
+ 872              		.loc 1 485 11 view .LVU259
+ 873 008a 0222     		movs	r2, #2
+ 874 008c 2046     		mov	r0, r4
+ 875              	.LVL76:
+ 485:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_HS_IN_PACKET_SIZE);
+ 876              		.loc 1 485 11 view .LVU260
+ 877 008e FFF7FEFF 		bl	USBD_LL_OpenEP
+ 878              	.LVL77:
+ 488:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 879              		.loc 1 488 5 is_stmt 1 view .LVU261
+ 488:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 880              		.loc 1 488 43 is_stmt 0 view .LVU262
+ 881 0092 2687     		strh	r6, [r4, #56]	@ movhi
+ 491:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_HS_OUT_PACKET_SIZE);
+ 882              		.loc 1 491 5 is_stmt 1 view .LVU263
+ 491:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                          CDC_DATA_HS_OUT_PACKET_SIZE);
+ 883              		.loc 1 491 11 is_stmt 0 view .LVU264
+ 884 0094 3146     		mov	r1, r6
+ 885 0096 4FF40073 		mov	r3, #512
+ 886 009a C9E7     		b	.L62
+ 887              	.LVL78:
+ 888              	.L60:
+ 537:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_FS_OUT_PACKET_SIZE);
+ 889              		.loc 1 537 5 is_stmt 1 view .LVU265
+ 537:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_FS_OUT_PACKET_SIZE);
+ 890              		.loc 1 537 11 is_stmt 0 view .LVU266
+ 891 009c 4023     		movs	r3, #64
+ 541:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 892              		.loc 1 541 10 view .LVU267
+ 893 009e 3E46     		mov	r6, r7
+ 537:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_FS_OUT_PACKET_SIZE);
+ 894              		.loc 1 537 11 view .LVU268
+ 895 00a0 FFF7FEFF 		bl	USBD_LL_PrepareReceive
+ 896              	.LVL79:
+ 542:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 897              		.loc 1 542 1 view .LVU269
+ 898 00a4 3046     		mov	r0, r6
+ 899 00a6 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ARM GAS  /tmp/cctOeuTT.s 			page 35
+
+
+ 900              	.LVL80:
+ 901              	.L63:
+ 476:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     return (uint8_t)USBD_EMEM;
+ 902              		.loc 1 476 5 is_stmt 1 view .LVU270
+ 477:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 903              		.loc 1 477 12 is_stmt 0 view .LVU271
+ 904 00aa 0226     		movs	r6, #2
+ 476:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     return (uint8_t)USBD_EMEM;
+ 905              		.loc 1 476 22 view .LVU272
+ 906 00ac C4F8BC02 		str	r0, [r4, #700]
+ 477:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 907              		.loc 1 477 5 is_stmt 1 view .LVU273
+ 542:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 908              		.loc 1 542 1 is_stmt 0 view .LVU274
+ 909 00b0 3046     		mov	r0, r6
+ 910              	.LVL81:
+ 542:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 911              		.loc 1 542 1 view .LVU275
+ 912 00b2 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 542:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 913              		.loc 1 542 1 view .LVU276
+ 914              		.cfi_endproc
+ 915              	.LFE134:
+ 917 00b6 00BF     		.section	.text.USBD_CDC_RegisterInterface,"ax",%progbits
+ 918              		.align	1
+ 919              		.p2align 2,,3
+ 920              		.global	USBD_CDC_RegisterInterface
+ 921              		.syntax unified
+ 922              		.thumb
+ 923              		.thumb_func
+ 924              		.fpu fpv4-sp-d16
+ 926              	USBD_CDC_RegisterInterface:
+ 927              	.LVL82:
+ 928              	.LFB144:
+ 831:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 832:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 833:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_RegisterInterface
+ 834:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pdev: device instance
+ 835:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  fops: CD  Interface callback
+ 836:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval status
+ 837:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 838:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** uint8_t USBD_CDC_RegisterInterface(USBD_HandleTypeDef *pdev,
+ 839:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                    USBD_CDC_ItfTypeDef *fops)
+ 840:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 929              		.loc 1 840 1 is_stmt 1 view -0
+ 930              		.cfi_startproc
+ 931              		@ args = 0, pretend = 0, frame = 0
+ 932              		@ frame_needed = 0, uses_anonymous_args = 0
+ 933              		@ link register save eliminated.
+ 841:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (fops == NULL)
+ 934              		.loc 1 841 3 view .LVU278
+ 935              		.loc 1 841 6 is_stmt 0 view .LVU279
+ 936 0000 19B1     		cbz	r1, .L67
+ 842:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 843:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     return (uint8_t)USBD_FAIL;
+ 844:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 845:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ARM GAS  /tmp/cctOeuTT.s 			page 36
+
+
+ 846:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   pdev->pUserData = fops;
+ 937              		.loc 1 846 3 is_stmt 1 view .LVU280
+ 938              		.loc 1 846 19 is_stmt 0 view .LVU281
+ 939 0002 C0F8C012 		str	r1, [r0, #704]
+ 847:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 848:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return (uint8_t)USBD_OK;
+ 940              		.loc 1 848 3 is_stmt 1 view .LVU282
+ 941              		.loc 1 848 10 is_stmt 0 view .LVU283
+ 942 0006 0020     		movs	r0, #0
+ 943              	.LVL83:
+ 944              		.loc 1 848 10 view .LVU284
+ 945 0008 7047     		bx	lr
+ 946              	.LVL84:
+ 947              	.L67:
+ 843:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 948              		.loc 1 843 12 view .LVU285
+ 949 000a 0320     		movs	r0, #3
+ 950              	.LVL85:
+ 849:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 951              		.loc 1 849 1 view .LVU286
+ 952 000c 7047     		bx	lr
+ 953              		.cfi_endproc
+ 954              	.LFE144:
+ 956 000e 00BF     		.section	.text.USBD_CDC_SetTxBuffer,"ax",%progbits
+ 957              		.align	1
+ 958              		.p2align 2,,3
+ 959              		.global	USBD_CDC_SetTxBuffer
+ 960              		.syntax unified
+ 961              		.thumb
+ 962              		.thumb_func
+ 963              		.fpu fpv4-sp-d16
+ 965              	USBD_CDC_SetTxBuffer:
+ 966              	.LVL86:
+ 967              	.LFB145:
+ 850:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 851:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 852:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_SetTxBuffer
+ 853:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pdev: device instance
+ 854:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pbuff: Tx Buffer
+ 855:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval status
+ 856:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 857:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** uint8_t USBD_CDC_SetTxBuffer(USBD_HandleTypeDef *pdev,
+ 858:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                              uint8_t *pbuff, uint32_t length)
+ 859:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 968              		.loc 1 859 1 is_stmt 1 view -0
+ 969              		.cfi_startproc
+ 970              		@ args = 0, pretend = 0, frame = 0
+ 971              		@ frame_needed = 0, uses_anonymous_args = 0
+ 972              		@ link register save eliminated.
+ 860:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 973              		.loc 1 860 3 view .LVU288
+ 974              		.loc 1 860 27 is_stmt 0 view .LVU289
+ 975 0000 D0F8BC32 		ldr	r3, [r0, #700]
+ 976              	.LVL87:
+ 861:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 862:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (hcdc == NULL)
+ 977              		.loc 1 862 3 is_stmt 1 view .LVU290
+ARM GAS  /tmp/cctOeuTT.s 			page 37
+
+
+ 978              		.loc 1 862 6 is_stmt 0 view .LVU291
+ 979 0004 2BB1     		cbz	r3, .L70
+ 863:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 864:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     return (uint8_t)USBD_FAIL;
+ 865:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 866:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 867:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   hcdc->TxBuffer = pbuff;
+ 980              		.loc 1 867 3 is_stmt 1 view .LVU292
+ 981              		.loc 1 867 18 is_stmt 0 view .LVU293
+ 982 0006 C3F80812 		str	r1, [r3, #520]
+ 868:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   hcdc->TxLength = length;
+ 983              		.loc 1 868 3 is_stmt 1 view .LVU294
+ 984              		.loc 1 868 18 is_stmt 0 view .LVU295
+ 985 000a C3F81022 		str	r2, [r3, #528]
+ 869:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 870:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return (uint8_t)USBD_OK;
+ 986              		.loc 1 870 3 is_stmt 1 view .LVU296
+ 987              		.loc 1 870 10 is_stmt 0 view .LVU297
+ 988 000e 0020     		movs	r0, #0
+ 989              	.LVL88:
+ 990              		.loc 1 870 10 view .LVU298
+ 991 0010 7047     		bx	lr
+ 992              	.LVL89:
+ 993              	.L70:
+ 864:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 994              		.loc 1 864 12 view .LVU299
+ 995 0012 0320     		movs	r0, #3
+ 996              	.LVL90:
+ 871:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 997              		.loc 1 871 1 view .LVU300
+ 998 0014 7047     		bx	lr
+ 999              		.cfi_endproc
+ 1000              	.LFE145:
+ 1002 0016 00BF     		.section	.text.USBD_CDC_SetRxBuffer,"ax",%progbits
+ 1003              		.align	1
+ 1004              		.p2align 2,,3
+ 1005              		.global	USBD_CDC_SetRxBuffer
+ 1006              		.syntax unified
+ 1007              		.thumb
+ 1008              		.thumb_func
+ 1009              		.fpu fpv4-sp-d16
+ 1011              	USBD_CDC_SetRxBuffer:
+ 1012              	.LVL91:
+ 1013              	.LFB146:
+ 872:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 873:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 874:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_SetRxBuffer
+ 875:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pdev: device instance
+ 876:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pbuff: Rx Buffer
+ 877:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval status
+ 878:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 879:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** uint8_t USBD_CDC_SetRxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff)
+ 880:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 1014              		.loc 1 880 1 is_stmt 1 view -0
+ 1015              		.cfi_startproc
+ 1016              		@ args = 0, pretend = 0, frame = 0
+ 1017              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  /tmp/cctOeuTT.s 			page 38
+
+
+ 1018              		@ link register save eliminated.
+ 881:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 1019              		.loc 1 881 3 view .LVU302
+ 1020              		.loc 1 881 27 is_stmt 0 view .LVU303
+ 1021 0000 D0F8BC32 		ldr	r3, [r0, #700]
+ 1022              	.LVL92:
+ 882:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 883:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (hcdc == NULL)
+ 1023              		.loc 1 883 3 is_stmt 1 view .LVU304
+ 1024              		.loc 1 883 6 is_stmt 0 view .LVU305
+ 1025 0004 1BB1     		cbz	r3, .L73
+ 884:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 885:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     return (uint8_t)USBD_FAIL;
+ 886:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 887:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 888:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   hcdc->RxBuffer = pbuff;
+ 1026              		.loc 1 888 3 is_stmt 1 view .LVU306
+ 1027              		.loc 1 888 18 is_stmt 0 view .LVU307
+ 1028 0006 C3F80412 		str	r1, [r3, #516]
+ 889:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 890:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return (uint8_t)USBD_OK;
+ 1029              		.loc 1 890 3 is_stmt 1 view .LVU308
+ 1030              		.loc 1 890 10 is_stmt 0 view .LVU309
+ 1031 000a 0020     		movs	r0, #0
+ 1032              	.LVL93:
+ 1033              		.loc 1 890 10 view .LVU310
+ 1034 000c 7047     		bx	lr
+ 1035              	.LVL94:
+ 1036              	.L73:
+ 885:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 1037              		.loc 1 885 12 view .LVU311
+ 1038 000e 0320     		movs	r0, #3
+ 1039              	.LVL95:
+ 891:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 1040              		.loc 1 891 1 view .LVU312
+ 1041 0010 7047     		bx	lr
+ 1042              		.cfi_endproc
+ 1043              	.LFE146:
+ 1045 0012 00BF     		.section	.text.USBD_CDC_TransmitPacket,"ax",%progbits
+ 1046              		.align	1
+ 1047              		.p2align 2,,3
+ 1048              		.global	USBD_CDC_TransmitPacket
+ 1049              		.syntax unified
+ 1050              		.thumb
+ 1051              		.thumb_func
+ 1052              		.fpu fpv4-sp-d16
+ 1054              	USBD_CDC_TransmitPacket:
+ 1055              	.LVL96:
+ 1056              	.LFB147:
+ 892:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 893:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 894:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_TransmitPacket
+ 895:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *         Transmit packet on IN endpoint
+ 896:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pdev: device instance
+ 897:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval status
+ 898:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 899:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** uint8_t USBD_CDC_TransmitPacket(USBD_HandleTypeDef *pdev)
+ARM GAS  /tmp/cctOeuTT.s 			page 39
+
+
+ 900:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 1057              		.loc 1 900 1 is_stmt 1 view -0
+ 1058              		.cfi_startproc
+ 1059              		@ args = 0, pretend = 0, frame = 0
+ 1060              		@ frame_needed = 0, uses_anonymous_args = 0
+ 901:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 1061              		.loc 1 901 3 view .LVU314
+ 1062              		.loc 1 901 27 is_stmt 0 view .LVU315
+ 1063 0000 D0F8BC22 		ldr	r2, [r0, #700]
+ 1064              	.LVL97:
+ 902:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_StatusTypeDef ret = USBD_BUSY;
+ 1065              		.loc 1 902 3 is_stmt 1 view .LVU316
+ 903:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 904:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (pdev->pClassData == NULL)
+ 1066              		.loc 1 904 3 view .LVU317
+ 1067              		.loc 1 904 6 is_stmt 0 view .LVU318
+ 1068 0004 92B1     		cbz	r2, .L76
+ 905:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 906:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     return (uint8_t)USBD_FAIL;
+ 907:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 908:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 909:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (hcdc->TxState == 0U)
+ 1069              		.loc 1 909 3 is_stmt 1 view .LVU319
+ 900:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 1070              		.loc 1 900 1 is_stmt 0 view .LVU320
+ 1071 0006 38B5     		push	{r3, r4, r5, lr}
+ 1072              	.LCFI13:
+ 1073              		.cfi_def_cfa_offset 16
+ 1074              		.cfi_offset 3, -16
+ 1075              		.cfi_offset 4, -12
+ 1076              		.cfi_offset 5, -8
+ 1077              		.cfi_offset 14, -4
+ 1078              		.loc 1 909 11 view .LVU321
+ 1079 0008 D2F81442 		ldr	r4, [r2, #532]
+ 1080              		.loc 1 909 6 view .LVU322
+ 1081 000c 0CB1     		cbz	r4, .L82
+ 902:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 1082              		.loc 1 902 22 view .LVU323
+ 1083 000e 0120     		movs	r0, #1
+ 1084              	.LVL98:
+ 910:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 911:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Tx Transfer in progress */
+ 912:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     hcdc->TxState = 1U;
+ 913:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 914:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Update the packet total length */
+ 915:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     pdev->ep_in[CDC_IN_EP & 0xFU].total_length = hcdc->TxLength;
+ 916:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 917:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Transmit next packet */
+ 918:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_LL_Transmit(pdev, CDC_IN_EP, hcdc->TxBuffer, hcdc->TxLength);
+ 919:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 920:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     ret = USBD_OK;
+ 921:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 922:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 923:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return (uint8_t)ret;
+ 924:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 1085              		.loc 1 924 1 view .LVU324
+ 1086 0010 38BD     		pop	{r3, r4, r5, pc}
+ARM GAS  /tmp/cctOeuTT.s 			page 40
+
+
+ 1087              	.LVL99:
+ 1088              	.L82:
+ 912:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 1089              		.loc 1 912 5 is_stmt 1 view .LVU325
+ 915:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 1090              		.loc 1 915 54 is_stmt 0 view .LVU326
+ 1091 0012 D2F81032 		ldr	r3, [r2, #528]
+ 912:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 1092              		.loc 1 912 19 view .LVU327
+ 1093 0016 0125     		movs	r5, #1
+ 1094 0018 C2F81452 		str	r5, [r2, #532]
+ 915:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 1095              		.loc 1 915 5 is_stmt 1 view .LVU328
+ 918:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 1096              		.loc 1 918 11 is_stmt 0 view .LVU329
+ 1097 001c 8121     		movs	r1, #129
+ 1098 001e D2F80822 		ldr	r2, [r2, #520]
+ 1099              	.LVL100:
+ 915:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 1100              		.loc 1 915 48 view .LVU330
+ 1101 0022 C362     		str	r3, [r0, #44]
+ 918:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 1102              		.loc 1 918 5 is_stmt 1 view .LVU331
+ 918:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 1103              		.loc 1 918 11 is_stmt 0 view .LVU332
+ 1104 0024 FFF7FEFF 		bl	USBD_LL_Transmit
+ 1105              	.LVL101:
+ 920:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 1106              		.loc 1 920 5 is_stmt 1 view .LVU333
+ 920:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 1107              		.loc 1 920 9 is_stmt 0 view .LVU334
+ 1108 0028 2046     		mov	r0, r4
+ 1109              	.LVL102:
+ 1110              		.loc 1 924 1 view .LVU335
+ 1111 002a 38BD     		pop	{r3, r4, r5, pc}
+ 1112              	.LVL103:
+ 1113              	.L76:
+ 1114              	.LCFI14:
+ 1115              		.cfi_def_cfa_offset 0
+ 1116              		.cfi_restore 3
+ 1117              		.cfi_restore 4
+ 1118              		.cfi_restore 5
+ 1119              		.cfi_restore 14
+ 906:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 1120              		.loc 1 906 12 view .LVU336
+ 1121 002c 0320     		movs	r0, #3
+ 1122              	.LVL104:
+ 1123              		.loc 1 924 1 view .LVU337
+ 1124 002e 7047     		bx	lr
+ 1125              		.cfi_endproc
+ 1126              	.LFE147:
+ 1128              		.section	.text.USBD_CDC_ReceivePacket,"ax",%progbits
+ 1129              		.align	1
+ 1130              		.p2align 2,,3
+ 1131              		.global	USBD_CDC_ReceivePacket
+ 1132              		.syntax unified
+ 1133              		.thumb
+ARM GAS  /tmp/cctOeuTT.s 			page 41
+
+
+ 1134              		.thumb_func
+ 1135              		.fpu fpv4-sp-d16
+ 1137              	USBD_CDC_ReceivePacket:
+ 1138              	.LVL105:
+ 1139              	.LFB148:
+ 925:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 926:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** /**
+ 927:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @brief  USBD_CDC_ReceivePacket
+ 928:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   *         prepare OUT Endpoint for reception
+ 929:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @param  pdev: device instance
+ 930:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   * @retval status
+ 931:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   */
+ 932:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** uint8_t USBD_CDC_ReceivePacket(USBD_HandleTypeDef *pdev)
+ 933:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** {
+ 1140              		.loc 1 933 1 is_stmt 1 view -0
+ 1141              		.cfi_startproc
+ 1142              		@ args = 0, pretend = 0, frame = 0
+ 1143              		@ frame_needed = 0, uses_anonymous_args = 0
+ 934:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 1144              		.loc 1 934 3 view .LVU339
+ 1145              		.loc 1 934 27 is_stmt 0 view .LVU340
+ 1146 0000 D0F8BC22 		ldr	r2, [r0, #700]
+ 1147              	.LVL106:
+ 935:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 936:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (pdev->pClassData == NULL)
+ 1148              		.loc 1 936 3 is_stmt 1 view .LVU341
+ 933:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)pdev->pClassData;
+ 1149              		.loc 1 933 1 is_stmt 0 view .LVU342
+ 1150 0004 10B5     		push	{r4, lr}
+ 1151              	.LCFI15:
+ 1152              		.cfi_def_cfa_offset 8
+ 1153              		.cfi_offset 4, -8
+ 1154              		.cfi_offset 14, -4
+ 1155              		.loc 1 936 6 view .LVU343
+ 1156 0006 8AB1     		cbz	r2, .L86
+ 937:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 938:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     return (uint8_t)USBD_FAIL;
+ 939:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 940:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 941:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   if (pdev->dev_speed == USBD_SPEED_HIGH)
+ 1157              		.loc 1 941 3 is_stmt 1 view .LVU344
+ 1158              		.loc 1 941 11 is_stmt 0 view .LVU345
+ 1159 0008 047C     		ldrb	r4, [r0, #16]	@ zero_extendqisi2
+ 942:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 943:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Prepare Out endpoint to receive next packet */
+ 944:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, hcdc->RxBuffer,
+ 1160              		.loc 1 944 11 view .LVU346
+ 1161 000a D2F80422 		ldr	r2, [r2, #516]
+ 1162              	.LVL107:
+ 941:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 1163              		.loc 1 941 6 view .LVU347
+ 1164 000e 34B1     		cbz	r4, .L88
+ 945:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_HS_OUT_PACKET_SIZE);
+ 946:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 947:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   else
+ 948:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   {
+ 949:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     /* Prepare Out endpoint to receive next packet */
+ARM GAS  /tmp/cctOeuTT.s 			page 42
+
+
+ 950:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****     (void)USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, hcdc->RxBuffer,
+ 1165              		.loc 1 950 5 is_stmt 1 view .LVU348
+ 1166              		.loc 1 950 11 is_stmt 0 view .LVU349
+ 1167 0010 4023     		movs	r3, #64
+ 1168 0012 0121     		movs	r1, #1
+ 951:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_FS_OUT_PACKET_SIZE);
+ 952:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 953:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** 
+ 954:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   return (uint8_t)USBD_OK;
+ 1169              		.loc 1 954 10 view .LVU350
+ 1170 0014 0024     		movs	r4, #0
+ 950:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_FS_OUT_PACKET_SIZE);
+ 1171              		.loc 1 950 11 view .LVU351
+ 1172 0016 FFF7FEFF 		bl	USBD_LL_PrepareReceive
+ 1173              	.LVL108:
+ 955:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c **** }
+ 1174              		.loc 1 955 1 view .LVU352
+ 1175 001a 2046     		mov	r0, r4
+ 1176 001c 10BD     		pop	{r4, pc}
+ 1177              	.LVL109:
+ 1178              	.L88:
+ 944:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_HS_OUT_PACKET_SIZE);
+ 1179              		.loc 1 944 5 is_stmt 1 view .LVU353
+ 944:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****                                  CDC_DATA_HS_OUT_PACKET_SIZE);
+ 1180              		.loc 1 944 11 is_stmt 0 view .LVU354
+ 1181 001e 4FF40073 		mov	r3, #512
+ 1182 0022 0121     		movs	r1, #1
+ 1183 0024 FFF7FEFF 		bl	USBD_LL_PrepareReceive
+ 1184              	.LVL110:
+ 1185              		.loc 1 955 1 view .LVU355
+ 1186 0028 2046     		mov	r0, r4
+ 1187 002a 10BD     		pop	{r4, pc}
+ 1188              	.LVL111:
+ 1189              	.L86:
+ 938:Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c ****   }
+ 1190              		.loc 1 938 12 view .LVU356
+ 1191 002c 0324     		movs	r4, #3
+ 1192              		.loc 1 955 1 view .LVU357
+ 1193 002e 2046     		mov	r0, r4
+ 1194              	.LVL112:
+ 1195              		.loc 1 955 1 view .LVU358
+ 1196 0030 10BD     		pop	{r4, pc}
+ 1197              		.cfi_endproc
+ 1198              	.LFE148:
+ 1200              		.global	USBD_CDC
+ 1201 0032 00BF     		.section	.data.USBD_CDC,"aw"
+ 1202              		.align	2
+ 1205              	USBD_CDC:
+ 1206 0000 00000000 		.word	USBD_CDC_Init
+ 1207 0004 00000000 		.word	USBD_CDC_DeInit
+ 1208 0008 00000000 		.word	USBD_CDC_Setup
+ 1209 000c 00000000 		.word	0
+ 1210 0010 00000000 		.word	USBD_CDC_EP0_RxReady
+ 1211 0014 00000000 		.word	USBD_CDC_DataIn
+ 1212 0018 00000000 		.word	USBD_CDC_DataOut
+ 1213 001c 00000000 		.word	0
+ 1214 0020 00000000 		.word	0
+ARM GAS  /tmp/cctOeuTT.s 			page 43
+
+
+ 1215 0024 00000000 		.word	0
+ 1216 0028 00000000 		.word	USBD_CDC_GetHSCfgDesc
+ 1217 002c 00000000 		.word	USBD_CDC_GetFSCfgDesc
+ 1218 0030 00000000 		.word	USBD_CDC_GetOtherSpeedCfgDesc
+ 1219 0034 00000000 		.word	USBD_CDC_GetDeviceQualifierDescriptor
+ 1220              		.section	.data.USBD_CDC_CfgFSDesc,"aw"
+ 1221              		.align	2
+ 1222              		.set	.LANCHOR0,. + 0
+ 1225              	USBD_CDC_CfgFSDesc:
+ 1226 0000 09024300 		.ascii	"\011\002C\000\002\001\000\3002\011\004\000\000\001\002"
+ 1226      020100C0 
+ 1226      32090400 
+ 1226      000102
+ 1227 000f 02010005 		.ascii	"\002\001\000\005$\000\020\001\005$\001\000\001\004$"
+ 1227      24001001 
+ 1227      05240100 
+ 1227      010424
+ 1228 001e 02020524 		.ascii	"\002\002\005$\006\000\001\007\005\202\003\010\000\020"
+ 1228      06000107 
+ 1228      05820308 
+ 1228      0010
+ 1229 002c 09040100 		.ascii	"\011\004\001\000\002\012\000\000\000\007\005\001\002"
+ 1229      020A0000 
+ 1229      00070501 
+ 1229      02
+ 1230 0039 40000007 		.ascii	"@\000\000\007\005\201\002@\000\000"
+ 1230      05810240 
+ 1230      0000
+ 1231              		.section	.data.USBD_CDC_CfgHSDesc,"aw"
+ 1232              		.align	2
+ 1233              		.set	.LANCHOR1,. + 0
+ 1236              	USBD_CDC_CfgHSDesc:
+ 1237 0000 09024300 		.ascii	"\011\002C\000\002\001\000\3002\011\004\000\000\001\002"
+ 1237      020100C0 
+ 1237      32090400 
+ 1237      000102
+ 1238 000f 02010005 		.ascii	"\002\001\000\005$\000\020\001\005$\001\000\001\004$"
+ 1238      24001001 
+ 1238      05240100 
+ 1238      010424
+ 1239 001e 02020524 		.ascii	"\002\002\005$\006\000\001\007\005\202\003\010\000\020"
+ 1239      06000107 
+ 1239      05820308 
+ 1239      0010
+ 1240 002c 09040100 		.ascii	"\011\004\001\000\002\012\000\000\000\007\005\001\002"
+ 1240      020A0000 
+ 1240      00070501 
+ 1240      02
+ 1241 0039 00020007 		.ascii	"\000\002\000\007\005\201\002\000\002\000"
+ 1241      05810200 
+ 1241      0200
+ 1242              		.section	.data.USBD_CDC_DeviceQualifierDesc,"aw"
+ 1243              		.align	2
+ 1244              		.set	.LANCHOR3,. + 0
+ 1247              	USBD_CDC_DeviceQualifierDesc:
+ 1248 0000 0A060002 		.ascii	"\012\006\000\002\000\000\000@\001\000"
+ 1248      00000040 
+ARM GAS  /tmp/cctOeuTT.s 			page 44
+
+
+ 1248      0100
+ 1249              		.section	.data.USBD_CDC_OtherSpeedCfgDesc,"aw"
+ 1250              		.align	2
+ 1251              		.set	.LANCHOR2,. + 0
+ 1254              	USBD_CDC_OtherSpeedCfgDesc:
+ 1255 0000 09074300 		.ascii	"\011\007C\000\002\001\004\3002\011\004\000\000\001\002"
+ 1255      020104C0 
+ 1255      32090400 
+ 1255      000102
+ 1256 000f 02010005 		.ascii	"\002\001\000\005$\000\020\001\005$\001\000\001\004$"
+ 1256      24001001 
+ 1256      05240100 
+ 1256      010424
+ 1257 001e 02020524 		.ascii	"\002\002\005$\006\000\001\007\005\202\003\010\000\020"
+ 1257      06000107 
+ 1257      05820308 
+ 1257      0010
+ 1258 002c 09040100 		.ascii	"\011\004\001\000\002\012\000\000\000\007\005\001\002"
+ 1258      020A0000 
+ 1258      00070501 
+ 1258      02
+ 1259 0039 40000007 		.ascii	"@\000\000\007\005\201\002@\000\000"
+ 1259      05810240 
+ 1259      0000
+ 1260              		.text
+ 1261              	.Letext0:
+ 1262              		.file 2 "/opt/gcc-arm-none-eabi-9-2020-q2-update/arm-none-eabi/include/machine/_default_types.h"
+ 1263              		.file 3 "/opt/gcc-arm-none-eabi-9-2020-q2-update/lib/gcc/arm-none-eabi/9.3.1/include/stddef.h"
+ 1264              		.file 4 "/opt/gcc-arm-none-eabi-9-2020-q2-update/arm-none-eabi/include/sys/_types.h"
+ 1265              		.file 5 "/opt/gcc-arm-none-eabi-9-2020-q2-update/arm-none-eabi/include/sys/reent.h"
+ 1266              		.file 6 "/opt/gcc-arm-none-eabi-9-2020-q2-update/arm-none-eabi/include/sys/lock.h"
+ 1267              		.file 7 "/opt/gcc-arm-none-eabi-9-2020-q2-update/arm-none-eabi/include/sys/_stdint.h"
+ 1268              		.file 8 "/opt/gcc-arm-none-eabi-9-2020-q2-update/arm-none-eabi/include/stdlib.h"
+ 1269              		.file 9 "Drivers/CMSIS/Include/core_cm4.h"
+ 1270              		.file 10 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h"
+ 1271              		.file 11 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f405xx.h"
+ 1272              		.file 12 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 1273              		.file 13 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h"
+ 1274              		.file 14 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h"
+ 1275              		.file 15 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
+ 1276              		.file 16 "Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h"
+ 1277              		.file 17 "Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h"
+ 1278              		.file 18 "Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h"
+ 1279              		.file 19 "Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h"
+ 1280              		.file 20 "Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h"
+ 1281              		.file 21 "Inc/usbd_conf.h"
+ARM GAS  /tmp/cctOeuTT.s 			page 45
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 usbd_cdc.c
+     /tmp/cctOeuTT.s:18     .text.USBD_CDC_EP0_RxReady:0000000000000000 $t
+     /tmp/cctOeuTT.s:26     .text.USBD_CDC_EP0_RxReady:0000000000000000 USBD_CDC_EP0_RxReady
+     /tmp/cctOeuTT.s:86     .text.USBD_CDC_GetFSCfgDesc:0000000000000000 $t
+     /tmp/cctOeuTT.s:93     .text.USBD_CDC_GetFSCfgDesc:0000000000000000 USBD_CDC_GetFSCfgDesc
+     /tmp/cctOeuTT.s:114    .text.USBD_CDC_GetFSCfgDesc:0000000000000008 $d
+     /tmp/cctOeuTT.s:119    .text.USBD_CDC_GetHSCfgDesc:0000000000000000 $t
+     /tmp/cctOeuTT.s:126    .text.USBD_CDC_GetHSCfgDesc:0000000000000000 USBD_CDC_GetHSCfgDesc
+     /tmp/cctOeuTT.s:147    .text.USBD_CDC_GetHSCfgDesc:0000000000000008 $d
+     /tmp/cctOeuTT.s:152    .text.USBD_CDC_GetOtherSpeedCfgDesc:0000000000000000 $t
+     /tmp/cctOeuTT.s:159    .text.USBD_CDC_GetOtherSpeedCfgDesc:0000000000000000 USBD_CDC_GetOtherSpeedCfgDesc
+     /tmp/cctOeuTT.s:180    .text.USBD_CDC_GetOtherSpeedCfgDesc:0000000000000008 $d
+     /tmp/cctOeuTT.s:185    .text.USBD_CDC_GetDeviceQualifierDescriptor:0000000000000000 $t
+     /tmp/cctOeuTT.s:193    .text.USBD_CDC_GetDeviceQualifierDescriptor:0000000000000000 USBD_CDC_GetDeviceQualifierDescriptor
+     /tmp/cctOeuTT.s:214    .text.USBD_CDC_GetDeviceQualifierDescriptor:0000000000000008 $d
+     /tmp/cctOeuTT.s:219    .text.USBD_CDC_DataOut:0000000000000000 $t
+     /tmp/cctOeuTT.s:226    .text.USBD_CDC_DataOut:0000000000000000 USBD_CDC_DataOut
+     /tmp/cctOeuTT.s:281    .text.USBD_CDC_DataIn:0000000000000000 $t
+     /tmp/cctOeuTT.s:288    .text.USBD_CDC_DataIn:0000000000000000 USBD_CDC_DataIn
+     /tmp/cctOeuTT.s:392    .text.USBD_CDC_Setup:0000000000000000 $t
+     /tmp/cctOeuTT.s:399    .text.USBD_CDC_Setup:0000000000000000 USBD_CDC_Setup
+     /tmp/cctOeuTT.s:527    .text.USBD_CDC_Setup:0000000000000074 $d
+     /tmp/cctOeuTT.s:539    .text.USBD_CDC_Setup:00000000000000a4 $t
+     /tmp/cctOeuTT.s:649    .text.USBD_CDC_DeInit:0000000000000000 $t
+     /tmp/cctOeuTT.s:656    .text.USBD_CDC_DeInit:0000000000000000 USBD_CDC_DeInit
+     /tmp/cctOeuTT.s:735    .text.USBD_CDC_Init:0000000000000000 $t
+     /tmp/cctOeuTT.s:742    .text.USBD_CDC_Init:0000000000000000 USBD_CDC_Init
+     /tmp/cctOeuTT.s:918    .text.USBD_CDC_RegisterInterface:0000000000000000 $t
+     /tmp/cctOeuTT.s:926    .text.USBD_CDC_RegisterInterface:0000000000000000 USBD_CDC_RegisterInterface
+     /tmp/cctOeuTT.s:957    .text.USBD_CDC_SetTxBuffer:0000000000000000 $t
+     /tmp/cctOeuTT.s:965    .text.USBD_CDC_SetTxBuffer:0000000000000000 USBD_CDC_SetTxBuffer
+     /tmp/cctOeuTT.s:1003   .text.USBD_CDC_SetRxBuffer:0000000000000000 $t
+     /tmp/cctOeuTT.s:1011   .text.USBD_CDC_SetRxBuffer:0000000000000000 USBD_CDC_SetRxBuffer
+     /tmp/cctOeuTT.s:1046   .text.USBD_CDC_TransmitPacket:0000000000000000 $t
+     /tmp/cctOeuTT.s:1054   .text.USBD_CDC_TransmitPacket:0000000000000000 USBD_CDC_TransmitPacket
+     /tmp/cctOeuTT.s:1129   .text.USBD_CDC_ReceivePacket:0000000000000000 $t
+     /tmp/cctOeuTT.s:1137   .text.USBD_CDC_ReceivePacket:0000000000000000 USBD_CDC_ReceivePacket
+     /tmp/cctOeuTT.s:1205   .data.USBD_CDC:0000000000000000 USBD_CDC
+     /tmp/cctOeuTT.s:1202   .data.USBD_CDC:0000000000000000 $d
+     /tmp/cctOeuTT.s:1221   .data.USBD_CDC_CfgFSDesc:0000000000000000 $d
+     /tmp/cctOeuTT.s:1225   .data.USBD_CDC_CfgFSDesc:0000000000000000 USBD_CDC_CfgFSDesc
+     /tmp/cctOeuTT.s:1232   .data.USBD_CDC_CfgHSDesc:0000000000000000 $d
+     /tmp/cctOeuTT.s:1236   .data.USBD_CDC_CfgHSDesc:0000000000000000 USBD_CDC_CfgHSDesc
+     /tmp/cctOeuTT.s:1243   .data.USBD_CDC_DeviceQualifierDesc:0000000000000000 $d
+     /tmp/cctOeuTT.s:1247   .data.USBD_CDC_DeviceQualifierDesc:0000000000000000 USBD_CDC_DeviceQualifierDesc
+     /tmp/cctOeuTT.s:1250   .data.USBD_CDC_OtherSpeedCfgDesc:0000000000000000 $d
+     /tmp/cctOeuTT.s:1254   .data.USBD_CDC_OtherSpeedCfgDesc:0000000000000000 USBD_CDC_OtherSpeedCfgDesc
+
+UNDEFINED SYMBOLS
+USBD_LL_GetRxDataSize
+USBD_LL_Transmit
+USBD_CtlError
+USBD_CtlSendData
+USBD_CtlPrepareRx
+USBD_LL_CloseEP
+USBD_static_free
+ARM GAS  /tmp/cctOeuTT.s 			page 46
+
+
+USBD_static_malloc
+USBD_LL_OpenEP
+USBD_LL_PrepareReceive
