@@ -1,5 +1,5 @@
 # UWB Module Firmware
-A nice tutorial on getting started with STM32 and Eclipsed, created by Mohammed Shalaby, can be found [here](./doc/stm32_tutorial.md).
+A nice tutorial on getting started with STM32 and Eclipse, created by Mohammed Shalaby, can be found [here](./doc/stm32_tutorial.md).
 
 Historically, and as also covered in that tutorial, development on an STM32 chip consists of first configuring the chip according to your specific PCB in CubeMX, followed by setting up a configuration within the Eclipse IDE to build and debug the project. However, it turns out that Eclipse is simply just generating a `makefile` and running a `make` command to build the project. To upload and debug, the fundamental tool involved is actually `openocd`, and GDB is the debugger.
 
@@ -216,17 +216,17 @@ Although OpenOCD can be downloaded explicitly, it is also possible to install it
 
 This will allow take care of creating a symbolic link to the `openocd` command, allowing us to just use the `openocd` command from any directory. Assuming you have built the code with `make`, that you are still in the `uwb_firmware` directory, and that the discovery board is plugged in with the appropriate jumpers removed, we can upload our firmware in one command:
 
-    openocd -f board/stm32f4discovery.cfg -c "program ./build/config_stm32f4.elf verify reset exit"
+    openocd -f interface/stlink-v2-1.cfg -f target/stm32f4x.cfg -c "program ./build/config_stm32f4.elf verify reset exit"
 
 ## Debugging with OpenOCD and GDB
 
 First, make sure the board is connected by USB and start OpenOCD
 
-    openocd -f board/stm32f4discovery.cfg
+    openocd -f interface/stlink-v2-1.cfg -f target/stm32f4x.cfg
 
 In a new terminal in the current `uwb_firmware` directory
 
-     arm-none-eabi-gdb ./build/config_stm32f4discovery.elf
+    arm-none-eabi-gdb ./build/config_stm32f4.elf
 
 and you will enter a GDB command line. The above step assumes that you have installed the `arm-none-eabi-gcc` toolchain as per Mohammed's tutorial. To connect to the openocd server 
 
@@ -330,11 +330,11 @@ Just as before, we just need to create a VS Code task to run the upload command 
     "type": "shell",
     "command": "openocd",
     "args":
-    [
-        "-f","board/stm32f4discovery.cfg",
-        "-c","'program build/config_stm32f4.elf verify reset exit'"
-        
-    ]
+		[
+			"-f","interface/stlink-v2-1.cfg",
+			"-f","target/stm32f4x.cfg",
+			"-c","'program build/config_stm32f4.elf verify reset exit'"
+		]
 }
 
 ```
@@ -347,23 +347,27 @@ Then, create a `launch.json` file inside the `.vscode` folder with the following
 
 ```json
 {
-	"version": "0.2.0",
-	"configurations":
-	[
-		{
-			"name": "Build and Debug",
-			"type": "cortex-debug",
-			"request": "launch",
-			"servertype": "openocd",
-			"cwd": "${workspaceFolder}",
-			"executable": "build/config_stm32f4.elf",
-			"configFiles":
-			[
-				"/usr/share/openocd/scripts/board/stm32f4discovery.cfg"
-			],
-			"preLaunchTask": "Build Firmware"
-		}
-	]
+    "version": "0.2.0",
+    "configurations":
+    [
+        {
+            "name": "Build and Debug",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "cwd": "${workspaceFolder}",
+            "executable": "./build/config_stm32f4.elf",
+            "device": "STM32F405RGT6",
+            "svdFile": "${workspaceFolder}/.vscode/STM32F405.svd",
+            "configFiles":
+            [
+                "/usr/share/openocd/scripts/interface/stlink-v2-1.cfg",
+                "/usr/share/openocd/scripts/target/stm32f4x.cfg"
+            ],
+            "preLaunchTask": "Build Firmware",
+            "overrideGDBServerStartedRegex": "Info\\s:\\s([^\\n\\.]*)\\.cpu([^\\n]*)"
+        }
+    ]
 }
 ```
 
