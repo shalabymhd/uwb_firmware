@@ -1,4 +1,4 @@
-ARM GAS  /tmp/ccuE61VX.s 			page 1
+ARM GAS  /tmp/ccAcLTlU.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -58,7 +58,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
   27:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****  *----------------------------------------------------------------------------
   28:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****  *
   29:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****  * Portions Copyright © 2016 STMicroelectronics International N.V. All rights reserved.
-ARM GAS  /tmp/ccuE61VX.s 			page 2
+ARM GAS  /tmp/ccAcLTlU.s 			page 2
 
 
   30:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****  * Portions Copyright (c) 2013 ARM LIMITED
@@ -118,7 +118,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
   84:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****  */
   85:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** #elif defined ( __ICCARM__ )
   86:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** 
-ARM GAS  /tmp/ccuE61VX.s 			page 3
+ARM GAS  /tmp/ccAcLTlU.s 			page 3
 
 
   87:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   #ifndef   __ASM
@@ -178,7 +178,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  141:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** osStatus osKernelInitialize (void);
  142:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** 
  143:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** /**
-ARM GAS  /tmp/ccuE61VX.s 			page 4
+ARM GAS  /tmp/ccAcLTlU.s 			page 4
 
 
  144:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @brief  Start the RTOS Kernel with executing the specified thread.
@@ -238,7 +238,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
   62              		.loc 1 166 1 is_stmt 1 view -0
   63              		.cfi_startproc
   64              		@ args = 0, pretend = 0, frame = 0
-ARM GAS  /tmp/ccuE61VX.s 			page 5
+ARM GAS  /tmp/ccAcLTlU.s 			page 5
 
 
   65              		@ frame_needed = 0, uses_anonymous_args = 0
@@ -298,7 +298,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  100              		.loc 1 186 3 view .LVU12
  101              	.LBB102:
  102              	.LBI102:
-ARM GAS  /tmp/ccuE61VX.s 			page 6
+ARM GAS  /tmp/ccAcLTlU.s 			page 6
 
 
  130:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** {
@@ -358,7 +358,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
   46:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
   47:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
   48:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
-ARM GAS  /tmp/ccuE61VX.s 			page 7
+ARM GAS  /tmp/ccAcLTlU.s 			page 7
 
 
   49:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE                 
@@ -418,7 +418,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  103:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
  104:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
  105:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
-ARM GAS  /tmp/ccuE61VX.s 			page 8
+ARM GAS  /tmp/ccAcLTlU.s 			page 8
 
 
  106:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
@@ -478,7 +478,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  160:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
  161:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
  162:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Control Register (non-secure)
-ARM GAS  /tmp/ccuE61VX.s 			page 9
+ARM GAS  /tmp/ccAcLTlU.s 			page 9
 
 
  163:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the content of the non-secure Control Register when in secure mode.
@@ -538,7 +538,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  117              	@ 0 "" 2
  118              	.LVL2:
  210:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
-ARM GAS  /tmp/ccuE61VX.s 			page 10
+ARM GAS  /tmp/ccAcLTlU.s 			page 10
 
 
  119              		.loc 2 210 3 view .LVU18
@@ -598,7 +598,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  205:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   
  206:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** #if( configSUPPORT_STATIC_ALLOCATION == 1 ) &&  ( configSUPPORT_DYNAMIC_ALLOCATION == 1 )
  207:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   if((thread_def->buffer != NULL) && (thread_def->controlblock != NULL)) {
-ARM GAS  /tmp/ccuE61VX.s 			page 11
+ARM GAS  /tmp/ccAcLTlU.s 			page 11
 
 
  157              		.loc 1 207 3 view .LVU27
@@ -658,7 +658,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  201 0018 14BF     		ite	ne
  202 001a 0335     		addne	r5, r5, #3
  203              	.LVL7:
-ARM GAS  /tmp/ccuE61VX.s 			page 12
+ARM GAS  /tmp/ccAcLTlU.s 			page 12
 
 
  105:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   
@@ -718,7 +718,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  213:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****               thread_def->stacksize, argument, makeFreeRtosPriority(thread_def->tpriority),
  230              		.loc 1 213 5 is_stmt 1 view .LVU50
  213:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****               thread_def->stacksize, argument, makeFreeRtosPriority(thread_def->tpriority),
-ARM GAS  /tmp/ccuE61VX.s 			page 13
+ARM GAS  /tmp/ccAcLTlU.s 			page 13
 
 
  231              		.loc 1 213 9 is_stmt 0 view .LVU51
@@ -778,7 +778,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  270              		.loc 1 232 3 is_stmt 1 view .LVU66
  216:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     } 
  271              		.loc 1 216 14 is_stmt 0 view .LVU67
-ARM GAS  /tmp/ccuE61VX.s 			page 14
+ARM GAS  /tmp/ccAcLTlU.s 			page 14
 
 
  272 0052 0020     		movne	r0, #0
@@ -838,7 +838,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  247:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** }
  248:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** 
  249:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** /**
-ARM GAS  /tmp/ccuE61VX.s 			page 15
+ARM GAS  /tmp/ccAcLTlU.s 			page 15
 
 
  250:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @brief  Terminate execution of a thread and remove it from Active Threads.
@@ -898,7 +898,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  350              		.cfi_startproc
  351              		@ args = 0, pretend = 0, frame = 0
  352              		@ frame_needed = 0, uses_anonymous_args = 0
-ARM GAS  /tmp/ccuE61VX.s 			page 16
+ARM GAS  /tmp/ccAcLTlU.s 			page 16
 
 
  353              		@ link register save eliminated.
@@ -958,7 +958,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  395              		@ args = 0, pretend = 0, frame = 0
  396              		@ frame_needed = 0, uses_anonymous_args = 0
  286:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** #if (INCLUDE_vTaskPrioritySet == 1)
-ARM GAS  /tmp/ccuE61VX.s 			page 17
+ARM GAS  /tmp/ccAcLTlU.s 			page 17
 
 
  287:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   vTaskPrioritySet(thread_id, makeFreeRtosPriority(priority));
@@ -1018,7 +1018,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  435              		.cfi_endproc
  436              	.LFE117:
  438 0012 00BF     		.section	.text.osThreadGetPriority,"ax",%progbits
-ARM GAS  /tmp/ccuE61VX.s 			page 18
+ARM GAS  /tmp/ccAcLTlU.s 			page 18
 
 
  439              		.align	1
@@ -1078,7 +1078,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  477              	.LBB120:
  478              	.LBB119:
  209:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
-ARM GAS  /tmp/ccuE61VX.s 			page 19
+ARM GAS  /tmp/ccAcLTlU.s 			page 19
 
 
  479              		.loc 2 209 3 view .LVU108
@@ -1138,7 +1138,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  522              	.LBE126:
  306:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   }
  307:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   else
-ARM GAS  /tmp/ccuE61VX.s 			page 20
+ARM GAS  /tmp/ccAcLTlU.s 			page 20
 
 
  308:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   {  
@@ -1198,7 +1198,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  563              		.fpu fpv4-sp-d16
  565              	osDelay:
  566              	.LVL33:
-ARM GAS  /tmp/ccuE61VX.s 			page 21
+ARM GAS  /tmp/ccAcLTlU.s 			page 21
 
 
  567              	.LFB119:
@@ -1258,7 +1258,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  600              		.thumb
  601              		.thumb_func
  602              		.fpu fpv4-sp-d16
-ARM GAS  /tmp/ccuE61VX.s 			page 22
+ARM GAS  /tmp/ccAcLTlU.s 			page 22
 
 
  604              	osTimerCreate:
@@ -1318,7 +1318,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  382:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****                       (TimerCallbackFunction_t)timer_def->ptimer,
  383:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****                       (StaticTimer_t *)timer_def->controlblock);  
  384:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** #else
-ARM GAS  /tmp/ccuE61VX.s 			page 23
+ARM GAS  /tmp/ccAcLTlU.s 			page 23
 
 
  385:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   return xTimerCreate((const char *)"",
@@ -1378,7 +1378,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  414:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   if (inHandlerMode()) 
  415:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   {
  416:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     if (xTimerChangePeriodFromISR(timer_id, ticks, &taskWoken) != pdPASS)
-ARM GAS  /tmp/ccuE61VX.s 			page 24
+ARM GAS  /tmp/ccAcLTlU.s 			page 24
 
 
  417:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     {
@@ -1438,7 +1438,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  666              		.loc 1 445 3 view .LVU152
  446:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** #if (configUSE_TIMERS == 1)  
  447:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   portBASE_TYPE taskWoken = pdFALSE;
-ARM GAS  /tmp/ccuE61VX.s 			page 25
+ARM GAS  /tmp/ccAcLTlU.s 			page 25
 
 
  448:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** 
@@ -1498,7 +1498,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  708              	.LFB124:
  465:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** 
  466:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** /**
-ARM GAS  /tmp/ccuE61VX.s 			page 26
+ARM GAS  /tmp/ccAcLTlU.s 			page 26
 
 
  467:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @brief  Delete a timer.
@@ -1558,7 +1558,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  722 0004 85B0     		sub	sp, sp, #20
  723              	.LCFI12:
  724              		.cfi_def_cfa_offset 24
-ARM GAS  /tmp/ccuE61VX.s 			page 27
+ARM GAS  /tmp/ccAcLTlU.s 			page 27
 
 
  506:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   uint32_t ulPreviousNotificationValue = 0;
@@ -1618,7 +1618,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  766 0020 029B     		ldr	r3, [sp, #8]
  767 0022 3BB1     		cbz	r3, .L52
  768              		.loc 1 513 5 discriminator 1 view .LVU176
-ARM GAS  /tmp/ccuE61VX.s 			page 28
+ARM GAS  /tmp/ccAcLTlU.s 			page 28
 
 
  769 0024 0A4B     		ldr	r3, .L56
@@ -1678,7 +1678,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  808              	.L53:
  511:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     
  809              		.loc 1 511 14 view .LVU185
-ARM GAS  /tmp/ccuE61VX.s 			page 29
+ARM GAS  /tmp/ccAcLTlU.s 			page 29
 
 
  810 0048 4FF00040 		mov	r0, #-2147483648
@@ -1738,7 +1738,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  839 0000 30B5     		push	{r4, r5, lr}
  840              	.LCFI15:
  841              		.cfi_def_cfa_offset 12
-ARM GAS  /tmp/ccuE61VX.s 			page 30
+ARM GAS  /tmp/ccAcLTlU.s 			page 30
 
 
  842              		.cfi_offset 4, -12
@@ -1798,7 +1798,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  878              		.syntax unified
  879              	.LBE137:
  880              	.LBE136:
-ARM GAS  /tmp/ccuE61VX.s 			page 31
+ARM GAS  /tmp/ccAcLTlU.s 			page 31
 
 
  881              	.LBE138:
@@ -1858,7 +1858,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  908              		.loc 1 569 8 is_stmt 0 view .LVU211
  909 0024 1346     		mov	r3, r2
  910 0026 1546     		mov	r5, r2
-ARM GAS  /tmp/ccuE61VX.s 			page 32
+ARM GAS  /tmp/ccAcLTlU.s 			page 32
 
 
  911 0028 02AA     		add	r2, sp, #8
@@ -1918,7 +1918,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  952              		.global	osMutexCreate
  953              		.syntax unified
  954              		.thumb
-ARM GAS  /tmp/ccuE61VX.s 			page 33
+ARM GAS  /tmp/ccAcLTlU.s 			page 33
 
 
  955              		.thumb_func
@@ -1978,7 +1978,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  991              		.thumb
  992              		.thumb_func
  993              		.fpu fpv4-sp-d16
-ARM GAS  /tmp/ccuE61VX.s 			page 34
+ARM GAS  /tmp/ccAcLTlU.s 			page 34
 
 
  995              	osMutexWait:
@@ -2038,7 +2038,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1019              		.loc 1 636 3 is_stmt 1 view .LVU242
  1020              	.LVL59:
  637:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   if (millisec == osWaitForever) {
-ARM GAS  /tmp/ccuE61VX.s 			page 35
+ARM GAS  /tmp/ccAcLTlU.s 			page 35
 
 
  1021              		.loc 1 637 3 view .LVU243
@@ -2098,7 +2098,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1054 0014 0128     		cmp	r0, #1
  1055 0016 16D1     		bne	.L70
  1056              	.L72:
-ARM GAS  /tmp/ccuE61VX.s 			page 36
+ARM GAS  /tmp/ccAcLTlU.s 			page 36
 
 
  654:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     return osErrorOS;
@@ -2158,7 +2158,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  657:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** }
  1098              		.loc 1 657 10 is_stmt 0 discriminator 1 view .LVU266
  1099              		.thumb
-ARM GAS  /tmp/ccuE61VX.s 			page 37
+ARM GAS  /tmp/ccAcLTlU.s 			page 37
 
 
  1100              		.syntax unified
@@ -2218,7 +2218,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1153              	.LFB128:
  659:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** 
  660:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** /**
-ARM GAS  /tmp/ccuE61VX.s 			page 38
+ARM GAS  /tmp/ccAcLTlU.s 			page 38
 
 
  661:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @brief Release a Mutex that was obtained by \ref osMutexWait
@@ -2278,7 +2278,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1191              		.loc 2 210 3 is_stmt 0 view .LVU285
  1192              		.thumb
  1193              		.syntax unified
-ARM GAS  /tmp/ccuE61VX.s 			page 39
+ARM GAS  /tmp/ccAcLTlU.s 			page 39
 
 
  1194              	.LBE145:
@@ -2338,7 +2338,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1236              	.LCFI31:
  1237              		.cfi_restore_state
  677:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   {
-ARM GAS  /tmp/ccuE61VX.s 			page 40
+ARM GAS  /tmp/ccAcLTlU.s 			page 40
 
 
  1238              		.loc 1 677 8 is_stmt 1 view .LVU296
@@ -2398,7 +2398,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1289              	.LVL75:
  1290              	.LFB129:
  683:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** 
-ARM GAS  /tmp/ccuE61VX.s 			page 41
+ARM GAS  /tmp/ccAcLTlU.s 			page 41
 
 
  684:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** /**
@@ -2458,7 +2458,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1329              		.syntax unified
  1330              	.LBE150:
  1331              	.LBE151:
-ARM GAS  /tmp/ccuE61VX.s 			page 42
+ARM GAS  /tmp/ccAcLTlU.s 			page 42
 
 
  1332              	.LBE153:
@@ -2518,7 +2518,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1366              		.loc 1 713 1 is_stmt 1 view -0
  1367              		.cfi_startproc
  1368              		@ args = 0, pretend = 0, frame = 0
-ARM GAS  /tmp/ccuE61VX.s 			page 43
+ARM GAS  /tmp/ccAcLTlU.s 			page 43
 
 
  1369              		@ frame_needed = 0, uses_anonymous_args = 0
@@ -2578,7 +2578,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  737:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****       return xSemaphoreCreateCounting(count, count);
  738:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** #else
  739:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****       return NULL;
-ARM GAS  /tmp/ccuE61VX.s 			page 44
+ARM GAS  /tmp/ccAcLTlU.s 			page 44
 
 
  740:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** #endif    
@@ -2638,7 +2638,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  720:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****       return xSemaphoreCreateBinaryStatic( semaphore_def->controlblock );
  1418              		.loc 1 720 14 view .LVU336
  1419 0024 0446     		mov	r4, r0
-ARM GAS  /tmp/ccuE61VX.s 			page 45
+ARM GAS  /tmp/ccAcLTlU.s 			page 45
 
 
  1420              		.loc 1 770 1 view .LVU337
@@ -2698,7 +2698,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  773:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @brief Wait until a Semaphore token becomes available
  774:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @param  semaphore_id  semaphore object referenced with \ref osSemaphore.
  775:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @param  millisec      timeout value or 0 in case of no time-out.
-ARM GAS  /tmp/ccuE61VX.s 			page 46
+ARM GAS  /tmp/ccAcLTlU.s 			page 46
 
 
  776:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @retval  number of available tokens, or -1 in case of incorrect parameters.
@@ -2758,7 +2758,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1495              		.loc 1 130 12 view .LVU354
  1496              	.LBE154:
  132:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** }
-ARM GAS  /tmp/ccuE61VX.s 			page 47
+ARM GAS  /tmp/ccAcLTlU.s 			page 47
 
 
  1497              		.loc 1 132 3 view .LVU355
@@ -2818,7 +2818,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1537              	.L117:
  1538              	.LCFI45:
  1539              		.cfi_restore_state
-ARM GAS  /tmp/ccuE61VX.s 			page 48
+ARM GAS  /tmp/ccAcLTlU.s 			page 48
 
 
  801:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     if (xSemaphoreTakeFromISR(semaphore_id, &taskWoken) != pdTRUE) {
@@ -2878,7 +2878,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1583              		.loc 1 807 12 is_stmt 0 view .LVU378
  1584 0046 FF20     		movs	r0, #255
  1585              		.loc 1 811 1 view .LVU379
-ARM GAS  /tmp/ccuE61VX.s 			page 49
+ARM GAS  /tmp/ccAcLTlU.s 			page 49
 
 
  1586 0048 02B0     		add	sp, sp, #8
@@ -2938,7 +2938,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1643              		@ args = 0, pretend = 0, frame = 0
  1644              		@ frame_needed = 0, uses_anonymous_args = 0
  1645              		@ link register save eliminated.
-ARM GAS  /tmp/ccuE61VX.s 			page 50
+ARM GAS  /tmp/ccAcLTlU.s 			page 50
 
 
  1646 0000 FFF7FEBF 		b	osMutexDelete
@@ -2998,7 +2998,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  852:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   vSemaphoreDelete(semaphore_id);
  853:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** 
  854:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   return osOK; 
-ARM GAS  /tmp/ccuE61VX.s 			page 51
+ARM GAS  /tmp/ccAcLTlU.s 			page 51
 
 
  855:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** }
@@ -3058,7 +3058,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  889:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   
  890:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   /* First have to allocate memory for the pool control block. */
  891:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****  thePool = pvPortMalloc(sizeof(os_pool_cb_t));
-ARM GAS  /tmp/ccuE61VX.s 			page 52
+ARM GAS  /tmp/ccAcLTlU.s 			page 52
 
 
  1681              		.loc 1 891 12 view .LVU386
@@ -3118,7 +3118,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1720              		.loc 1 902 8 is_stmt 0 view .LVU405
  1721 0028 A0B1     		cbz	r0, .L124
  903:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****       /* Now allocate the pool itself. */
-ARM GAS  /tmp/ccuE61VX.s 			page 53
+ARM GAS  /tmp/ccAcLTlU.s 			page 53
 
 
  904:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****      thePool->pool = pvPortMalloc(pool_def->pool_sz * itemSize);
@@ -3178,7 +3178,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  913:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****         vPortFree(thePool);
  914:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****         thePool = NULL;
  915:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****       }
-ARM GAS  /tmp/ccuE61VX.s 			page 54
+ARM GAS  /tmp/ccAcLTlU.s 			page 54
 
 
  916:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     }
@@ -3238,7 +3238,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1796 006a FFF7FEFF 		bl	vPortFree
  1797              	.LVL115:
  914:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****       }
-ARM GAS  /tmp/ccuE61VX.s 			page 55
+ARM GAS  /tmp/ccAcLTlU.s 			page 55
 
 
  1798              		.loc 1 914 9 view .LVU432
@@ -3298,7 +3298,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1835              	.LBB160:
  207:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  1836              		.loc 2 207 3 view .LVU443
-ARM GAS  /tmp/ccuE61VX.s 			page 56
+ARM GAS  /tmp/ccAcLTlU.s 			page 56
 
 
  209:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
@@ -3358,7 +3358,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
   10:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * subject to the following conditions:
   11:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
   12:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * The above copyright notice and this permission notice shall be included in all
-ARM GAS  /tmp/ccuE61VX.s 			page 57
+ARM GAS  /tmp/ccAcLTlU.s 			page 57
 
 
   13:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * copies or substantial portions of the Software.
@@ -3418,7 +3418,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
   67:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	not need to be guarded with a critical section. */
   68:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portTICK_TYPE_IS_ATOMIC 1
   69:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
-ARM GAS  /tmp/ccuE61VX.s 			page 58
+ARM GAS  /tmp/ccAcLTlU.s 			page 58
 
 
   70:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
@@ -3478,7 +3478,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  124:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
  125:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
  126:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
-ARM GAS  /tmp/ccuE61VX.s 			page 59
+ARM GAS  /tmp/ccAcLTlU.s 			page 59
 
 
  127:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #if configUSE_PORT_OPTIMISED_TASK_SELECTION == 1
@@ -3538,7 +3538,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  181:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	else
  182:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	{
  183:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 		xReturn = pdTRUE;
-ARM GAS  /tmp/ccuE61VX.s 			page 60
+ARM GAS  /tmp/ccAcLTlU.s 			page 60
 
 
  184:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	}
@@ -3598,7 +3598,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1892              		.loc 3 223 2 view .LVU454
  1893              		.loc 3 223 2 is_stmt 0 view .LVU455
  1894              		.thumb
-ARM GAS  /tmp/ccuE61VX.s 			page 61
+ARM GAS  /tmp/ccAcLTlU.s 			page 61
 
 
  1895              		.syntax unified
@@ -3658,7 +3658,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1935 004c F4D1     		bne	.L139
  954:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****       pool_id->markers[index] = 1;
  1936              		.loc 1 954 7 is_stmt 1 view .LVU471
-ARM GAS  /tmp/ccuE61VX.s 			page 62
+ARM GAS  /tmp/ccAcLTlU.s 			page 62
 
 
  1937              		.loc 1 954 31 is_stmt 0 view .LVU472
@@ -3718,7 +3718,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  1978              		.loc 1 961 6 view .LVU488
  1979 0066 4BB1     		cbz	r3, .L141
  1980              	.L147:
-ARM GAS  /tmp/ccuE61VX.s 			page 63
+ARM GAS  /tmp/ccAcLTlU.s 			page 63
 
 
  962:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     portCLEAR_INTERRUPT_MASK_FROM_ISR(dummy);
@@ -3778,7 +3778,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  205:Drivers/CMSIS/Include/cmsis_gcc.h **** {
  2017              		.loc 2 205 31 view .LVU497
  2018              	.LBB170:
-ARM GAS  /tmp/ccuE61VX.s 			page 64
+ARM GAS  /tmp/ccAcLTlU.s 			page 64
 
 
  207:Drivers/CMSIS/Include/cmsis_gcc.h **** 
@@ -3838,7 +3838,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2064              	.LFE135:
  2066 0092 00BF     		.section	.text.osPoolCAlloc,"ax",%progbits
  2067              		.align	1
-ARM GAS  /tmp/ccuE61VX.s 			page 65
+ARM GAS  /tmp/ccAcLTlU.s 			page 65
 
 
  2068              		.p2align 2,,3
@@ -3898,7 +3898,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2105 000e 00BF     		.section	.text.osPoolFree,"ax",%progbits
  2106              		.align	1
  2107              		.p2align 2,,3
-ARM GAS  /tmp/ccuE61VX.s 			page 66
+ARM GAS  /tmp/ccAcLTlU.s 			page 66
 
 
  2108              		.global	osPoolFree
@@ -3958,7 +3958,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2137 000a C368     		ldr	r3, [r0, #12]
 1012:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   if (index % pool_id->item_sz) {
  2138              		.loc 1 1012 9 view .LVU530
-ARM GAS  /tmp/ccuE61VX.s 			page 67
+ARM GAS  /tmp/ccAcLTlU.s 			page 67
 
 
  2139 000c 891A     		subs	r1, r1, r2
@@ -4018,7 +4018,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2180              		.p2align 2,,3
  2181              		.global	osMessageCreate
  2182              		.syntax unified
-ARM GAS  /tmp/ccuE61VX.s 			page 68
+ARM GAS  /tmp/ccAcLTlU.s 			page 68
 
 
  2183              		.thumb
@@ -4078,7 +4078,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2214 000c 0021     		movs	r1, #0
  2215              	.LVL143:
  2216              		.loc 1 1047 12 view .LVU556
-ARM GAS  /tmp/ccuE61VX.s 			page 69
+ARM GAS  /tmp/ccAcLTlU.s 			page 69
 
 
  2217 000e 0091     		str	r1, [sp]
@@ -4138,7 +4138,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1061:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @param  queue_id  message queue ID obtained with \ref osMessageCreate.
 1062:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @param  info      message information.
 1063:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @param  millisec  timeout value or 0 in case of no time-out.
-ARM GAS  /tmp/ccuE61VX.s 			page 70
+ARM GAS  /tmp/ccAcLTlU.s 			page 70
 
 
 1064:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @retval status code that indicates the execution status of the function.
@@ -4198,7 +4198,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  207:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  2292              		.loc 2 207 3 view .LVU575
  209:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
-ARM GAS  /tmp/ccuE61VX.s 			page 71
+ARM GAS  /tmp/ccAcLTlU.s 			page 71
 
 
  2293              		.loc 2 209 3 view .LVU576
@@ -4258,7 +4258,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2334 0026 10BD     		pop	{r4, pc}
  2335              	.LVL155:
  2336              	.L175:
-ARM GAS  /tmp/ccuE61VX.s 			page 72
+ARM GAS  /tmp/ccAcLTlU.s 			page 72
 
 
  2337              	.LCFI69:
@@ -4318,7 +4318,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1089:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** }
  2381              		.loc 1 1089 10 is_stmt 0 discriminator 1 view .LVU599
  2382              		.thumb
-ARM GAS  /tmp/ccuE61VX.s 			page 73
+ARM GAS  /tmp/ccAcLTlU.s 			page 73
 
 
  2383              		.syntax unified
@@ -4378,7 +4378,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2423              		.cfi_offset 5, -8
  2424              		.cfi_offset 14, -4
  2425 0002 85B0     		sub	sp, sp, #20
-ARM GAS  /tmp/ccuE61VX.s 			page 74
+ARM GAS  /tmp/ccAcLTlU.s 			page 74
 
 
  2426              	.LCFI74:
@@ -4438,7 +4438,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  205:Drivers/CMSIS/Include/cmsis_gcc.h **** {
  2455              		.loc 2 205 31 view .LVU621
  2456              	.LBB183:
-ARM GAS  /tmp/ccuE61VX.s 			page 75
+ARM GAS  /tmp/ccAcLTlU.s 			page 75
 
 
  207:Drivers/CMSIS/Include/cmsis_gcc.h **** 
@@ -4498,7 +4498,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2493              		.loc 1 1142 20 view .LVU634
  2494 002a 0195     		str	r5, [sp, #4]
  2495              	.L191:
-ARM GAS  /tmp/ccuE61VX.s 			page 76
+ARM GAS  /tmp/ccAcLTlU.s 			page 76
 
 
 1143:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     }
@@ -4558,7 +4558,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1134:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   }
  2537              		.loc 1 1134 5 discriminator 1 view .LVU646
  2538 0056 0B4B     		ldr	r3, .L204
-ARM GAS  /tmp/ccuE61VX.s 			page 77
+ARM GAS  /tmp/ccAcLTlU.s 			page 77
 
 
  2539 0058 4FF08052 		mov	r2, #268435456
@@ -4618,7 +4618,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2584 0082 00BF     		.align	2
  2585              	.L204:
  2586 0084 04ED00E0 		.word	-536810236
-ARM GAS  /tmp/ccuE61VX.s 			page 78
+ARM GAS  /tmp/ccAcLTlU.s 			page 78
 
 
  2587              		.cfi_endproc
@@ -4678,7 +4678,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2616              		.loc 1 1173 15 view .LVU661
  2617 0002 D0E90023 		ldrd	r2, r3, [r0]
 1169:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** #if (configSUPPORT_DYNAMIC_ALLOCATION == 1)
-ARM GAS  /tmp/ccuE61VX.s 			page 79
+ARM GAS  /tmp/ccAcLTlU.s 			page 79
 
 
  2618              		.loc 1 1169 1 view .LVU662
@@ -4738,7 +4738,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2655 0028 0421     		movs	r1, #4
  2656 002a FFF7FEFF 		bl	xQueueGenericCreate
  2657              	.LVL177:
-ARM GAS  /tmp/ccuE61VX.s 			page 80
+ARM GAS  /tmp/ccAcLTlU.s 			page 80
 
 
 1186:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** 
@@ -4798,7 +4798,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2690              	.LCFI81:
  2691              		.cfi_remember_state
  2692              		.cfi_def_cfa_offset 16
-ARM GAS  /tmp/ccuE61VX.s 			page 81
+ARM GAS  /tmp/ccAcLTlU.s 			page 81
 
 
  2693              		@ sp needed
@@ -4858,7 +4858,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2733              		@ args = 0, pretend = 0, frame = 0
  2734              		@ frame_needed = 0, uses_anonymous_args = 0
  2735              		@ link register save eliminated.
-ARM GAS  /tmp/ccuE61VX.s 			page 82
+ARM GAS  /tmp/ccAcLTlU.s 			page 82
 
 
 1216:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   (void) millisec;
@@ -4918,7 +4918,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1238:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   uint32_t i;
  2770              		.loc 1 1238 3 view .LVU711
 1239:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   void *p = osMailAlloc(queue_id, millisec);
-ARM GAS  /tmp/ccuE61VX.s 			page 83
+ARM GAS  /tmp/ccAcLTlU.s 			page 83
 
 
  2771              		.loc 1 1239 3 view .LVU712
@@ -4978,7 +4978,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2811 000e 2368     		ldr	r3, [r4]
  2812              		.loc 1 1242 5 view .LVU728
  2813 0010 5B68     		ldr	r3, [r3, #4]
-ARM GAS  /tmp/ccuE61VX.s 			page 84
+ARM GAS  /tmp/ccAcLTlU.s 			page 84
 
 
  2814 0012 53B1     		cbz	r3, .L217
@@ -5038,7 +5038,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2855              		.cfi_def_cfa_offset 0
  2856              		.cfi_restore 3
  2857              		.cfi_restore 4
-ARM GAS  /tmp/ccuE61VX.s 			page 85
+ARM GAS  /tmp/ccAcLTlU.s 			page 85
 
 
  2858              		.cfi_restore 5
@@ -5098,7 +5098,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2896              		.cfi_offset 4, -8
  2897              		.cfi_offset 14, -4
  2898 0002 84B0     		sub	sp, sp, #16
-ARM GAS  /tmp/ccuE61VX.s 			page 86
+ARM GAS  /tmp/ccAcLTlU.s 			page 86
 
 
  2899              	.LCFI86:
@@ -5158,7 +5158,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1270:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****       return osErrorOS;
 1271:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     }
 1272:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     portEND_SWITCHING_ISR(taskWoken);
-ARM GAS  /tmp/ccuE61VX.s 			page 87
+ARM GAS  /tmp/ccAcLTlU.s 			page 87
 
 
 1273:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   }
@@ -5218,7 +5218,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  2979 0038 F2D0     		beq	.L241
 1272:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   }
  2980              		.loc 1 1272 5 discriminator 1 view .LVU774
-ARM GAS  /tmp/ccuE61VX.s 			page 88
+ARM GAS  /tmp/ccAcLTlU.s 			page 88
 
 
  2981 003a 084B     		ldr	r3, .L248
@@ -5278,7 +5278,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3029 005a 10BD     		pop	{r4, pc}
  3030              	.L249:
  3031              		.align	2
-ARM GAS  /tmp/ccuE61VX.s 			page 89
+ARM GAS  /tmp/ccAcLTlU.s 			page 89
 
 
  3032              	.L248:
@@ -5338,7 +5338,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1297:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   
 1298:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   if (queue_id == NULL) {
  3071              		.loc 1 1298 3 is_stmt 1 view .LVU792
-ARM GAS  /tmp/ccuE61VX.s 			page 90
+ARM GAS  /tmp/ccAcLTlU.s 			page 90
 
 
  3072              		.loc 1 1298 6 is_stmt 0 view .LVU793
@@ -5398,7 +5398,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3103              	.LBE199:
  3104              	.LBE198:
  3105              	.LBE200:
-ARM GAS  /tmp/ccuE61VX.s 			page 91
+ARM GAS  /tmp/ccAcLTlU.s 			page 91
 
 
  3106              		.loc 1 1316 6 view .LVU806
@@ -5458,7 +5458,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3139              	.LCFI96:
  3140              		.cfi_remember_state
  3141              		.cfi_def_cfa_offset 12
-ARM GAS  /tmp/ccuE61VX.s 			page 92
+ARM GAS  /tmp/ccAcLTlU.s 			page 92
 
 
  3142              		@ sp needed
@@ -5518,7 +5518,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3185              		.thumb
  3186              		.syntax unified
  3187 0064 E1E7     		b	.L255
-ARM GAS  /tmp/ccuE61VX.s 			page 93
+ARM GAS  /tmp/ccAcLTlU.s 			page 93
 
 
  3188              	.LVL220:
@@ -5578,7 +5578,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1338:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** 
 1339:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** /**
 1340:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @brief Free a memory block from a mail
-ARM GAS  /tmp/ccuE61VX.s 			page 94
+ARM GAS  /tmp/ccAcLTlU.s 			page 94
 
 
 1341:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @param  queue_id mail queue ID obtained with \ref osMailCreate.
@@ -5638,7 +5638,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3268 000e D868     		ldr	r0, [r3, #12]
  3269              	.LVL225:
 1012:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   if (index % pool_id->item_sz) {
-ARM GAS  /tmp/ccuE61VX.s 			page 95
+ARM GAS  /tmp/ccAcLTlU.s 			page 95
 
 
  3270              		.loc 1 1012 9 view .LVU853
@@ -5698,7 +5698,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3311              		.global	osSystickHandler
  3312              		.syntax unified
  3313              		.thumb
-ARM GAS  /tmp/ccuE61VX.s 			page 96
+ARM GAS  /tmp/ccAcLTlU.s 			page 96
 
 
  3314              		.thumb_func
@@ -5758,7 +5758,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3346              		.loc 1 1369 5 view .LVU876
  3347 0010 FFF7FEBF 		b	SysTick_Handler
  3348              	.LVL232:
-ARM GAS  /tmp/ccuE61VX.s 			page 97
+ARM GAS  /tmp/ccAcLTlU.s 			page 97
 
 
  3349              		.cfi_endproc
@@ -5818,7 +5818,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1415:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @brief Check if a thread is already suspended or not.
 1416:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @param thread_id thread ID obtained by \ref osThreadCreate or \ref osThreadGetId.
 1417:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @retval status code that indicates the execution status of the function.
-ARM GAS  /tmp/ccuE61VX.s 			page 98
+ARM GAS  /tmp/ccAcLTlU.s 			page 98
 
 
 1418:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** */
@@ -5878,7 +5878,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3395              	.LVL235:
  3396              	.LFB149:
 1442:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** 
-ARM GAS  /tmp/ccuE61VX.s 			page 99
+ARM GAS  /tmp/ccAcLTlU.s 			page 99
 
 
 1443:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** /**
@@ -5938,7 +5938,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3435              		.syntax unified
  3436              	.LBE206:
  3437              	.LBE207:
-ARM GAS  /tmp/ccuE61VX.s 			page 100
+ARM GAS  /tmp/ccAcLTlU.s 			page 100
 
 
  3438              	.LBE209:
@@ -5998,7 +5998,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1455:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     }
  3472              		.loc 1 1455 7 discriminator 1 view .LVU906
  3473              	@ 1455 "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c" 1
-ARM GAS  /tmp/ccuE61VX.s 			page 101
+ARM GAS  /tmp/ccAcLTlU.s 			page 101
 
 
  3474 0028 BFF36F8F 		isb
@@ -6058,7 +6058,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3517 0008 08BD     		pop	{r3, pc}
  3518              		.cfi_endproc
  3519              	.LFE150:
-ARM GAS  /tmp/ccuE61VX.s 			page 102
+ARM GAS  /tmp/ccAcLTlU.s 			page 102
 
 
  3521 000a 00BF     		.section	.text.osThreadResumeAll,"ax",%progbits
@@ -6118,7 +6118,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3563              		.fpu fpv4-sp-d16
  3565              	osDelayUntil:
  3566              	.LVL242:
-ARM GAS  /tmp/ccuE61VX.s 			page 103
+ARM GAS  /tmp/ccAcLTlU.s 			page 103
 
 
  3567              	.LFB152:
@@ -6178,7 +6178,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1518:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** * @retval  status code that indicates the execution status of the function.
 1519:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** */
 1520:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** osStatus osAbortDelay(osThreadId thread_id)
-ARM GAS  /tmp/ccuE61VX.s 			page 104
+ARM GAS  /tmp/ccAcLTlU.s 			page 104
 
 
 1521:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** {
@@ -6238,7 +6238,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1545:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** #endif
 1546:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   return osOK;
  3628              		.loc 1 1546 3 view .LVU933
-ARM GAS  /tmp/ccuE61VX.s 			page 105
+ARM GAS  /tmp/ccAcLTlU.s 			page 105
 
 
 1547:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** }
@@ -6298,7 +6298,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3669 0006 0391     		str	r1, [sp, #12]
 1561:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   
 1562:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   if (queue_id == NULL) {
-ARM GAS  /tmp/ccuE61VX.s 			page 106
+ARM GAS  /tmp/ccAcLTlU.s 			page 106
 
 
  3670              		.loc 1 1562 3 is_stmt 1 view .LVU943
@@ -6358,7 +6358,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1586:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   }
 1587:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   
 1588:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   return event;
-ARM GAS  /tmp/ccuE61VX.s 			page 107
+ARM GAS  /tmp/ccAcLTlU.s 			page 107
 
 
  3701              		.loc 1 1588 3 is_stmt 1 view .LVU956
@@ -6418,7 +6418,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3748              		.align	1
  3749              		.p2align 2,,3
  3750              		.global	osMessageWaiting
-ARM GAS  /tmp/ccuE61VX.s 			page 108
+ARM GAS  /tmp/ccAcLTlU.s 			page 108
 
 
  3751              		.syntax unified
@@ -6478,7 +6478,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3791              		.loc 1 1599 5 is_stmt 1 view .LVU978
  3792              		.loc 1 1599 12 is_stmt 0 view .LVU979
  3793 0006 FFF7FEBF 		b	uxQueueMessagesWaitingFromISR
-ARM GAS  /tmp/ccuE61VX.s 			page 109
+ARM GAS  /tmp/ccAcLTlU.s 			page 109
 
 
  3794              	.LVL260:
@@ -6538,7 +6538,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3836              		.fpu fpv4-sp-d16
  3838              	osMessageDelete:
  3839              	.LFB170:
-ARM GAS  /tmp/ccuE61VX.s 			page 110
+ARM GAS  /tmp/ccAcLTlU.s 			page 110
 
 
  3840              		.cfi_startproc
@@ -6598,7 +6598,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1646:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   else {
 1647:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     return xSemaphoreCreateRecursiveMutex();
 1648:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   }
-ARM GAS  /tmp/ccuE61VX.s 			page 111
+ARM GAS  /tmp/ccAcLTlU.s 			page 111
 
 
 1649:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c **** #elif ( configSUPPORT_STATIC_ALLOCATION == 1 )
@@ -6658,7 +6658,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3915              		.align	1
  3916              		.p2align 2,,3
  3917              		.global	osSemaphoreGetCount
-ARM GAS  /tmp/ccuE61VX.s 			page 112
+ARM GAS  /tmp/ccAcLTlU.s 			page 112
 
 
  3918              		.syntax unified
@@ -6718,7 +6718,7 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
 1705:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****       ticks = 1;
 1706:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****     }
 1707:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   }
-ARM GAS  /tmp/ccuE61VX.s 			page 113
+ARM GAS  /tmp/ccAcLTlU.s 			page 113
 
 
 1708:Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c ****   
@@ -6769,133 +6769,133 @@ ARM GAS  /tmp/ccuE61VX.s 			page 1
  3953              		.file 16 "Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h"
  3954              		.file 17 "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h"
  3955              		.file 18 "Middlewares/Third_Party/FreeRTOS/Source/include/portable.h"
-ARM GAS  /tmp/ccuE61VX.s 			page 114
+ARM GAS  /tmp/ccAcLTlU.s 			page 114
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 cmsis_os.c
-     /tmp/ccuE61VX.s:18     .text.osKernelStart:0000000000000000 $t
-     /tmp/ccuE61VX.s:27     .text.osKernelStart:0000000000000000 osKernelStart
-     /tmp/ccuE61VX.s:52     .text.osKernelRunning:0000000000000000 $t
-     /tmp/ccuE61VX.s:60     .text.osKernelRunning:0000000000000000 osKernelRunning
-     /tmp/ccuE61VX.s:85     .text.osKernelSysTick:0000000000000000 $t
-     /tmp/ccuE61VX.s:93     .text.osKernelSysTick:0000000000000000 osKernelSysTick
-     /tmp/ccuE61VX.s:141    .text.osThreadCreate:0000000000000000 $t
-     /tmp/ccuE61VX.s:149    .text.osThreadCreate:0000000000000000 osThreadCreate
-     /tmp/ccuE61VX.s:283    .text.osThreadGetId:0000000000000000 $t
-     /tmp/ccuE61VX.s:291    .text.osThreadGetId:0000000000000000 osThreadGetId
-     /tmp/ccuE61VX.s:306    .text.osThreadTerminate:0000000000000000 $t
-     /tmp/ccuE61VX.s:314    .text.osThreadTerminate:0000000000000000 osThreadTerminate
-     /tmp/ccuE61VX.s:339    .text.osThreadYield:0000000000000000 $t
-     /tmp/ccuE61VX.s:347    .text.osThreadYield:0000000000000000 osThreadYield
-     /tmp/ccuE61VX.s:377    .text.osThreadYield:0000000000000014 $d
-     /tmp/ccuE61VX.s:382    .text.osThreadSetPriority:0000000000000000 $t
-     /tmp/ccuE61VX.s:390    .text.osThreadSetPriority:0000000000000000 osThreadSetPriority
-     /tmp/ccuE61VX.s:439    .text.osThreadGetPriority:0000000000000000 $t
-     /tmp/ccuE61VX.s:447    .text.osThreadGetPriority:0000000000000000 osThreadGetPriority
-     /tmp/ccuE61VX.s:557    .text.osDelay:0000000000000000 $t
-     /tmp/ccuE61VX.s:565    .text.osDelay:0000000000000000 osDelay
-     /tmp/ccuE61VX.s:596    .text.osTimerCreate:0000000000000000 $t
-     /tmp/ccuE61VX.s:604    .text.osTimerCreate:0000000000000000 osTimerCreate
-     /tmp/ccuE61VX.s:622    .text.osTimerStart:0000000000000000 $t
-     /tmp/ccuE61VX.s:630    .text.osTimerStart:0000000000000000 osTimerStart
-     /tmp/ccuE61VX.s:650    .text.osTimerStop:0000000000000000 $t
-     /tmp/ccuE61VX.s:658    .text.osTimerStop:0000000000000000 osTimerStop
-     /tmp/ccuE61VX.s:678    .text.osTimerDelete:0000000000000000 $t
-     /tmp/ccuE61VX.s:686    .text.osTimerDelete:0000000000000000 osTimerDelete
-     /tmp/ccuE61VX.s:698    .text.osSignalSet:0000000000000000 $t
-     /tmp/ccuE61VX.s:706    .text.osSignalSet:0000000000000000 osSignalSet
-     /tmp/ccuE61VX.s:815    .text.osSignalSet:0000000000000050 $d
-     /tmp/ccuE61VX.s:820    .text.osSignalWait:0000000000000000 $t
-     /tmp/ccuE61VX.s:828    .text.osSignalWait:0000000000000000 osSignalWait
-     /tmp/ccuE61VX.s:950    .text.osMutexCreate:0000000000000000 $t
-     /tmp/ccuE61VX.s:958    .text.osMutexCreate:0000000000000000 osMutexCreate
-     /tmp/ccuE61VX.s:987    .text.osMutexWait:0000000000000000 $t
-     /tmp/ccuE61VX.s:995    .text.osMutexWait:0000000000000000 osMutexWait
-     /tmp/ccuE61VX.s:1138   .text.osMutexWait:0000000000000054 $d
-     /tmp/ccuE61VX.s:1143   .text.osMutexRelease:0000000000000000 $t
-     /tmp/ccuE61VX.s:1151   .text.osMutexRelease:0000000000000000 osMutexRelease
-     /tmp/ccuE61VX.s:1275   .text.osMutexRelease:000000000000004c $d
-     /tmp/ccuE61VX.s:1280   .text.osMutexDelete:0000000000000000 $t
-     /tmp/ccuE61VX.s:1288   .text.osMutexDelete:0000000000000000 osMutexDelete
-     /tmp/ccuE61VX.s:1355   .text.osSemaphoreCreate:0000000000000000 $t
-     /tmp/ccuE61VX.s:1363   .text.osSemaphoreCreate:0000000000000000 osSemaphoreCreate
-     /tmp/ccuE61VX.s:1457   .text.osSemaphoreWait:0000000000000000 $t
-     /tmp/ccuE61VX.s:1465   .text.osSemaphoreWait:0000000000000000 osSemaphoreWait
-     /tmp/ccuE61VX.s:1608   .text.osSemaphoreWait:0000000000000054 $d
-     /tmp/ccuE61VX.s:1613   .text.osSemaphoreRelease:0000000000000000 $t
-     /tmp/ccuE61VX.s:1621   .text.osSemaphoreRelease:0000000000000000 osSemaphoreRelease
-     /tmp/ccuE61VX.s:1632   .text.osSemaphoreDelete:0000000000000000 $t
-     /tmp/ccuE61VX.s:1640   .text.osSemaphoreDelete:0000000000000000 osSemaphoreDelete
-     /tmp/ccuE61VX.s:1651   .text.osPoolCreate:0000000000000000 $t
-     /tmp/ccuE61VX.s:1659   .text.osPoolCreate:0000000000000000 osPoolCreate
-ARM GAS  /tmp/ccuE61VX.s 			page 115
+     /tmp/ccAcLTlU.s:18     .text.osKernelStart:0000000000000000 $t
+     /tmp/ccAcLTlU.s:27     .text.osKernelStart:0000000000000000 osKernelStart
+     /tmp/ccAcLTlU.s:52     .text.osKernelRunning:0000000000000000 $t
+     /tmp/ccAcLTlU.s:60     .text.osKernelRunning:0000000000000000 osKernelRunning
+     /tmp/ccAcLTlU.s:85     .text.osKernelSysTick:0000000000000000 $t
+     /tmp/ccAcLTlU.s:93     .text.osKernelSysTick:0000000000000000 osKernelSysTick
+     /tmp/ccAcLTlU.s:141    .text.osThreadCreate:0000000000000000 $t
+     /tmp/ccAcLTlU.s:149    .text.osThreadCreate:0000000000000000 osThreadCreate
+     /tmp/ccAcLTlU.s:283    .text.osThreadGetId:0000000000000000 $t
+     /tmp/ccAcLTlU.s:291    .text.osThreadGetId:0000000000000000 osThreadGetId
+     /tmp/ccAcLTlU.s:306    .text.osThreadTerminate:0000000000000000 $t
+     /tmp/ccAcLTlU.s:314    .text.osThreadTerminate:0000000000000000 osThreadTerminate
+     /tmp/ccAcLTlU.s:339    .text.osThreadYield:0000000000000000 $t
+     /tmp/ccAcLTlU.s:347    .text.osThreadYield:0000000000000000 osThreadYield
+     /tmp/ccAcLTlU.s:377    .text.osThreadYield:0000000000000014 $d
+     /tmp/ccAcLTlU.s:382    .text.osThreadSetPriority:0000000000000000 $t
+     /tmp/ccAcLTlU.s:390    .text.osThreadSetPriority:0000000000000000 osThreadSetPriority
+     /tmp/ccAcLTlU.s:439    .text.osThreadGetPriority:0000000000000000 $t
+     /tmp/ccAcLTlU.s:447    .text.osThreadGetPriority:0000000000000000 osThreadGetPriority
+     /tmp/ccAcLTlU.s:557    .text.osDelay:0000000000000000 $t
+     /tmp/ccAcLTlU.s:565    .text.osDelay:0000000000000000 osDelay
+     /tmp/ccAcLTlU.s:596    .text.osTimerCreate:0000000000000000 $t
+     /tmp/ccAcLTlU.s:604    .text.osTimerCreate:0000000000000000 osTimerCreate
+     /tmp/ccAcLTlU.s:622    .text.osTimerStart:0000000000000000 $t
+     /tmp/ccAcLTlU.s:630    .text.osTimerStart:0000000000000000 osTimerStart
+     /tmp/ccAcLTlU.s:650    .text.osTimerStop:0000000000000000 $t
+     /tmp/ccAcLTlU.s:658    .text.osTimerStop:0000000000000000 osTimerStop
+     /tmp/ccAcLTlU.s:678    .text.osTimerDelete:0000000000000000 $t
+     /tmp/ccAcLTlU.s:686    .text.osTimerDelete:0000000000000000 osTimerDelete
+     /tmp/ccAcLTlU.s:698    .text.osSignalSet:0000000000000000 $t
+     /tmp/ccAcLTlU.s:706    .text.osSignalSet:0000000000000000 osSignalSet
+     /tmp/ccAcLTlU.s:815    .text.osSignalSet:0000000000000050 $d
+     /tmp/ccAcLTlU.s:820    .text.osSignalWait:0000000000000000 $t
+     /tmp/ccAcLTlU.s:828    .text.osSignalWait:0000000000000000 osSignalWait
+     /tmp/ccAcLTlU.s:950    .text.osMutexCreate:0000000000000000 $t
+     /tmp/ccAcLTlU.s:958    .text.osMutexCreate:0000000000000000 osMutexCreate
+     /tmp/ccAcLTlU.s:987    .text.osMutexWait:0000000000000000 $t
+     /tmp/ccAcLTlU.s:995    .text.osMutexWait:0000000000000000 osMutexWait
+     /tmp/ccAcLTlU.s:1138   .text.osMutexWait:0000000000000054 $d
+     /tmp/ccAcLTlU.s:1143   .text.osMutexRelease:0000000000000000 $t
+     /tmp/ccAcLTlU.s:1151   .text.osMutexRelease:0000000000000000 osMutexRelease
+     /tmp/ccAcLTlU.s:1275   .text.osMutexRelease:000000000000004c $d
+     /tmp/ccAcLTlU.s:1280   .text.osMutexDelete:0000000000000000 $t
+     /tmp/ccAcLTlU.s:1288   .text.osMutexDelete:0000000000000000 osMutexDelete
+     /tmp/ccAcLTlU.s:1355   .text.osSemaphoreCreate:0000000000000000 $t
+     /tmp/ccAcLTlU.s:1363   .text.osSemaphoreCreate:0000000000000000 osSemaphoreCreate
+     /tmp/ccAcLTlU.s:1457   .text.osSemaphoreWait:0000000000000000 $t
+     /tmp/ccAcLTlU.s:1465   .text.osSemaphoreWait:0000000000000000 osSemaphoreWait
+     /tmp/ccAcLTlU.s:1608   .text.osSemaphoreWait:0000000000000054 $d
+     /tmp/ccAcLTlU.s:1613   .text.osSemaphoreRelease:0000000000000000 $t
+     /tmp/ccAcLTlU.s:1621   .text.osSemaphoreRelease:0000000000000000 osSemaphoreRelease
+     /tmp/ccAcLTlU.s:1632   .text.osSemaphoreDelete:0000000000000000 $t
+     /tmp/ccAcLTlU.s:1640   .text.osSemaphoreDelete:0000000000000000 osSemaphoreDelete
+     /tmp/ccAcLTlU.s:1651   .text.osPoolCreate:0000000000000000 $t
+     /tmp/ccAcLTlU.s:1659   .text.osPoolCreate:0000000000000000 osPoolCreate
+ARM GAS  /tmp/ccAcLTlU.s 			page 115
 
 
-     /tmp/ccuE61VX.s:1806   .text.osPoolAlloc:0000000000000000 $t
-     /tmp/ccuE61VX.s:1814   .text.osPoolAlloc:0000000000000000 osPoolAlloc
-     /tmp/ccuE61VX.s:2067   .text.osPoolCAlloc:0000000000000000 $t
-     /tmp/ccuE61VX.s:2075   .text.osPoolCAlloc:0000000000000000 osPoolCAlloc
-     /tmp/ccuE61VX.s:2106   .text.osPoolFree:0000000000000000 $t
-     /tmp/ccuE61VX.s:2114   .text.osPoolFree:0000000000000000 osPoolFree
-     /tmp/ccuE61VX.s:2179   .text.osMessageCreate:0000000000000000 $t
-     /tmp/ccuE61VX.s:2187   .text.osMessageCreate:0000000000000000 osMessageCreate
-     /tmp/ccuE61VX.s:2246   .text.osMessagePut:0000000000000000 $t
-     /tmp/ccuE61VX.s:2254   .text.osMessagePut:0000000000000000 osMessagePut
-     /tmp/ccuE61VX.s:2394   .text.osMessagePut:0000000000000054 $d
-     /tmp/ccuE61VX.s:2399   .text.osMessageGet:0000000000000000 $t
-     /tmp/ccuE61VX.s:2407   .text.osMessageGet:0000000000000000 osMessageGet
-     /tmp/ccuE61VX.s:2586   .text.osMessageGet:0000000000000084 $d
-     /tmp/ccuE61VX.s:2591   .text.osMailCreate:0000000000000000 $t
-     /tmp/ccuE61VX.s:2599   .text.osMailCreate:0000000000000000 osMailCreate
-     /tmp/ccuE61VX.s:2720   .text.osMailAlloc:0000000000000000 $t
-     /tmp/ccuE61VX.s:2728   .text.osMailAlloc:0000000000000000 osMailAlloc
-     /tmp/ccuE61VX.s:2755   .text.osMailCAlloc:0000000000000000 $t
-     /tmp/ccuE61VX.s:2763   .text.osMailCAlloc:0000000000000000 osMailCAlloc
-     /tmp/ccuE61VX.s:2875   .text.osMailPut:0000000000000000 $t
-     /tmp/ccuE61VX.s:2883   .text.osMailPut:0000000000000000 osMailPut
-     /tmp/ccuE61VX.s:3033   .text.osMailPut:000000000000005c $d
-     /tmp/ccuE61VX.s:3038   .text.osMailGet:0000000000000000 $t
-     /tmp/ccuE61VX.s:3046   .text.osMailGet:0000000000000000 osMailGet
-     /tmp/ccuE61VX.s:3221   .text.osMailGet:0000000000000080 $d
-     /tmp/ccuE61VX.s:3226   .text.osMailFree:0000000000000000 $t
-     /tmp/ccuE61VX.s:3234   .text.osMailFree:0000000000000000 osMailFree
-     /tmp/ccuE61VX.s:3309   .text.osSystickHandler:0000000000000000 $t
-     /tmp/ccuE61VX.s:3317   .text.osSystickHandler:0000000000000000 osSystickHandler
-     /tmp/ccuE61VX.s:3353   .text.osThreadSuspend:0000000000000000 $t
-     /tmp/ccuE61VX.s:3361   .text.osThreadSuspend:0000000000000000 osThreadSuspend
-     /tmp/ccuE61VX.s:3386   .text.osThreadResume:0000000000000000 $t
-     /tmp/ccuE61VX.s:3394   .text.osThreadResume:0000000000000000 osThreadResume
-     /tmp/ccuE61VX.s:3485   .text.osThreadResume:0000000000000030 $d
-     /tmp/ccuE61VX.s:3490   .text.osThreadSuspendAll:0000000000000000 $t
-     /tmp/ccuE61VX.s:3498   .text.osThreadSuspendAll:0000000000000000 osThreadSuspendAll
-     /tmp/ccuE61VX.s:3522   .text.osThreadResumeAll:0000000000000000 $t
-     /tmp/ccuE61VX.s:3530   .text.osThreadResumeAll:0000000000000000 osThreadResumeAll
-     /tmp/ccuE61VX.s:3557   .text.osDelayUntil:0000000000000000 $t
-     /tmp/ccuE61VX.s:3565   .text.osDelayUntil:0000000000000000 osDelayUntil
-     /tmp/ccuE61VX.s:3585   .text.osAbortDelay:0000000000000000 $t
-     /tmp/ccuE61VX.s:3593   .text.osAbortDelay:0000000000000000 osAbortDelay
-     /tmp/ccuE61VX.s:3612   .text.osThreadList:0000000000000000 $t
-     /tmp/ccuE61VX.s:3620   .text.osThreadList:0000000000000000 osThreadList
-     /tmp/ccuE61VX.s:3638   .text.osMessagePeek:0000000000000000 $t
-     /tmp/ccuE61VX.s:3646   .text.osMessagePeek:0000000000000000 osMessagePeek
-     /tmp/ccuE61VX.s:3748   .text.osMessageWaiting:0000000000000000 $t
-     /tmp/ccuE61VX.s:3756   .text.osMessageWaiting:0000000000000000 osMessageWaiting
-     /tmp/ccuE61VX.s:3805   .text.osMessageAvailableSpace:0000000000000000 $t
-     /tmp/ccuE61VX.s:3813   .text.osMessageAvailableSpace:0000000000000000 osMessageAvailableSpace
-     /tmp/ccuE61VX.s:3830   .text.osMessageDelete:0000000000000000 $t
-     /tmp/ccuE61VX.s:3838   .text.osMessageDelete:0000000000000000 osMessageDelete
-     /tmp/ccuE61VX.s:3849   .text.osRecursiveMutexCreate:0000000000000000 $t
-     /tmp/ccuE61VX.s:3857   .text.osRecursiveMutexCreate:0000000000000000 osRecursiveMutexCreate
-     /tmp/ccuE61VX.s:3875   .text.osRecursiveMutexRelease:0000000000000000 $t
-     /tmp/ccuE61VX.s:3883   .text.osRecursiveMutexRelease:0000000000000000 osRecursiveMutexRelease
-ARM GAS  /tmp/ccuE61VX.s 			page 116
+     /tmp/ccAcLTlU.s:1806   .text.osPoolAlloc:0000000000000000 $t
+     /tmp/ccAcLTlU.s:1814   .text.osPoolAlloc:0000000000000000 osPoolAlloc
+     /tmp/ccAcLTlU.s:2067   .text.osPoolCAlloc:0000000000000000 $t
+     /tmp/ccAcLTlU.s:2075   .text.osPoolCAlloc:0000000000000000 osPoolCAlloc
+     /tmp/ccAcLTlU.s:2106   .text.osPoolFree:0000000000000000 $t
+     /tmp/ccAcLTlU.s:2114   .text.osPoolFree:0000000000000000 osPoolFree
+     /tmp/ccAcLTlU.s:2179   .text.osMessageCreate:0000000000000000 $t
+     /tmp/ccAcLTlU.s:2187   .text.osMessageCreate:0000000000000000 osMessageCreate
+     /tmp/ccAcLTlU.s:2246   .text.osMessagePut:0000000000000000 $t
+     /tmp/ccAcLTlU.s:2254   .text.osMessagePut:0000000000000000 osMessagePut
+     /tmp/ccAcLTlU.s:2394   .text.osMessagePut:0000000000000054 $d
+     /tmp/ccAcLTlU.s:2399   .text.osMessageGet:0000000000000000 $t
+     /tmp/ccAcLTlU.s:2407   .text.osMessageGet:0000000000000000 osMessageGet
+     /tmp/ccAcLTlU.s:2586   .text.osMessageGet:0000000000000084 $d
+     /tmp/ccAcLTlU.s:2591   .text.osMailCreate:0000000000000000 $t
+     /tmp/ccAcLTlU.s:2599   .text.osMailCreate:0000000000000000 osMailCreate
+     /tmp/ccAcLTlU.s:2720   .text.osMailAlloc:0000000000000000 $t
+     /tmp/ccAcLTlU.s:2728   .text.osMailAlloc:0000000000000000 osMailAlloc
+     /tmp/ccAcLTlU.s:2755   .text.osMailCAlloc:0000000000000000 $t
+     /tmp/ccAcLTlU.s:2763   .text.osMailCAlloc:0000000000000000 osMailCAlloc
+     /tmp/ccAcLTlU.s:2875   .text.osMailPut:0000000000000000 $t
+     /tmp/ccAcLTlU.s:2883   .text.osMailPut:0000000000000000 osMailPut
+     /tmp/ccAcLTlU.s:3033   .text.osMailPut:000000000000005c $d
+     /tmp/ccAcLTlU.s:3038   .text.osMailGet:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3046   .text.osMailGet:0000000000000000 osMailGet
+     /tmp/ccAcLTlU.s:3221   .text.osMailGet:0000000000000080 $d
+     /tmp/ccAcLTlU.s:3226   .text.osMailFree:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3234   .text.osMailFree:0000000000000000 osMailFree
+     /tmp/ccAcLTlU.s:3309   .text.osSystickHandler:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3317   .text.osSystickHandler:0000000000000000 osSystickHandler
+     /tmp/ccAcLTlU.s:3353   .text.osThreadSuspend:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3361   .text.osThreadSuspend:0000000000000000 osThreadSuspend
+     /tmp/ccAcLTlU.s:3386   .text.osThreadResume:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3394   .text.osThreadResume:0000000000000000 osThreadResume
+     /tmp/ccAcLTlU.s:3485   .text.osThreadResume:0000000000000030 $d
+     /tmp/ccAcLTlU.s:3490   .text.osThreadSuspendAll:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3498   .text.osThreadSuspendAll:0000000000000000 osThreadSuspendAll
+     /tmp/ccAcLTlU.s:3522   .text.osThreadResumeAll:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3530   .text.osThreadResumeAll:0000000000000000 osThreadResumeAll
+     /tmp/ccAcLTlU.s:3557   .text.osDelayUntil:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3565   .text.osDelayUntil:0000000000000000 osDelayUntil
+     /tmp/ccAcLTlU.s:3585   .text.osAbortDelay:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3593   .text.osAbortDelay:0000000000000000 osAbortDelay
+     /tmp/ccAcLTlU.s:3612   .text.osThreadList:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3620   .text.osThreadList:0000000000000000 osThreadList
+     /tmp/ccAcLTlU.s:3638   .text.osMessagePeek:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3646   .text.osMessagePeek:0000000000000000 osMessagePeek
+     /tmp/ccAcLTlU.s:3748   .text.osMessageWaiting:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3756   .text.osMessageWaiting:0000000000000000 osMessageWaiting
+     /tmp/ccAcLTlU.s:3805   .text.osMessageAvailableSpace:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3813   .text.osMessageAvailableSpace:0000000000000000 osMessageAvailableSpace
+     /tmp/ccAcLTlU.s:3830   .text.osMessageDelete:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3838   .text.osMessageDelete:0000000000000000 osMessageDelete
+     /tmp/ccAcLTlU.s:3849   .text.osRecursiveMutexCreate:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3857   .text.osRecursiveMutexCreate:0000000000000000 osRecursiveMutexCreate
+     /tmp/ccAcLTlU.s:3875   .text.osRecursiveMutexRelease:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3883   .text.osRecursiveMutexRelease:0000000000000000 osRecursiveMutexRelease
+ARM GAS  /tmp/ccAcLTlU.s 			page 116
 
 
-     /tmp/ccuE61VX.s:3895   .text.osRecursiveMutexWait:0000000000000000 $t
-     /tmp/ccuE61VX.s:3903   .text.osRecursiveMutexWait:0000000000000000 osRecursiveMutexWait
-     /tmp/ccuE61VX.s:3915   .text.osSemaphoreGetCount:0000000000000000 $t
-     /tmp/ccuE61VX.s:3923   .text.osSemaphoreGetCount:0000000000000000 osSemaphoreGetCount
+     /tmp/ccAcLTlU.s:3895   .text.osRecursiveMutexWait:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3903   .text.osRecursiveMutexWait:0000000000000000 osRecursiveMutexWait
+     /tmp/ccAcLTlU.s:3915   .text.osSemaphoreGetCount:0000000000000000 $t
+     /tmp/ccAcLTlU.s:3923   .text.osSemaphoreGetCount:0000000000000000 osSemaphoreGetCount
 
 UNDEFINED SYMBOLS
 vTaskStartScheduler

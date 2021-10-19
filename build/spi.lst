@@ -1,4 +1,4 @@
-ARM GAS  /tmp/ccc5yMru.s 			page 1
+ARM GAS  /tmp/ccNVulYp.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -58,7 +58,7 @@ ARM GAS  /tmp/ccc5yMru.s 			page 1
   27:Src/spi.c     **** SPI_HandleTypeDef hspi1;
   28:Src/spi.c     **** 
   29:Src/spi.c     **** /* SPI1 init function */
-ARM GAS  /tmp/ccc5yMru.s 			page 2
+ARM GAS  /tmp/ccNVulYp.s 			page 2
 
 
   30:Src/spi.c     **** void MX_SPI1_Init(void)
@@ -118,7 +118,7 @@ ARM GAS  /tmp/ccc5yMru.s 			page 1
   56 0014 C0E90233 		strd	r3, r3, [r0, #8]
   45:Src/spi.c     ****   hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
   57              		.loc 1 45 23 view .LVU11
-ARM GAS  /tmp/ccc5yMru.s 			page 3
+ARM GAS  /tmp/ccNVulYp.s 			page 3
 
 
   58 0018 C0E90433 		strd	r3, r3, [r0, #16]
@@ -178,7 +178,7 @@ ARM GAS  /tmp/ccc5yMru.s 			page 1
   91              		.loc 1 54 5 view .LVU29
   92 0036 FFF7FEBF 		b	Error_Handler
   93              	.LVL1:
-ARM GAS  /tmp/ccc5yMru.s 			page 4
+ARM GAS  /tmp/ccNVulYp.s 			page 4
 
 
   94              	.L7:
@@ -238,7 +238,7 @@ ARM GAS  /tmp/ccc5yMru.s 			page 1
  140 000c CDE90344 		strd	r4, r4, [sp, #12]
  141 0010 CDE90544 		strd	r4, r4, [sp, #20]
  142 0014 0794     		str	r4, [sp, #28]
-ARM GAS  /tmp/ccc5yMru.s 			page 5
+ARM GAS  /tmp/ccNVulYp.s 			page 5
 
 
  143              		.loc 1 66 3 is_stmt 1 view .LVU38
@@ -298,7 +298,7 @@ ARM GAS  /tmp/ccc5yMru.s 			page 1
   72:Src/spi.c     **** 
  161              		.loc 1 72 5 view .LVU43
  162 0022 5A6C     		ldr	r2, [r3, #68]
-ARM GAS  /tmp/ccc5yMru.s 			page 6
+ARM GAS  /tmp/ccNVulYp.s 			page 6
 
 
  163              	.LBE2:
@@ -358,7 +358,7 @@ ARM GAS  /tmp/ccc5yMru.s 			page 1
   75:Src/spi.c     ****     /**SPI1 GPIO Configuration
  203              		.loc 1 75 5 view .LVU58
  204 0054 1B6B     		ldr	r3, [r3, #48]
-ARM GAS  /tmp/ccc5yMru.s 			page 7
+ARM GAS  /tmp/ccNVulYp.s 			page 7
 
 
  205              	.LBE5:
@@ -418,7 +418,7 @@ ARM GAS  /tmp/ccc5yMru.s 			page 1
  241 0076 3823     		movs	r3, #56
   94:Src/spi.c     **** 
  242              		.loc 1 94 5 view .LVU77
-ARM GAS  /tmp/ccc5yMru.s 			page 8
+ARM GAS  /tmp/ccNVulYp.s 			page 8
 
 
  243 0078 0748     		ldr	r0, .L12+8
@@ -478,7 +478,7 @@ ARM GAS  /tmp/ccc5yMru.s 			page 1
  102:Src/spi.c     **** void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
  103:Src/spi.c     **** {
  288              		.loc 1 103 1 is_stmt 1 view -0
-ARM GAS  /tmp/ccc5yMru.s 			page 9
+ARM GAS  /tmp/ccNVulYp.s 			page 9
 
 
  289              		.cfi_startproc
@@ -538,7 +538,7 @@ ARM GAS  /tmp/ccc5yMru.s 			page 1
  315 0016 5364     		str	r3, [r2, #68]
  119:Src/spi.c     **** 
  316              		.loc 1 119 5 is_stmt 1 view .LVU97
-ARM GAS  /tmp/ccc5yMru.s 			page 10
+ARM GAS  /tmp/ccNVulYp.s 			page 10
 
 
  317 0018 1021     		movs	r1, #16
@@ -582,21 +582,21 @@ ARM GAS  /tmp/ccc5yMru.s 			page 1
  354              		.file 11 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
  355              		.file 12 "Inc/spi.h"
  356              		.file 13 "Inc/main.h"
-ARM GAS  /tmp/ccc5yMru.s 			page 11
+ARM GAS  /tmp/ccNVulYp.s 			page 11
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 spi.c
-     /tmp/ccc5yMru.s:18     .text.MX_SPI1_Init:0000000000000000 $t
-     /tmp/ccc5yMru.s:27     .text.MX_SPI1_Init:0000000000000000 MX_SPI1_Init
-     /tmp/ccc5yMru.s:97     .text.MX_SPI1_Init:000000000000003c $d
+     /tmp/ccNVulYp.s:18     .text.MX_SPI1_Init:0000000000000000 $t
+     /tmp/ccNVulYp.s:27     .text.MX_SPI1_Init:0000000000000000 MX_SPI1_Init
+     /tmp/ccNVulYp.s:97     .text.MX_SPI1_Init:000000000000003c $d
                             *COM*:0000000000000058 hspi1
-     /tmp/ccc5yMru.s:103    .text.HAL_SPI_MspInit:0000000000000000 $t
-     /tmp/ccc5yMru.s:111    .text.HAL_SPI_MspInit:0000000000000000 HAL_SPI_MspInit
-     /tmp/ccc5yMru.s:270    .text.HAL_SPI_MspInit:0000000000000090 $d
-     /tmp/ccc5yMru.s:277    .text.HAL_SPI_MspDeInit:0000000000000000 $t
-     /tmp/ccc5yMru.s:285    .text.HAL_SPI_MspDeInit:0000000000000000 HAL_SPI_MspDeInit
-     /tmp/ccc5yMru.s:335    .text.HAL_SPI_MspDeInit:000000000000002c $d
+     /tmp/ccNVulYp.s:103    .text.HAL_SPI_MspInit:0000000000000000 $t
+     /tmp/ccNVulYp.s:111    .text.HAL_SPI_MspInit:0000000000000000 HAL_SPI_MspInit
+     /tmp/ccNVulYp.s:270    .text.HAL_SPI_MspInit:0000000000000090 $d
+     /tmp/ccNVulYp.s:277    .text.HAL_SPI_MspDeInit:0000000000000000 $t
+     /tmp/ccNVulYp.s:285    .text.HAL_SPI_MspDeInit:0000000000000000 HAL_SPI_MspDeInit
+     /tmp/ccNVulYp.s:335    .text.HAL_SPI_MspDeInit:000000000000002c $d
 
 UNDEFINED SYMBOLS
 HAL_SPI_Init
