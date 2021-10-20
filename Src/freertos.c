@@ -46,12 +46,14 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t *data = "Hello World from USB CDC\n";
+uint8_t *CdcTransmitData = "Hello World from USB CDC\n";
+uint8_t CdcReceiveBuffer[64];
 /* USER CODE END Variables */
 
 osThreadId defaultTaskHandle;
 osThreadId blinkTaskHandle;
-osThreadId usbTaskHandle;
+osThreadId usbTransmitTaskHandle;
+osThreadId usbReceiveTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -61,6 +63,7 @@ osThreadId usbTaskHandle;
 void StartDefaultTask(void const * argument);
 void StartBlinking(void const * argument);
 void StartUsbTransmit(void const * argument);
+void StartUsbReceive(void const * argument);
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -113,11 +116,14 @@ void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  osThreadDef(blink, StartBlinking, osPriorityNormal, 0, 128);
+  osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
   blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
-  osThreadDef(usb, StartUsbTransmit, osPriorityHigh, 0, 128);
-  usbTaskHandle = osThreadCreate(osThread(usb), NULL);
+  osThreadDef(usbTransmit, StartUsbTransmit, osPriorityIdle, 0, 128);
+  usbTransmitTaskHandle = osThreadCreate(osThread(usbTransmit), NULL);
+
+  osThreadDef(usbReceive, StartUsbReceive, osPriorityRealtime, 0, 128);
+  usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
   /* USER CODE END RTOS_THREADS */
 
 }
@@ -155,8 +161,17 @@ void StartUsbTransmit(void const *argument){
   // To read the transmitted data on a computer, execute in a terminal
   // >> cat /dev/ttyACMx
   while (1){
-    CDC_Transmit_FS(data, strlen(data));
-    osDelay(1000);    
+    CDC_Transmit_FS(CdcTransmitData, strlen(CdcTransmitData));
+    osDelay(1000);
+  }
+}
+
+void StartUsbReceive(void const *argument){
+  // To receive the data transmitted by a computer, execute in a terminal
+  // >> cat /dev/ttyACMx
+  while (1){
+    CDC_Transmit_FS(CdcReceiveBuffer, strlen(CdcReceiveBuffer));
+    osDelay(1000);
   }
 }
 /* USER CODE END Application */
