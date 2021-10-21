@@ -181,16 +181,8 @@ typedef struct imudata{
 	float xmagn;
 	float ymagn;
 	float zmagn;
-	float yaw;
-	float pitch;
-	float roll;
-	float theta;
 	float dt;
-	float quaternion[4];
 } imudata;
-
-static imudata imuvals;
-
 
 // Set initial input parameters
 enum AscaleEn {
@@ -234,7 +226,7 @@ int16_t readTempData(void);
 
 void resetMPU9250(void);
 
-void initialize_imu(void);
+void initializeImu(void);
 
 // Update all the values
 void updateValues(void);

@@ -18,6 +18,7 @@
 #include "cmsis_os.h"
 
 #include "i2c.h"
+#include "common.h"
 
 // See also MPU-9250 Register Map and Descriptions, Revision 4.0, RM-MPU-9250A-00, Rev. 1.4, 9/9/2013 for registers not listed in
 // above document; the MPU9250 and MPU9150 are virtually identical but the latter has a different register map
@@ -36,6 +37,8 @@ static int16_t rawMag[3];    // Stores the 16-bit signed magnetometer sensor out
 static int16_t tempCount;   // Stores the real internal chip temperature in degrees Celsius
 static float temperature;
 static float SelfTest[6];
+
+static imudata imuvals;
 
 static float scaleAcc, scaleGyr, scaleMag; // Scale of the three
 
@@ -56,9 +59,12 @@ static void getScales(){
 // TESTS
 
 void imu_main(){
-	initialize_imu();
+	initializeImu();
 	uint32_t diff_us;
 	uint32_t previous_ticks[1]={0};
+
+	uint8_t SuccessMessage[64] = "Hello World from MPU9250 \n";
+	uint8_t FailMessage[64] = "IMU not properly initialized \n";
 	while(1){
 		updateValues();
 		convertValues();
@@ -66,6 +72,18 @@ void imu_main(){
 		imuvals.dt = (float) diff_us; // cast values in microseconds
 		imuvals.dt/=1.0e6; // convert in seconds
 		osDelay(10);
+
+		if (imuvals.xacc != 0) {
+			CDC_Transmit_FS(SuccessMessage, strlen(SuccessMessage));
+		}
+		else if (imuvals.xacc == 0) {
+			CDC_Transmit_FS(FailMessage, strlen(FailMessage));
+		}
+
+		osDelay(1000);
+		CDC_Transmit_FS((uint8_t) imuvals.xacc, strlen((uint8_t) imuvals.xacc));
+
+		// osDelay(1000);
 	}
 }
 
@@ -74,7 +92,7 @@ uint8_t get_imu_id(){
 	return id;
 }
 
-void initialize_imu(){
+void initializeImu(){
 	char str;
 	char imu_id = get_imu_id();
 	CDC_Transmit_FS(imu_id, strlen(imu_id));
@@ -84,13 +102,13 @@ void initialize_imu(){
 		str = "MPU online: starting initialization! \n";
 		CDC_Transmit_FS(str, strlen(str));
 		
+		getScales();
+
 		resetMPU9250();
 		osDelay(2000);
 		
 		initMPU9250(); // Initialization of the main device
 		osDelay(2000); // Delay to stabilize the device
-		
-		getScales();
 	}
 	else{
 		// The MPU is offline. Return error.

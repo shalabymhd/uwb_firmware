@@ -48,7 +48,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t *CdcTransmitData = "Hello World from USB CDC\n";
+uint8_t CdcTransmitData[64] = "Hello World from USB CDC \n";
 uint8_t CdcReceiveBuffer[64];
 /* USER CODE END Variables */
 
@@ -183,6 +183,9 @@ void StartUsbReceive(void const *argument){
 }
 
 void StartImuTask(void const *argument){
+  
+  MX_USB_DEVICE_Init();
+  
   while (1){
     imu_main();
   }
