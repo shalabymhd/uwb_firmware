@@ -63,7 +63,8 @@ void imu_main(){
 	uint32_t diff_us;
 	uint32_t previous_ticks[1]={0};
 
-	uint8_t SuccessMessage[64] = "Hello World from MPU9250 \n";
+	char imuMsg[30];
+
 	uint8_t FailMessage[64] = "IMU not properly initialized \n";
 	while(1){
 		updateValues();
@@ -74,16 +75,22 @@ void imu_main(){
 		osDelay(10);
 
 		if (imuvals.xacc != 0) {
-			CDC_Transmit_FS(SuccessMessage, strlen(SuccessMessage));
+			sprintf(imuMsg,"Acc:%d|%d|%d \n",rawAcc[0],rawAcc[1],rawAcc[2]);
+			CDC_Transmit_FS(imuMsg, strlen(imuMsg));
+			osDelay(10);
+
+			sprintf(imuMsg,"Gyr:%d|%d|%d \n",rawGyr[0],rawGyr[1],rawGyr[2]);
+			CDC_Transmit_FS(imuMsg, strlen(imuMsg));
+			osDelay(10);
+
+			sprintf(imuMsg,"Mag:%d|%d|%d \n",rawMag[0],rawMag[1],rawMag[2]);
+			CDC_Transmit_FS(imuMsg, strlen(imuMsg));
 		}
 		else if (imuvals.xacc == 0) {
 			CDC_Transmit_FS(FailMessage, strlen(FailMessage));
 		}
 
-		osDelay(1000);
-		CDC_Transmit_FS((uint8_t) imuvals.xacc, strlen((uint8_t) imuvals.xacc));
-
-		// osDelay(1000);
+		osDelay(10);
 	}
 }
 
