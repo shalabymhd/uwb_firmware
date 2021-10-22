@@ -18,6 +18,8 @@ extern "C" {
 /* Returns the interval between previous_ticks and current ticks. */
 uint32_t getInterval(uint32_t* previous_ticks_buff);
 
+void convertFloatToString(char* stringbuff,float data);
+
 #ifdef __cplusplus
 }
 #endif

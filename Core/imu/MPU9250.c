@@ -63,7 +63,7 @@ void imu_main(){
 	uint32_t diff_us;
 	uint32_t previous_ticks[1]={0};
 
-	char imuMsg[30];
+	char imuMsg[10];
 
 	uint8_t FailMessage[64] = "IMU not properly initialized \n";
 	while(1){
@@ -75,15 +75,19 @@ void imu_main(){
 		osDelay(10);
 
 		if (imuvals.xacc != 0) {
-			sprintf(imuMsg,"Acc:%d|%d|%d \n",rawAcc[0],rawAcc[1],rawAcc[2]);
-			CDC_Transmit_FS(imuMsg, strlen(imuMsg));
-			osDelay(10);
+			// sprintf(imuMsg,"Acc:%d|%d|%d \n",rawAcc[0],rawAcc[1],rawAcc[2]);
+			// CDC_Transmit_FS(imuMsg, strlen(imuMsg));
+			// osDelay(10);
 
-			sprintf(imuMsg,"Gyr:%d|%d|%d \n",rawGyr[0],rawGyr[1],rawGyr[2]);
-			CDC_Transmit_FS(imuMsg, strlen(imuMsg));
-			osDelay(10);
+			// sprintf(imuMsg,"Gyr:%d|%d|%d \n",rawGyr[0],rawGyr[1],rawGyr[2]);
+			// CDC_Transmit_FS(imuMsg, strlen(imuMsg));
+			// osDelay(10);
 
-			sprintf(imuMsg,"Mag:%d|%d|%d \n",rawMag[0],rawMag[1],rawMag[2]);
+			// sprintf(imuMsg,"Mag:%d|%d|%d \n",rawMag[0],rawMag[1],rawMag[2]);
+			// CDC_Transmit_FS(imuMsg, strlen(imuMsg));
+
+			convertFloatToString(imuMsg, imuvals.xacc);
+			strcat(imuMsg, "\n");
 			CDC_Transmit_FS(imuMsg, strlen(imuMsg));
 		}
 		else if (imuvals.xacc == 0) {
