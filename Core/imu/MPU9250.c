@@ -74,7 +74,7 @@ void imu_main(){
 		imuvals.dt/=1.0e6; // convert in seconds
 		osDelay(10);
 
-		if (imuvals.xacc != 0) {
+		if (imuvals.acc.x != 0) {
 			// sprintf(imuMsg,"Acc:%d|%d|%d \n",rawAcc[0],rawAcc[1],rawAcc[2]);
 			// CDC_Transmit_FS(imuMsg, strlen(imuMsg));
 			// osDelay(10);
@@ -86,11 +86,11 @@ void imu_main(){
 			// sprintf(imuMsg,"Mag:%d|%d|%d \n",rawMag[0],rawMag[1],rawMag[2]);
 			// CDC_Transmit_FS(imuMsg, strlen(imuMsg));
 
-			convertFloatToString(imuMsg, imuvals.xacc);
+			convertFloatToString(imuMsg, imuvals.acc.x);
 			strcat(imuMsg, "\n");
 			CDC_Transmit_FS(imuMsg, strlen(imuMsg));
 		}
-		else if (imuvals.xacc == 0) {
+		else if (imuvals.acc.x == 0) {
 			CDC_Transmit_FS(FailMessage, strlen(FailMessage));
 		}
 
@@ -137,17 +137,17 @@ void updateValues(){
 
 void convertValues(){
 	// Conversion of the accelerometer values
-	imuvals.xacc = (float)rawAcc[0]*scaleAcc;
-	imuvals.yacc = (float)rawAcc[1]*scaleAcc;
-	imuvals.zacc = (float)rawAcc[2]*scaleAcc;
+	imuvals.acc.x = (float)rawAcc[0]*scaleAcc;
+	imuvals.acc.y = (float)rawAcc[1]*scaleAcc;
+	imuvals.acc.z = (float)rawAcc[2]*scaleAcc;
 	// Conversion of the gyroscope values
-	imuvals.xgyr = (float)rawGyr[0]*scaleGyr;
-	imuvals.ygyr = (float)rawGyr[1]*scaleGyr;
-	imuvals.zgyr = (float)rawGyr[2]*scaleGyr;
+	imuvals.gyr.x = (float)rawGyr[0]*scaleGyr;
+	imuvals.gyr.y = (float)rawGyr[1]*scaleGyr;
+	imuvals.gyr.z = (float)rawGyr[2]*scaleGyr;
 	// Conversion of the magn values
-	imuvals.xmagn = (float)rawMag[0]*scaleMag;
-	imuvals.xmagn = (float)rawMag[1]*scaleMag;
-	imuvals.xmagn = (float)rawMag[2]*scaleMag;
+	imuvals.mag.x = (float)rawMag[0]*scaleMag;
+	imuvals.mag.y = (float)rawMag[1]*scaleMag;
+	imuvals.mag.z = (float)rawMag[2]*scaleMag;
 }
 
 void writeByte(uint8_t address, uint8_t subAddress, uint8_t data)

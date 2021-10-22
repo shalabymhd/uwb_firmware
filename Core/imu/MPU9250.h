@@ -171,16 +171,16 @@
 #define MPU9250_ADDRESS 0x68<<1  // Device address when ADO = 0
 #endif
 
-typedef struct imudata{
-	float xgyr;
-	float ygyr;
-	float zgyr;
-	float xacc;
-	float yacc;
-	float zacc;
-	float xmagn;
-	float ymagn;
-	float zmagn;
+typedef struct{
+	float x;
+	float y;
+	float z;
+} element_3d;
+
+typedef struct{
+	element_3d acc;
+	element_3d gyr;
+	element_3d mag;
 	float dt;
 } imudata;
 
