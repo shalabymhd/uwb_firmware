@@ -9,8 +9,7 @@
  * 	@author Justin Cano
  * 
  * TODO: 1) Mag is offline.
- * 		 2) getInterval doens't seem to be working.
- * 		 3) Fix notation inconsistency; Comment; Clean up. 
+ * 		 2) Fix notation inconsistency; Comment; Clean up. 
  * 
  */
 
@@ -71,8 +70,7 @@ void imu_main(){
 		convertValues();
 		diff_us = getInterval(previous_ticks);
 		imuvals.dt = (float) diff_us; // cast values in microseconds
-		imuvals.dt*=1.0e3; // convert in nanoseconds
-		osDelay(10);
+		imuvals.dt/=1.0e3; // convert in milliseconds
 
 		if (imuvals.acc.x != 0) {
 			convertElementR3ToString(tmpMsg, imuvals.acc);
@@ -90,7 +88,7 @@ void imu_main(){
 			CDC_Transmit_FS(FailMessage, strlen(FailMessage));
 		}
 
-		osDelay(10);
+		osDelay(1);
 	}
 }
 

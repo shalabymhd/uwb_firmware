@@ -144,8 +144,6 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-  /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
@@ -183,9 +181,6 @@ void StartUsbReceive(void const *argument){
 }
 
 void StartImuTask(void const *argument){
-  
-  MX_USB_DEVICE_Init();
-  
   while (1){
     imu_main();
   }
