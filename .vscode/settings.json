@@ -8,6 +8,7 @@
         "main.h": "c",
         "i2c.h": "c",
         "cmsis_os.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "stm32f4xx_hal.h": "c"
     }
 }

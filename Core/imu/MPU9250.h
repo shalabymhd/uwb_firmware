@@ -11,6 +11,7 @@
 #include "math.h"
 #include "stdint.h"
 #include "cmsis_os.h"
+#include "common.h"
 
 // See also MPU-9250 Register Map and Descriptions, Revision 4.0, RM-MPU-9250A-00, Rev. 1.4, 9/9/2013 for registers not listed in
 // above document; the MPU9250 and MPU9150 are virtually identical but the latter has a different register map
@@ -172,15 +173,9 @@
 #endif
 
 typedef struct{
-	float x;
-	float y;
-	float z;
-} element_3d;
-
-typedef struct{
-	element_3d acc;
-	element_3d gyr;
-	element_3d mag;
+	element_R3 acc;
+	element_R3 gyr;
+	element_R3 mag;
 	float dt;
 } imudata;
 

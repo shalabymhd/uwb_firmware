@@ -7,7 +7,7 @@
  * 
  * AND????????
  * 
- * 
+ * Mag is offline.
  */
 
 #include "math.h"
@@ -18,7 +18,6 @@
 #include "cmsis_os.h"
 
 #include "i2c.h"
-#include "common.h"
 
 // See also MPU-9250 Register Map and Descriptions, Revision 4.0, RM-MPU-9250A-00, Rev. 1.4, 9/9/2013 for registers not listed in
 // above document; the MPU9250 and MPU9150 are virtually identical but the latter has a different register map
@@ -63,7 +62,8 @@ void imu_main(){
 	uint32_t diff_us;
 	uint32_t previous_ticks[1]={0};
 
-	char imuMsg[10];
+	char imuMsg[100];
+	char tmpMsg[30];
 
 	uint8_t FailMessage[64] = "IMU not properly initialized \n";
 	while(1){
@@ -75,19 +75,13 @@ void imu_main(){
 		osDelay(10);
 
 		if (imuvals.acc.x != 0) {
-			// sprintf(imuMsg,"Acc:%d|%d|%d \n",rawAcc[0],rawAcc[1],rawAcc[2]);
-			// CDC_Transmit_FS(imuMsg, strlen(imuMsg));
-			// osDelay(10);
-
-			// sprintf(imuMsg,"Gyr:%d|%d|%d \n",rawGyr[0],rawGyr[1],rawGyr[2]);
-			// CDC_Transmit_FS(imuMsg, strlen(imuMsg));
-			// osDelay(10);
-
-			// sprintf(imuMsg,"Mag:%d|%d|%d \n",rawMag[0],rawMag[1],rawMag[2]);
-			// CDC_Transmit_FS(imuMsg, strlen(imuMsg));
-
-			convertFloatToString(imuMsg, imuvals.acc.x);
-			strcat(imuMsg, "\n");
+			convertElementR3ToString(tmpMsg, imuvals.acc);
+			sprintf(imuMsg,"Acc: %s",tmpMsg);
+			convertElementR3ToString(tmpMsg, imuvals.gyr);
+			sprintf(imuMsg,"%s;   Gyr: %s",imuMsg, tmpMsg);
+			convertElementR3ToString(tmpMsg, imuvals.mag);
+			sprintf(imuMsg,"%s;   Mag: %s \n",imuMsg, tmpMsg);
+			
 			CDC_Transmit_FS(imuMsg, strlen(imuMsg));
 		}
 		else if (imuvals.acc.x == 0) {

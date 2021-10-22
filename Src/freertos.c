@@ -126,8 +126,8 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(usbTransmit, StartUsbTransmit, osPriorityIdle, 0, 128);
   usbTransmitTaskHandle = osThreadCreate(osThread(usbTransmit), NULL);
 
-  osThreadDef(usbReceive, StartUsbReceive, osPriorityRealtime, 0, 128);
-  usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
+  // osThreadDef(usbReceive, StartUsbReceive, osPriorityRealtime, 0, 128);
+  // usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
 
   osThreadDef(imu, StartImuTask, osPriorityRealtime, 0, 128);
   imuTaskHandle = osThreadCreate(osThread(imu), NULL);
