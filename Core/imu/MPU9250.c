@@ -2,12 +2,16 @@
  * @file   MPU-9250.c
  * @brief  9-axis sensor(InvenSense MPU-9250) driver for TZ10xx.
  *
- * Adapted from https://github.com/kriswiner/MPU9250/blob/master/STM32F401/
- * @author Cerevo Inc.
+ * Adapted from: 
+ * 1) https://github.com/kriswiner/MPU9250/blob/master/STM32F401/
+ * 	@author Cerevo Inc.
+ * 2) https://gitlab.com/nitraced/uwb_robots
+ * 	@author Justin Cano
  * 
- * AND????????
+ * TODO: 1) Mag is offline.
+ * 		 2) getInterval doens't seem to be working.
+ * 		 3) Fix notation inconsistency; Comment; Clean up. 
  * 
- * Mag is offline.
  */
 
 #include "math.h"
@@ -27,15 +31,11 @@
 static uint8_t Ascale = AFS_2G;     // AFS_2G, AFS_4G, AFS_8G, AFS_16G
 static uint8_t Gscale = GFS_250DPS; // GFS_250DPS, GFS_500DPS, GFS_1000DPS, GFS_2000DPS
 static uint8_t Mscale = MFS_16BITS; // MFS_14BITS or MFS_16BITS, 14-bit or 16-bit magnetometer resolution
-static uint8_t Mmode = 0x06;        // Either 8 Hz 0x02) or 100 Hz (0x06) magnetometer data ODR
 static float aRes, gRes, mRes;      // scale resolutions per LSB for the sensors
 
 static int16_t rawAcc[3];  // Stores the 16-bit signed accelerometer sensor output
 static int16_t rawGyr[3];   // Stores the 16-bit signed gyro sensor output
 static int16_t rawMag[3];    // Stores the 16-bit signed magnetometer sensor output
-static int16_t tempCount;   // Stores the real internal chip temperature in degrees Celsius
-static float temperature;
-static float SelfTest[6];
 
 static imudata imuvals;
 
@@ -71,7 +71,7 @@ void imu_main(){
 		convertValues();
 		diff_us = getInterval(previous_ticks);
 		imuvals.dt = (float) diff_us; // cast values in microseconds
-		imuvals.dt/=1.0e6; // convert in seconds
+		imuvals.dt*=1.0e3; // convert in nanoseconds
 		osDelay(10);
 
 		if (imuvals.acc.x != 0) {
@@ -80,8 +80,10 @@ void imu_main(){
 			convertElementR3ToString(tmpMsg, imuvals.gyr);
 			sprintf(imuMsg,"%s;   Gyr: %s",imuMsg, tmpMsg);
 			convertElementR3ToString(tmpMsg, imuvals.mag);
-			sprintf(imuMsg,"%s;   Mag: %s \n",imuMsg, tmpMsg);
-			
+			sprintf(imuMsg,"%s;   Mag: %s",imuMsg, tmpMsg);
+			convertFloatToString(tmpMsg, imuvals.dt);
+			sprintf(imuMsg,"%s;   dt: %s \n",imuMsg, tmpMsg);
+
 			CDC_Transmit_FS(imuMsg, strlen(imuMsg));
 		}
 		else if (imuvals.acc.x == 0) {
