@@ -6,8 +6,8 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __SPI_H__
-#define __SPI_H__
+#ifndef __USB_H__
+#define __USB_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,4 +23,4 @@ void usb_print(char*);
 }
 #endif
 
-#endif /* __SPI_H__ */
+#endif /* __USB_H__ */

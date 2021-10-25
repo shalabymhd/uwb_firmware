@@ -19,6 +19,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "spi.h"
+#include "deca_types.h"
+#include "deca_device_api.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -128,6 +130,90 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void port_set_dw1000_slowrate(void)
+{
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+    HAL_SPI_Init(&hspi1);
+}
+
+void port_set_dw1000_fastrate(void)
+{
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+    HAL_SPI_Init(&hspi1);
+}
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * Function: writetospi()
+ *
+ * Low level abstract function to write to the SPI
+ * Takes two separate byte buffers for write header and write data
+ * returns 0 for success, or -1 for error
+ */
+#pragma GCC optimize ("O3")
+int writetospi(uint16 headerLength, const uint8 *headerBuffer, uint32 bodylength, const uint8 *bodyBuffer)
+{
+	uint32_t i;
+
+	//allocate a big local buffer
+	const uint32_t size = headerLength + bodylength;
+	uint8_t write_buffer[size];
+
+	// fill the buffer
+	for(i=0; i<headerLength; i++){
+		write_buffer[i]=headerBuffer[i];
+	}
+	for(i=headerLength;i<size;i++){
+		write_buffer[i]=bodyBuffer[i-headerLength];
+	}
+	//begin transmission by enabling CS
+	__HAL_SPI_ENABLE(&hspi1);
+	//transmit
+	HAL_SPI_Transmit(&hspi1,&write_buffer,size,SPI_TIMEOUT);
+	//end tranmission
+	__HAL_SPI_DISABLE(&hspi1);
+
+    return 0;
+} // end writetospi()
+
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * Function: readfromspi()
+ *
+ * Low level abstract function to read from the SPI
+ * Takes two separate byte buffers for write header and read data
+ * returns the offset into read buffer where first byte of read data may be found,
+ * or returns -1 if there was an error
+ *
+ */
+int readfromspi(uint16 headerLength, const uint8 *headerBuffer, uint32 readlength, uint8 *readBuffer)
+{
+	uint32_t i;
+
+	// alocate temp buffer
+	const uint32 size = readlength + headerLength;
+	uint8_t RXbuffer[size];
+	uint8_t TXbuffer[size];
+   // We fill the TX Buffer
+	for(i=0; i<headerLength;i++){
+		TXbuffer[i] = headerBuffer[i];
+	}
+
+	//Begin transmission (activate CS)
+	//Begin data swapping
+	__HAL_SPI_ENABLE(&hspi1);
+
+	HAL_SPI_TransmitReceive(&hspi1,&TXbuffer,&RXbuffer,size,SPI_TIMEOUT);
+
+  // End of the transmission
+	__HAL_SPI_DISABLE(&hspi1);
+
+	// fill the results buffer
+	for(i=headerLength;i<size;i++){
+		readBuffer[i-headerLength]=RXbuffer[i];
+	}
+
+  return 0;
+} // end readfromspi()
 
 /* USER CODE END 1 */
 
