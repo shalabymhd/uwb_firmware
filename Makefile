@@ -85,6 +85,7 @@ Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Core/imu/MPU9250.c \
+Core/usb/usb.c \
 $(wildcard ./Utils/Src/*.c)
 
 # ASM sources
@@ -154,8 +155,8 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \
 -IUtils/Inc \
--ICore/imu
-
+-ICore/imu \
+-ICore/usb
 
 
 # compile gcc flags

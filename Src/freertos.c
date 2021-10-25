@@ -26,7 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "usbd_cdc_if.h"
+#include "usb.h"
 #include "MPU9250.h"
 
 /* USER CODE END Includes */
@@ -48,7 +48,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t CdcTransmitData[64] = "Hello World from USB CDC \n";
 uint8_t CdcReceiveBuffer[64];
 /* USER CODE END Variables */
 
@@ -166,7 +165,7 @@ void StartUsbTransmit(void const *argument){
   // To read the transmitted data on a computer, execute in a terminal
   // >> cat /dev/ttyACMx
   while (1){
-    CDC_Transmit_FS(CdcTransmitData, strlen(CdcTransmitData));
+    usb_print("Hello World from USB CDC \n");
     osDelay(1000);
   }
 }
@@ -175,7 +174,7 @@ void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
   while (1){
-    CDC_Transmit_FS(CdcReceiveBuffer, strlen(CdcReceiveBuffer));
+    usb_print(CdcReceiveBuffer);
     osDelay(1000);
   }
 }
