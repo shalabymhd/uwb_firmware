@@ -32,6 +32,7 @@
                 "Utils/Inc", 
                 "Drivers/decadriver",
                 "Core/usb",
+                "Core/uwb",
                 "Utils/Inc"
             ]
         }
