@@ -81,5 +81,5 @@ void convertElementR3ToString(char* str, element_R3 data){
 	convertFloatToString(y_str, data.y);
 	convertFloatToString(z_str, data.z);
 
-	sprintf(str,(char*)"[%s; %s; %s]",x_str,y_str,z_str);
+	sprintf(str,(char*)"[%s, %s, %s]",x_str,y_str,z_str);
 }

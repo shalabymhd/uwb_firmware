@@ -33,8 +33,8 @@ static uint8_t Mscale = MFS_16BITS; // MFS_14BITS or MFS_16BITS, 14-bit or 16-bi
 static float aRes, gRes, mRes;      // scale resolutions per LSB for the sensors
 
 static int16_t rawAcc[3];  // Stores the 16-bit signed accelerometer sensor output
-static int16_t rawGyr[3];   // Stores the 16-bit signed gyro sensor output
-static int16_t rawMag[3];    // Stores the 16-bit signed magnetometer sensor output
+static int16_t rawGyr[3];  // Stores the 16-bit signed gyro sensor output
+static int16_t rawMag[3];  // Stores the 16-bit signed magnetometer sensor output
 
 static imudata imuvals;
 
@@ -53,8 +53,6 @@ static void getScales(){
 	scaleAcc = getAres();
 	scaleGyr = getGres();
 }
-
-// TESTS
 
 void imu_main(){
 	initializeImu();
@@ -76,11 +74,11 @@ void imu_main(){
 			convertElementR3ToString(tmpMsg, imuvals.acc);
 			sprintf(imuMsg,"Acc: %s",tmpMsg);
 			convertElementR3ToString(tmpMsg, imuvals.gyr);
-			sprintf(imuMsg,"%s;   Gyr: %s",imuMsg, tmpMsg);
+			sprintf(imuMsg,"%s; Gyr: %s",imuMsg, tmpMsg);
 			convertElementR3ToString(tmpMsg, imuvals.mag);
-			sprintf(imuMsg,"%s;   Mag: %s",imuMsg, tmpMsg);
+			sprintf(imuMsg,"%s; Mag: %s",imuMsg, tmpMsg);
 			convertFloatToString(tmpMsg, imuvals.dt);
-			sprintf(imuMsg,"%s;   dt: %s \n",imuMsg, tmpMsg);
+			sprintf(imuMsg,"%s; dt: %s \n",imuMsg, tmpMsg);
 
 			CDC_Transmit_FS(imuMsg, strlen(imuMsg));
 		}
