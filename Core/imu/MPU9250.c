@@ -21,6 +21,7 @@
 #include "cmsis_os.h"
 
 #include "i2c.h"
+#include "usb.h"
 
 // See also MPU-9250 Register Map and Descriptions, Revision 4.0, RM-MPU-9250A-00, Rev. 1.4, 9/9/2013 for registers not listed in
 // above document; the MPU9250 and MPU9150 are virtually identical but the latter has a different register map
@@ -62,7 +63,6 @@ void imu_main(){
 	char imuMsg[100];
 	char tmpMsg[30];
 
-	uint8_t FailMessage[64] = "IMU not properly initialized \n";
 	while(1){
 		updateValues();
 		convertValues();
@@ -80,10 +80,10 @@ void imu_main(){
 			convertFloatToString(tmpMsg, imuvals.dt);
 			sprintf(imuMsg,"%s; dt: %s \n",imuMsg, tmpMsg);
 
-			CDC_Transmit_FS(imuMsg, strlen(imuMsg));
+			usb_print(imuMsg);
 		}
 		else if (imuvals.acc.x == 0) {
-			CDC_Transmit_FS(FailMessage, strlen(FailMessage));
+			usb_print("IMU not properly initialized \n");
 		}
 
 		osDelay(1);
@@ -96,14 +96,12 @@ uint8_t get_imu_id(){
 }
 
 void initializeImu(){
-	char str;
 	char imu_id = get_imu_id();
-	CDC_Transmit_FS(imu_id, strlen(imu_id));
+	usb_print(imu_id);
 
 	if(imu_id==0x71){
 		// The MPU is online. Initialize.
-		str = "MPU online: starting initialization! \n";
-		CDC_Transmit_FS(str, strlen(str));
+		usb_print("MPU online: starting initialization! \n");
 		
 		getScales();
 
@@ -115,8 +113,7 @@ void initializeImu(){
 	}
 	else{
 		// The MPU is offline. Return error.
-		str = "MPU offline: ID test failed! \n";
-		CDC_Transmit_FS(str, strlen(str));
+		usb_print("MPU offline: ID test failed! \n");
 	}
 }
 

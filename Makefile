@@ -86,7 +86,8 @@ Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Core/imu/MPU9250.c \
 $(wildcard ./Utils/Src/*.c) \
-$(wildcard ./Drivers/decadriver/*.c)
+$(wildcard ./Drivers/decadriver/*.c) \
+Core/usb/usb.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -156,8 +157,8 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Include \
 -IUtils/Inc \
 -ICore/imu \
--IDrivers/decadriver
-
+-IDrivers/decadriver \
+-ICore/usb
 
 
 # compile gcc flags

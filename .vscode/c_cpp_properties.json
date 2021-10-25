@@ -30,7 +30,9 @@
                 "Drivers/CMSIS/Include", 
                 "Core/imu",
                 "Utils/Inc", 
-                "Drivers/decadriver"
+                "Drivers/decadriver",
+                "Core/usb",
+                "Utils/Inc"
             ]
         }
     ]
