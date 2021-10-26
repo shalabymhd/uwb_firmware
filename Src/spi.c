@@ -130,16 +130,36 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void SPI_ChangeRate(uint16_t scalingfactor)
+{
+	uint16_t tmpreg = 0;
+
+	/* Get the SPIx CR1 value */
+	tmpreg = SPIx->CR1;
+
+	/*clear the scaling bits*/
+	tmpreg &= 0xFFC7;
+
+	/*set the scaling bits*/
+	tmpreg |= scalingfactor;
+
+	/* Write to SPIx CR1 */
+	SPIx->CR1 = tmpreg;
+
+}
+
 void port_set_dw1000_slowrate(void)
 {
-    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
-    HAL_SPI_Init(&hspi1);
+    SPI_ChangeRate(SPI_BAUDRATEPRESCALER_32);
+    // hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+    // HAL_SPI_Init(&hspi1);
 }
 
 void port_set_dw1000_fastrate(void)
 {
-    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
-    HAL_SPI_Init(&hspi1);
+    SPI_ChangeRate(SPI_BAUDRATEPRESCALER_4);
+    // hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+    // HAL_SPI_Init(&hspi1);
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------

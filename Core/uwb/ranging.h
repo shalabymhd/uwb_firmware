@@ -26,6 +26,14 @@ void reset_DW1000(void);
 #define TX_ANT_DLY 16436
 #define RX_ANT_DLY 16436
 
+#define POLL_RX_TIMEOUT 10000
+#define RESP_RX_TIMEOUT 2000 //2700
+#define FINAL_RX_TIMEOUT 2000
+#define REPORT_RX_TIMEOUT 1000
+#define POLL_TX_TO_RESP_RX_DLY_UUS 150
+
+#define PRE_TIMEOUT 8
+
 #ifdef __cplusplus
 }
 #endif

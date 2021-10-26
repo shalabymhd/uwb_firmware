@@ -124,8 +124,8 @@ void MX_FREERTOS_Init(void) {
   // defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  // osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
-  // blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
+  osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
+  blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
   // osThreadDef(usbTransmit, StartUsbTransmit, osPriorityIdle, 0, 128);
   // usbTransmitTaskHandle = osThreadCreate(osThread(usbTransmit), NULL);
@@ -199,6 +199,7 @@ void StartUwbTask(void const *argument){
   uwb_init();
   while (1){
     do_owr();
+    osDelay(100);
   }
 }
 
