@@ -62,9 +62,18 @@ void Error_Handler(void);
 #define USB_DM_GPIO_Port GPIOA
 #define USB_DP_Pin GPIO_PIN_12
 #define USB_DP_GPIO_Port GPIOA
+
 /* USER CODE BEGIN Private defines */
 #define DW_RESET_Pin GPIO_PIN_11
 #define DW_RESET_GPIO_Port GPIOC
+
+// To be used in deca_mutex
+#if !(EXTI9_5_IRQn)
+#define DECAIRQ_EXTI_IRQn       (23)
+#else
+#define DECAIRQ_EXTI_IRQn       (EXTI9_5_IRQn)
+#endif
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

@@ -16,9 +16,15 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 
 /* Function Prototypes -------------------------------------------------------*/
-void do_owr(void);
+int do_owr(void);
+void listen(void);
 void uwb_init(void);
 void reset_DW1000(void);
+
+#define UUS_TO_DWT_TIME 65536
+/* Default antenna delay values for 64 MHz PRF. */
+#define TX_ANT_DLY 16436
+#define RX_ANT_DLY 16436
 
 #ifdef __cplusplus
 }

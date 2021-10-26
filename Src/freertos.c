@@ -58,6 +58,7 @@ osThreadId usbTransmitTaskHandle;
 osThreadId usbReceiveTaskHandle;
 osThreadId imuTaskHandle;
 osThreadId uwbTaskHandle;
+osThreadId listeningTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -70,6 +71,7 @@ void StartUsbTransmit(void const * argument);
 void StartUsbReceive(void const * argument);
 void StartImuTask(void const * argument);
 void StartUwbTask(void const * argument);
+void StartListeningTask(void const * argument);
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -118,15 +120,15 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityIdle, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  // osThreadDef(defaultTask, StartDefaultTask, osPriorityIdle, 0, 128);
+  // defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
-  blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
+  // osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
+  // blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
-  osThreadDef(usbTransmit, StartUsbTransmit, osPriorityIdle, 0, 128);
-  usbTransmitTaskHandle = osThreadCreate(osThread(usbTransmit), NULL);
+  // osThreadDef(usbTransmit, StartUsbTransmit, osPriorityIdle, 0, 128);
+  // usbTransmitTaskHandle = osThreadCreate(osThread(usbTransmit), NULL);
 
   // osThreadDef(usbReceive, StartUsbReceive, osPriorityRealtime, 0, 128);
   // usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
@@ -134,8 +136,11 @@ void MX_FREERTOS_Init(void) {
   // osThreadDef(imu, StartImuTask, osPriorityRealtime, 0, 128);
   // imuTaskHandle = osThreadCreate(osThread(imu), NULL);
 
-  osThreadDef(uwb, StartUwbTask, osPriorityRealtime, 0, 128);
-  uwbTaskHandle = osThreadCreate(osThread(uwb), NULL);
+  // osThreadDef(uwb, StartUwbTask, osPriorityRealtime, 0, 128);
+  // uwbTaskHandle = osThreadCreate(osThread(uwb), NULL);
+
+  osThreadDef(listening, StartListeningTask, osPriorityRealtime, 0, 128);
+  listeningTaskHandle = osThreadCreate(osThread(listening), NULL);
   /* USER CODE END RTOS_THREADS */
 }
 
@@ -191,8 +196,16 @@ void StartImuTask(void const *argument){
 }
 
 void StartUwbTask(void const *argument){
+  uwb_init();
   while (1){
     do_owr();
+  }
+}
+
+void StartListeningTask(void const *argument){
+  uwb_init();
+  while (1){
+    listen();
   }
 }
 /* USER CODE END Application */
