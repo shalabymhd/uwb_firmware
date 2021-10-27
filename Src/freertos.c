@@ -29,6 +29,7 @@
 #include "usb.h"
 #include "MPU9250.h"
 #include "ranging.h"
+#include "spi.h"
 
 /* USER CODE END Includes */
 
@@ -59,6 +60,7 @@ osThreadId usbReceiveTaskHandle;
 osThreadId imuTaskHandle;
 osThreadId uwbTaskHandle;
 osThreadId listeningTaskHandle;
+osThreadId uwbTestingTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -72,6 +74,7 @@ void StartUsbReceive(void const * argument);
 void StartImuTask(void const * argument);
 void StartUwbTask(void const * argument);
 void StartListeningTask(void const * argument);
+void StartUwbTesting(void const * argument);
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -139,8 +142,11 @@ void MX_FREERTOS_Init(void) {
   // osThreadDef(uwb, StartUwbTask, osPriorityRealtime, 0, 128);
   // uwbTaskHandle = osThreadCreate(osThread(uwb), NULL);
 
-  osThreadDef(listening, StartListeningTask, osPriorityRealtime, 0, 128);
-  listeningTaskHandle = osThreadCreate(osThread(listening), NULL);
+  // osThreadDef(listening, StartListeningTask, osPriorityRealtime, 0, 128);
+  // listeningTaskHandle = osThreadCreate(osThread(listening), NULL);
+
+  osThreadDef(uwbTesting, StartUwbTesting, osPriorityRealtime, 0, 128);
+  uwbTestingTaskHandle = osThreadCreate(osThread(uwbTesting), NULL);
   /* USER CODE END RTOS_THREADS */
 }
 
@@ -207,6 +213,13 @@ void StartListeningTask(void const *argument){
   uwb_init();
   while (1){
     listen();
+  }
+}
+
+void StartUwbTesting(void const *argument){
+  uwb_init();
+  while (1){
+    dw_test();
   }
 }
 /* USER CODE END Application */

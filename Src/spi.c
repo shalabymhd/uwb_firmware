@@ -21,6 +21,9 @@
 #include "spi.h"
 #include "deca_types.h"
 #include "deca_device_api.h"
+#include "cmsis_os.h"
+#include "usb.h"
+#include <stdio.h>
 
 /* USER CODE BEGIN 0 */
 
@@ -234,6 +237,17 @@ int readfromspi(uint16 headerLength, const uint8 *headerBuffer, uint32 readlengt
 
   return 0;
 } // end readfromspi()
+
+void dw_test(){
+  uint32_t id;
+  char print_buff[100];
+
+  id = dwt_readdevid();
+  sprintf(print_buff,"Id read = 0x%x \n",id);
+  usb_print(print_buff);
+  
+  osDelay(10);
+} // end dw_test()
 
 /* USER CODE END 1 */
 
