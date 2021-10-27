@@ -26,7 +26,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "usbd_cdc_if.h"
+#include "usb.h"
+#include "MPU9250.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,7 +48,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t *CdcTransmitData = "Hello World from USB CDC\n";
 uint8_t CdcReceiveBuffer[64];
 /* USER CODE END Variables */
 
@@ -54,6 +55,7 @@ osThreadId defaultTaskHandle;
 osThreadId blinkTaskHandle;
 osThreadId usbTransmitTaskHandle;
 osThreadId usbReceiveTaskHandle;
+osThreadId imuTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -64,6 +66,7 @@ void StartDefaultTask(void const * argument);
 void StartBlinking(void const * argument);
 void StartUsbTransmit(void const * argument);
 void StartUsbReceive(void const * argument);
+void StartImuTask(void const * argument);
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -122,8 +125,11 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(usbTransmit, StartUsbTransmit, osPriorityIdle, 0, 128);
   usbTransmitTaskHandle = osThreadCreate(osThread(usbTransmit), NULL);
 
-  osThreadDef(usbReceive, StartUsbReceive, osPriorityRealtime, 0, 128);
-  usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
+  // osThreadDef(usbReceive, StartUsbReceive, osPriorityRealtime, 0, 128);
+  // usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
+
+  osThreadDef(imu, StartImuTask, osPriorityRealtime, 0, 128);
+  imuTaskHandle = osThreadCreate(osThread(imu), NULL);
   /* USER CODE END RTOS_THREADS */
 
 }
@@ -137,8 +143,6 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-  /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
@@ -161,7 +165,7 @@ void StartUsbTransmit(void const *argument){
   // To read the transmitted data on a computer, execute in a terminal
   // >> cat /dev/ttyACMx
   while (1){
-    CDC_Transmit_FS(CdcTransmitData, strlen(CdcTransmitData));
+    usb_print("Hello World from USB CDC \n");
     osDelay(1000);
   }
 }
@@ -170,8 +174,14 @@ void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
   while (1){
-    CDC_Transmit_FS(CdcReceiveBuffer, strlen(CdcReceiveBuffer));
+    usb_print(CdcReceiveBuffer);
     osDelay(1000);
+  }
+}
+
+void StartImuTask(void const *argument){
+  while (1){
+    imu_main();
   }
 }
 /* USER CODE END Application */

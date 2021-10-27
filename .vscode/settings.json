@@ -2,6 +2,13 @@
     "cortex-debug.armToolchainPath": "",
     "cortex-debug.openocdPath": "/usr/bin/openocd",
     "files.associations": {
-        "usbd_cdc_if.h": "c"
+        "usbd_cdc_if.h": "c",
+        "mpu9250.h": "c",
+        "common.h": "c",
+        "main.h": "c",
+        "i2c.h": "c",
+        "cmsis_os.h": "c",
+        "stdint.h": "c",
+        "stm32f4xx_hal.h": "c"
     }
 }
