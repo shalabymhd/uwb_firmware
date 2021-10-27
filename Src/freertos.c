@@ -202,18 +202,20 @@ void StartImuTask(void const *argument){
 }
 
 void StartUwbTask(void const *argument){
-  uwb_init();
-  while (1){
-    do_owr();
-    osDelay(100);
-  }
+  // uwb_init();
+  // while (1){
+  //   do_owr();
+  //   osDelay(100);
+  // }
+  do_twr();
 }
 
 void StartListeningTask(void const *argument){
-  uwb_init();
-  while (1){
-    listen();
-  }
+  // uwb_init();
+  // while (1){
+  //   listen();
+  // }
+  listen_twr();
 }
 
 void StartUwbTesting(void const *argument){

@@ -17,7 +17,9 @@ extern "C" {
 
 /* Function Prototypes -------------------------------------------------------*/
 int do_owr(void);
+int do_twr(void);
 void listen(void);
+void listen_twr(void);
 void uwb_init(void);
 void reset_DW1000(void);
 
