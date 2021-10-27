@@ -142,11 +142,11 @@ void MX_FREERTOS_Init(void) {
   // osThreadDef(uwb, StartUwbTask, osPriorityRealtime, 0, 128);
   // uwbTaskHandle = osThreadCreate(osThread(uwb), NULL);
 
-  // osThreadDef(listening, StartListeningTask, osPriorityRealtime, 0, 128);
-  // listeningTaskHandle = osThreadCreate(osThread(listening), NULL);
+  osThreadDef(listening, StartListeningTask, osPriorityRealtime, 0, 128);
+  listeningTaskHandle = osThreadCreate(osThread(listening), NULL);
 
-  osThreadDef(uwbTesting, StartUwbTesting, osPriorityRealtime, 0, 128);
-  uwbTestingTaskHandle = osThreadCreate(osThread(uwbTesting), NULL);
+  // osThreadDef(uwbTesting, StartUwbTesting, osPriorityRealtime, 0, 128);
+  // uwbTestingTaskHandle = osThreadCreate(osThread(uwbTesting), NULL);
   /* USER CODE END RTOS_THREADS */
 }
 

@@ -96,7 +96,7 @@ void listen(){
         rx_buffer[i] = 0;
     }
 
-    dwt_setrxtimeout(200000*UUS_TO_DWT_TIME);
+    dwt_setrxtimeout(2000*UUS_TO_DWT_TIME);
 
     /* Activate reception immediately. See NOTE 3 below. */
     dwt_rxenable(DWT_START_RX_IMMEDIATE);
