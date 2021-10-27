@@ -35,13 +35,11 @@ extern SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN Private defines */
 #define SPI_TIMEOUT 10
-#define SPIx SPI2
 /* USER CODE END Private defines */
 
 void MX_SPI1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-void SPI_ChangeRate(uint16_t);
 void port_set_dw1000_slowrate(void);
 void port_set_dw1000_fastrate(void);
 void dw_test(void);
