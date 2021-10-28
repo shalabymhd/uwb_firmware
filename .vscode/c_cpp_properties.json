@@ -29,7 +29,10 @@
                 "Drivers/CMSIS/Device/ST/STM32F4xx/Include", 
                 "Drivers/CMSIS/Include", 
                 "Core/imu",
+                "Utils/Inc", 
+                "Drivers/decadriver",
                 "Core/usb",
+                "Core/uwb",
                 "Utils/Inc"
             ]
         }
