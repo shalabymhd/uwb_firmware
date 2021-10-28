@@ -18,6 +18,7 @@
 
 #include "cmsis_os.h"
 #include <stdio.h>
+#include "common.h"
 
 /* Default communication configuration. 
 In Decawave's examples, the default mode (mode 3) is used. 
@@ -119,9 +120,6 @@ static void final_msg_get_ts(const uint8 *ts_field, uint32 *ts);
 /* Hold copies of computed time of flight and distance here for reference so that it can be examined at a debug breakpoint. */
 static double tof;
 static double distance;
-
-/* String used to display measured distance on UART. */
-char dist_str[16] = {0};
 
 
 int do_owr(void){
@@ -278,7 +276,7 @@ int do_twr(void){
         }
 
         // /* Execute a delay between ranging exchanges. */
-        osDelay(RNG_DELAY_MS);
+        // osDelay(RNG_DELAY_MS);
     }
 }
 
@@ -333,6 +331,9 @@ void listen(){
 }
 
 void listen_twr(void){
+    /* String used to display measured distance on UART. */
+    char dist_str[30] = {0};
+
 	/* Reset and initialise DW1000.
      * For initialisation, DW1000 clocks must be temporarily set to crystal speed. After initialisation SPI rate can be increased for optimum
      * performance. */
@@ -449,7 +450,7 @@ void listen_twr(void){
                         double Ra, Rb, Da, Db;
                         int64 tof_dtu;
 
-                        usb_print("Final message received.\n");
+                        // usb_print("Final message received.\n");
 
                         /* Retrieve response transmission and final reception timestamps. */
                         resp_tx_ts = get_tx_timestamp_u64();
@@ -468,17 +469,16 @@ void listen_twr(void){
                         Rb = (double)(final_rx_ts_32 - resp_tx_ts_32);
                         Da = (double)(final_tx_ts - resp_rx_ts);
                         Db = (double)(resp_tx_ts_32 - poll_rx_ts_32);
-                        tof_dtu = (int64)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db));
-                        // tof_dtu = (int64)((Ra - Db) / (2));
+                        // tof_dtu = (int64)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db));
+                        tof_dtu = (int64)((Ra - Db) / (2));
 
                         tof = tof_dtu * DWT_TIME_UNITS;
                         distance = tof * SPEED_OF_LIGHT;
 
                         /* Display computed distance. */
-                        sprintf(dist_str, "DIST: %3.2f m", distance);
-                        // usb_print("\033[u"); // Restore last cursor position
+                        convertFloatToString(dist_str,distance);
+                        sprintf(dist_str, "%s \n", dist_str);
                         usb_print(dist_str);
-                        usb_print("\n");
                     }
                 }
                 else
