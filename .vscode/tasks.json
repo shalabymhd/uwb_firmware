@@ -25,7 +25,7 @@
             }
         },
         {
-            "label": "Upload Firmware",
+            "label": "Upload Firmware V2",
             "type": "shell",
             "command": "openocd",
             "args":
@@ -34,6 +34,18 @@
                 "-f","target/stm32f4x.cfg",
                 "-c","'program ./build/config_stm32f4.elf verify reset exit'"
             ]
+        },
+        {
+            "label": "Upload Firmware V1",
+            "type": "shell",
+            "command": "openocd",
+            "args":
+            [
+                "-f","board/stm32f4discovery.cfg",
+				"-c","'program build/config_stm32f4.elf verify reset exit'"
+            ]
         }
     ]
 }
+
+
