@@ -18,7 +18,10 @@
             [
                 "${workspaceFolder}/**",
                 "/opt/gcc-arm-none-eabi-9-2020-q2-update/lib/gcc/arm-none-eabi/9.3.1/include",
-                "Inc",
+                "include",
+                "include/core",
+                "include/stm32",
+                "include/utils",
                 "Drivers/STM32F4xx_HAL_Driver/Inc", 
                 "Drivers/STM32F4xx_HAL_Driver/Inc/Legacy", 
                 "Middlewares/Third_Party/FreeRTOS/Source/include", 
@@ -28,11 +31,7 @@
                 "Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc", 
                 "Drivers/CMSIS/Device/ST/STM32F4xx/Include", 
                 "Drivers/CMSIS/Include", 
-                "Core/imu",
-                "Utils/Inc", 
-                "Drivers/decadriver",
-                "Core/uwb",
-                "Utils/Inc"
+                "Drivers/decadriver"
             ]
         }
     ]
