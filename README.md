@@ -9,6 +9,8 @@ The benefits of this editor-independent approach consist of a much more fundamen
 
 If you would like to start from the absolute beginning, switch to the `blank` branch, which contains nothing other than the `config_stm32f4.ioc` file as well as this README.
 
+In order to program and debug directly on the chip, we need to use the ST-LINK interface provided by our Discovery board. There are two ST-LINK versions that require two different sets of commands, both of which are provided in this document. In order to identify which version your board is running, I would recommend trying out both and identifying which version works, then running the commands associated with that version.
+
 ## Generating the starter code with CubeMX
 Assuming you are on the `blank` branch, you will have only the following in your directory
 
@@ -214,13 +216,21 @@ Although OpenOCD can be downloaded explicitly, it is also possible to install it
 
     sudo apt-get install openocd
 
-This will allow take care of creating a symbolic link to the `openocd` command, allowing us to just use the `openocd` command from any directory. Assuming you have built the code with `make`, that you are still in the `uwb_firmware` directory, and that the discovery board is plugged in with the appropriate jumpers removed, we can upload our firmware in one command:
+This will allow take care of creating a symbolic link to the `openocd` command, allowing us to just use the `openocd` command from any directory. Assuming you have built the code with `make`, that you are still in the `uwb_firmware` directory, and that the discovery board is plugged in with the appropriate jumpers removed, we can upload our firmware in one command. If your debugger is using ST-LINK V1, the command is
+
+	openocd -f board/stm32f4discovery.cfg -c "program ./build/config_stm32f4.elf verify reset exit"
+
+If the debugger is using ST-LINK V2, then 
 
     openocd -f interface/stlink-v2-1.cfg -f target/stm32f4x.cfg -c "program ./build/config_stm32f4.elf verify reset exit"
 
 ## Debugging with OpenOCD and GDB
 
-First, make sure the board is connected by USB and start OpenOCD
+First, make sure the board is connected by USB and start OpenOCD in V1
+
+	openocd -f board/stm32f4discovery.cfg
+
+or in V2
 
     openocd -f interface/stlink-v2-1.cfg -f target/stm32f4x.cfg
 
@@ -326,7 +336,7 @@ Just as before, we just need to create a VS Code task to run the upload command 
 
 ```json
 {
-    "label": "Upload Firmware",
+    "label": "Upload Firmware V2",
     "type": "shell",
     "command": "openocd",
     "args":
@@ -335,6 +345,16 @@ Just as before, we just need to create a VS Code task to run the upload command 
 			"-f","target/stm32f4x.cfg",
 			"-c","'program build/config_stm32f4.elf verify reset exit'"
 		]
+},
+{
+	"label": "Upload Firmware V1",
+	"type": "shell",
+	"command": "openocd",
+	"args":
+	[
+		"-f","board/stm32f4discovery.cfg",
+		"-c","'program build/config_stm32f4.elf verify reset exit'"
+	]
 }
 
 ```
@@ -351,7 +371,7 @@ Then, create a `launch.json` file inside the `.vscode` folder with the following
     "configurations":
     [
         {
-            "name": "Build and Debug",
+            "name": "Build and Debug V2",
             "type": "cortex-debug",
             "request": "launch",
             "servertype": "openocd",
@@ -366,9 +386,26 @@ Then, create a `launch.json` file inside the `.vscode` folder with the following
             ],
             "preLaunchTask": "Build Firmware",
             "overrideGDBServerStartedRegex": "Info\\s:\\s([^\\n\\.]*)\\.cpu([^\\n]*)"
-        }
+        },
+		{
+			"name": "Build and Debug V1",
+			"type": "cortex-debug",
+			"request": "launch",
+			"servertype": "openocd",
+			"cwd": "${workspaceFolder}",
+			"executable": "build/config_stm32f4.elf",
+			"device": "STM32F405RGT6",
+            "svdFile": "${workspaceFolder}/.vscode/STM32F405.svd",
+			"configFiles":
+			[
+				"/usr/share/openocd/scripts/board/stm32f4discovery.cfg"
+			],
+			"preLaunchTask": "Build Firmware",
+			"overrideGDBServerStartedRegex": "Info\\s:\\s([^\\n\\.]*)\\.cpu([^\\n]*)"
+		}
     ]
-}
+},
+
 ```
 
 Create a `settings.json` file inside the `.vscode` folder with the following contents.
