@@ -14,7 +14,7 @@
 #include "spi.h"
 #include "stm32f4xx_hal_conf.h"
 #include "main.h"
-#include "usb.h"
+#include "common.h"
 
 #include "cmsis_os.h"
 #include <stdio.h>
@@ -154,25 +154,7 @@ int do_owr(void){
 }
 
 int do_twr(void){
-	/* Reset and initialise DW1000.
-     * For initialisation, DW1000 clocks must be temporarily set to crystal speed. After initialisation SPI rate can be increased for optimum
-     * performance. */
-    reset_DW1000(); /* Target specific drive of RSTn line into DW1000 low for a period. */
-    port_set_dw1000_slowrate();
-    if (dwt_initialise(DWT_LOADUCODE) == DWT_ERROR)
-    {
-        usb_print("INIT FAILED \n");
-        while (1)
-        { };
-    }
-    port_set_dw1000_fastrate();
-
-    /* Configure DW1000. See NOTE 7 below. */
-    dwt_configure(&config);
-
-    /* Apply default antenna delay value. See NOTE 1 below. */
-    dwt_setrxantennadelay(RX_ANT_DLY);
-    dwt_settxantennadelay(TX_ANT_DLY);
+	uwb_init();
 
     /* Set expected response's delay and timeout. See NOTE 4, 5 and 6 below.
      * As this example only handles one incoming frame with always the same delay and timeout, those values can be set here once for all. */
@@ -334,25 +316,7 @@ void listen_twr(void){
     /* String used to display measured distance on UART. */
     char dist_str[30] = {0};
 
-	/* Reset and initialise DW1000.
-     * For initialisation, DW1000 clocks must be temporarily set to crystal speed. After initialisation SPI rate can be increased for optimum
-     * performance. */
-    reset_DW1000(); /* Target specific drive of RSTn line into DW1000 low for a period. */
-    port_set_dw1000_slowrate();
-    if (dwt_initialise(DWT_LOADUCODE) == DWT_ERROR)
-    {
-        usb_print("INIT FAILED \n");
-        while (1)
-        { };
-    }
-    port_set_dw1000_fastrate();
-
-    /* Configure DW1000. See NOTE 7 below. */
-    dwt_configure(&config);
-
-    /* Apply default antenna delay value. See NOTE 1 below. */
-    dwt_setrxantennadelay(RX_ANT_DLY);
-    dwt_settxantennadelay(TX_ANT_DLY);
+	uwb_init();
 
     /* Set preamble timeout for expected frames. See NOTE 6 below. */
     // dwt_setpreambledetecttimeout(PRE_TIMEOUT);
@@ -476,7 +440,7 @@ void listen_twr(void){
                         distance = tof * SPEED_OF_LIGHT;
 
                         /* Display computed distance. */
-                        convertFloatToString(dist_str,distance);
+                        convert_float_to_string(dist_str,distance);
                         sprintf(dist_str, "%s \n", dist_str);
                         usb_print(dist_str);
                     }

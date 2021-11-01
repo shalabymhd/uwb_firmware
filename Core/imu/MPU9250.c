@@ -21,12 +21,7 @@
 #include "cmsis_os.h"
 
 #include "i2c.h"
-#include "usb.h"
-
-// See also MPU-9250 Register Map and Descriptions, Revision 4.0, RM-MPU-9250A-00, Rev. 1.4, 9/9/2013 for registers not listed in
-// above document; the MPU9250 and MPU9150 are virtually identical but the latter has a different register map
-//
-
+#include "common.h"
 
 static uint8_t Ascale = AFS_2G;     // AFS_2G, AFS_4G, AFS_8G, AFS_16G
 static uint8_t Gscale = GFS_250DPS; // GFS_250DPS, GFS_500DPS, GFS_1000DPS, GFS_2000DPS
@@ -40,13 +35,6 @@ static int16_t rawMag[3];  // Stores the 16-bit signed magnetometer sensor outpu
 static imudata imuvals;
 
 static float scaleAcc, scaleGyr, scaleMag; // Scale of the three
-
-/* Private functions (adaptation to C from cpp) */
-// Adaptation of wait with FREERTOS
-static void wait_adapted(float time){
-	time *=1000.0;
-	osDelay((uint32_t) time);
-}
 
 // Get all the scales
 static void getScales(){
@@ -71,13 +59,13 @@ void imu_main(){
 		imuvals.dt/=1.0e3; // convert in milliseconds
 
 		if (imuvals.acc.x != 0) {
-			convertElementR3ToString(tmpMsg, imuvals.acc);
+			convert_elementR3_to_string(tmpMsg, imuvals.acc);
 			sprintf(imuMsg,"Acc: %s",tmpMsg);
-			convertElementR3ToString(tmpMsg, imuvals.gyr);
+			convert_elementR3_to_string(tmpMsg, imuvals.gyr);
 			sprintf(imuMsg,"%s; Gyr: %s",imuMsg, tmpMsg);
-			convertElementR3ToString(tmpMsg, imuvals.mag);
+			convert_elementR3_to_string(tmpMsg, imuvals.mag);
 			sprintf(imuMsg,"%s; Mag: %s",imuMsg, tmpMsg);
-			convertFloatToString(tmpMsg, imuvals.dt);
+			convert_float_to_string(tmpMsg, imuvals.dt);
 			sprintf(imuMsg,"%s; dt: %s \n",imuMsg, tmpMsg);
 
 			usb_print(imuMsg);
@@ -263,14 +251,14 @@ int16_t readTempData()
 void resetMPU9250() {
 	// reset device
 	writeByte(MPU9250_ADDRESS, PWR_MGMT_1, 0x80); // Write a one to bit 7 reset bit; toggle reset device
-	wait_adapted(0.1);
+	osDelay(100);
 }
 
 void initMPU9250() {
 	// Initialize MPU9250 device
 	// wake up device
 	writeByte(MPU9250_ADDRESS, PWR_MGMT_1, 0x00); // Clear sleep mode bit (6), enable all sensors
-	wait_adapted(0.1); // Delay 100 ms for PLL to get established on x-axis gyro; should check for PLL ready interrupt
+	osDelay(100); // Delay 100 ms for PLL to get established on x-axis gyro; should check for PLL ready interrupt
 
 	// get stable time source
 	writeByte(MPU9250_ADDRESS, PWR_MGMT_1, 0x01);  // Set clock source to be PLL with x-axis gyroscope reference, bits 2:0 = 001

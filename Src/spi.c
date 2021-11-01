@@ -21,9 +21,6 @@
 #include "spi.h"
 #include "deca_types.h"
 #include "deca_device_api.h"
-#include "cmsis_os.h"
-#include "usb.h"
-#include <stdio.h>
 
 /* USER CODE BEGIN 0 */
 
@@ -150,6 +147,9 @@ void port_set_dw1000_fastrate(void)
  * Low level abstract function to write to the SPI
  * Takes two separate byte buffers for write header and write data
  * returns 0 for success, or -1 for error
+ * 
+ * Extracted from the Decawave tutorial.
+ * 
  */
 #pragma GCC optimize ("O3")
 int writetospi(uint16 headerLength, const uint8 *headerBuffer, uint32 bodylength, const uint8 *bodyBuffer)
@@ -186,6 +186,8 @@ int writetospi(uint16 headerLength, const uint8 *headerBuffer, uint32 bodylength
  * returns the offset into read buffer where first byte of read data may be found,
  * or returns -1 if there was an error
  *
+ * Extracted from the Decawave tutorial.
+ * 
  */
 int readfromspi(uint16 headerLength, const uint8 *headerBuffer, uint32 readlength, uint8 *readBuffer)
 {
@@ -216,17 +218,6 @@ int readfromspi(uint16 headerLength, const uint8 *headerBuffer, uint32 readlengt
 
   return 0;
 } // end readfromspi()
-
-void dw_test(){
-  uint32_t id;
-  char print_buff[100];
-
-  id = dwt_readdevid();
-  sprintf(print_buff,"Id read = 0x%x \n",id);
-  usb_print(print_buff);
-  
-  osDelay(10);
-} // end dw_test()
 
 /* USER CODE END 1 */
 
