@@ -18,6 +18,8 @@
 #include "deca_regs.h"
 #include "deca_device_api.h"
 
+#include "dwt_general.h"
+
 // Defines for enable_clocks function
 #define FORCE_SYS_XTI  0
 #define ENABLE_ALL_SEQ 1
@@ -2820,7 +2822,7 @@ void dwt_forcetrxoff(void)
     // We can disable the radio, but before the status is cleared an interrupt can be set (e.g. the
     // event has just happened before the radio was disabled)
     // thus we need to disable interrupt during this operation
-    // stat = decamutexon() ;
+    stat = decamutexon() ;
 
     dwt_write32bitreg(SYS_MASK_ID, 0) ; // Clear interrupt mask - so we don't get any unwanted events
 
@@ -2834,7 +2836,7 @@ void dwt_forcetrxoff(void)
     dwt_write32bitreg(SYS_MASK_ID, mask) ; // Set interrupt mask to what it was
 
     // Enable/restore interrupts again...
-    // decamutexoff(stat) ;
+    decamutexoff(stat) ;
     pdw1000local->wait4resp = 0;
 
 } // end deviceforcetrxoff()
