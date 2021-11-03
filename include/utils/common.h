@@ -32,5 +32,4 @@ void convert_elementR3_to_string(char* str, element_R3 data);
 }
 #endif
 
-
 #endif /* __COMMON_H__ */

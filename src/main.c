@@ -24,6 +24,7 @@
 #include "spi.h"
 #include "usb_device.h"
 #include "gpio.h"
+#include "dwt_general.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
