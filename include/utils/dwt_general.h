@@ -5,6 +5,9 @@ typedef int decaIrqStatus_t ; // Type for remembering IRQ status
 /* DW1000 IRQ (EXTI9_5_IRQ) handler type. */
 typedef void (*port_deca_isr_t)(void);
 
+/* DW1000 IRQ handler declaration. */
+port_deca_isr_t port_deca_isr;
+
 uint32_t DWT_Delay_Init(void);
 
 /* Returns the interval between previous_ticks and current ticks. */
@@ -13,6 +16,25 @@ uint32_t getInterval(uint32_t* previous_ticks_buff);
 void port_DisableEXT_IRQ(void);
 void port_EnableEXT_IRQ(void);
 uint32_t port_GetEXT_IRQStatus(void);
+
+uint32_t port_CheckEXT_IRQ(void);
+void process_deca_irq(void);
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * @fn port_set_deca_isr()
+ *
+ * @brief This function is used to install the handling function for DW1000 IRQ.
+ *
+ * NOTE:
+ *   - As EXTI9_5_IRQHandler does not check that port_deca_isr is not null, the user application must ensure that a
+ *     proper handler is set by calling this function before any DW1000 IRQ occurs!
+ *   - This function makes sure the DW1000 IRQ line is deactivated while the handler is installed.
+ *
+ * @param deca_isr function pointer to DW1000 interrupt handler to install
+ *
+ * @return none
+ */
+void port_set_deca_isr(port_deca_isr_t deca_isr);
 
 /*! ------------------------------------------------------------------------------------------------------------------
  * @fn decamutexon()

@@ -13,9 +13,6 @@
 #include "main.h"
 #include "common.h"
 
-/* DW1000 IRQ handler declaration. */
-    port_deca_isr_t port_deca_isr;
-
 uint32_t DWT_Delay_Init(void) {
     /* Disable TRC */
     CoreDebug->DEMCR &= ~CoreDebug_DEMCR_TRCENA_Msk; // ~0x01000000;
@@ -78,7 +75,7 @@ __INLINE void port_DisableEXT_IRQ(void)
  * */
 __INLINE void port_EnableEXT_IRQ(void)
 {
-    HAL_NVIC_DisableIRQ(DECAIRQ_EXTI_IRQn);
+    HAL_NVIC_EnableIRQ(DECAIRQ_EXTI_IRQn);
 }
 
 /* @fn      port_GetEXT_IRQStatus
@@ -135,6 +132,9 @@ void decamutexoff(decaIrqStatus_t s)        // put a function here that re-enabl
 	}
 }
 
+/* DW1000 IRQ handler definition. */
+port_deca_isr_t port_deca_isr = NULL;
+
 void port_set_deca_isr(port_deca_isr_t deca_isr)
 {
     /* Check DW1000 IRQ activation status. */
@@ -146,8 +146,46 @@ void port_set_deca_isr(port_deca_isr_t deca_isr)
         port_DisableEXT_IRQ();
     }
     port_deca_isr = deca_isr;
-    if (en)
-    {
+    // if (en)
+    // {
         port_EnableEXT_IRQ();
+    // }
+}
+
+/* @fn      HAL_GPIO_EXTI_Callback
+ * @brief   IRQ HAL call-back for all EXTI configured lines
+ *          i.e. DW_RESET_Pin and DW_IRQn_Pin
+ * */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == GPIO_PIN_9)
+    {
+        process_deca_irq();
     }
+    else
+    {
+    }
+}
+
+/* @fn      process_deca_irq
+ * @brief   main call-back for processing of DW1000 IRQ
+ *          it re-enters the IRQ routing and processes all events.
+ *          After processing of all events, DW1000 will clear the IRQ line.
+ * */
+__INLINE void process_deca_irq(void)
+{
+    while(port_CheckEXT_IRQ() != 0)
+    {
+
+        port_deca_isr();
+
+    } //while DW1000 IRQ line active
+}
+
+/* @fn      port_CheckEXT_IRQ
+ * @brief   wrapper to read DW_IRQ input pin state
+ * */
+__INLINE uint32_t port_CheckEXT_IRQ(void)
+{
+    return HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9);
 }

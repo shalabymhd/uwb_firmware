@@ -22,6 +22,7 @@ void listen(void);
 void listen_twr(void);
 void uwb_init(void);
 void reset_DW1000(void);
+void uwbReceiveInterruptInit(void);
 
 #define UUS_TO_DWT_TIME 65536
 /* Default antenna delay values for 64 MHz PRF. */

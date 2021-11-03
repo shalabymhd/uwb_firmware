@@ -19,6 +19,7 @@
 #include "cmsis_os.h"
 #include <stdio.h>
 #include "common.h"
+#include "dwt_general.h"
 
 /* Default communication configuration. 
 In Decawave's examples, the default mode (mode 3) is used. 
@@ -121,6 +122,24 @@ static void final_msg_get_ts(const uint8 *ts_field, uint32 *ts);
 static double tof;
 static double distance;
 
+/* Declaration of static functions. */
+static void rx_ok_cb(const dwt_cb_data_t *cb_data);
+static void rx_to_cb(const dwt_cb_data_t *cb_data);
+static void rx_err_cb(const dwt_cb_data_t *cb_data);
+static void tx_conf_cb(const dwt_cb_data_t *cb_data);
+
+/* Default inter-frame delay period, in milliseconds. */
+#define DFLT_TX_DELAY_MS 1000
+/* Inter-frame delay period in case of RX timeout, in milliseconds.
+ * In case of RX timeout, assume the receiver is not present and lower the rate of blink transmission. */
+#define RX_TO_TX_DELAY_MS 3000
+/* Inter-frame delay period in case of RX error, in milliseconds.
+ * In case of RX error, assume the receiver is present but its response has not been received for any reason and retry blink transmission immediately. */
+#define RX_ERR_TX_DELAY_MS 0
+/* Current inter-frame delay period.
+ * This global static variable is also used as the mechanism to signal events to the background main loop from the interrupt handler callbacks,
+ * which set it to positive delay values. */
+volatile static int32 tx_delay_ms = -1;
 
 int do_owr(void){
     int result;
@@ -410,8 +429,10 @@ void listen_twr(void){
                     if (memcmp(rx_buffer, rx_final_msg, ALL_MSG_COMMON_LEN) == 0)
                     {
                         uint32 poll_tx_ts, resp_rx_ts, final_tx_ts;
-                        uint32 poll_rx_ts_32, resp_tx_ts_32, final_rx_ts_32;
-                        double Ra, Rb, Da, Db;
+                        uint32 poll_rx_ts_32, resp_tx_ts_32;
+                        // uint32 final_rx_ts_32;
+                        double Ra, Db;
+                        // double Rb, Da;
                         int64 tof_dtu;
 
                         // usb_print("Final message received.\n");
@@ -428,10 +449,10 @@ void listen_twr(void){
                         /* Compute time of flight. 32-bit subtractions give correct answers even if clock has wrapped. See NOTE 12 below. */
                         poll_rx_ts_32 = (uint32)poll_rx_ts;
                         resp_tx_ts_32 = (uint32)resp_tx_ts;
-                        final_rx_ts_32 = (uint32)final_rx_ts;
+                        // final_rx_ts_32 = (uint32)final_rx_ts;
                         Ra = (double)(resp_rx_ts - poll_tx_ts);
-                        Rb = (double)(final_rx_ts_32 - resp_tx_ts_32);
-                        Da = (double)(final_tx_ts - resp_rx_ts);
+                        // Rb = (double)(final_rx_ts_32 - resp_tx_ts_32);
+                        // Da = (double)(final_tx_ts - resp_rx_ts);
                         Db = (double)(resp_tx_ts_32 - poll_rx_ts_32);
                         // tof_dtu = (int64)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db));
                         tof_dtu = (int64)((Ra - Db) / (2));
@@ -463,6 +484,49 @@ void listen_twr(void){
             /* Reset RX to properly reinitialise LDE operation. */
             dwt_rxreset();
         }
+    }
+}
+
+void uwbReceiveInterruptInit(){
+    /* Install DW1000 IRQ handler. */
+    port_set_deca_isr(dwt_isr);
+
+    uwb_init();
+
+    /* Register RX call-back. */
+    dwt_setcallbacks(&tx_conf_cb, &rx_ok_cb, &rx_to_cb, &rx_err_cb);
+
+    /* Enable wanted interrupts (TX confirmation, RX good frames, RX timeouts and RX errors). */
+    dwt_setinterrupt(DWT_INT_TFRS | DWT_INT_RFCG | DWT_INT_RFTO | DWT_INT_RXPTO | DWT_INT_RPHE | DWT_INT_RFCE | DWT_INT_RFSL | DWT_INT_SFDT, 1);
+    // dwt_setinterrupt(DWT_INT_RFCG, 1);
+
+    /* Set delay to turn reception on after transmission of the frame. See NOTE 2 below. */
+    dwt_setrxaftertxdelay(60);
+
+    /* Set response frame timeout. */
+    dwt_setrxtimeout(5000);
+
+    while (1)
+    {
+        /* Write frame data to DW1000 and prepare transmission. See NOTE 7 below. */
+        dwt_writetxdata(sizeof(tx_msg), tx_msg, 0); /* Zero offset in TX buffer. */
+        dwt_writetxfctrl(sizeof(tx_msg), 0, 0); /* Zero offset in TX buffer, no ranging. */
+
+        /* Start transmission, indicating that a response is expected so that reception is enabled immediately after the frame is sent. */
+        dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
+
+        /* Wait for any RX event. */
+        while (tx_delay_ms == -1)
+        { };
+
+        /* Execute the defined delay before next transmission. */
+        if (tx_delay_ms > 0)
+        {
+            osDelay(tx_delay_ms);
+        }
+
+        /* Reset the TX delay and event signalling mechanism ready to await the next event. */
+        tx_delay_ms = -1;
     }
 }
 
@@ -607,4 +671,97 @@ static void final_msg_get_ts(const uint8 *ts_field, uint32 *ts)
     {
         *ts += ts_field[i] << (i * 8);
     }
+}
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * @fn rx_ok_cb()
+ *
+ * @brief Callback to process RX good frame events
+ *
+ * @param  cb_data  callback data
+ *
+ * @return  none
+ */
+static void rx_ok_cb(const dwt_cb_data_t *cb_data)
+{
+    int i;
+
+    /* Clear local RX buffer to avoid having leftovers from previous receptions. This is not necessary but is included here to aid reading the RX
+     * buffer. */
+    for (i = 0 ; i < RX_BUF_LEN; i++ )
+    {
+        rx_buffer[i] = 0;
+    }
+
+    /* A frame has been received, copy it to our local buffer. */
+    if (cb_data->datalength <= RX_BUF_LEN)
+    {
+        dwt_readrxdata(rx_buffer, cb_data->datalength, 0);
+    }
+
+    usb_print("Frame received through interrupt!\r\n");
+    //Good candidate
+    usb_print(rx_buffer);
+    usb_print(" \n");
+
+    /* Set corresponding inter-frame delay. */
+    tx_delay_ms = DFLT_TX_DELAY_MS;
+
+    /* TESTING BREAKPOINT LOCATION #1 */
+}
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * @fn rx_to_cb()
+ *
+ * @brief Callback to process RX timeout events
+ *
+ * @param  cb_data  callback data
+ *
+ * @return  none
+ */
+static void rx_to_cb(const dwt_cb_data_t *cb_data)
+{
+    /* Set corresponding inter-frame delay. */
+    tx_delay_ms = RX_TO_TX_DELAY_MS;
+
+    /* TESTING BREAKPOINT LOCATION #2 */
+    usb_print("RX Timeout!\r\n");
+}
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * @fn rx_err_cb()
+ *
+ * @brief Callback to process RX error events
+ *
+ * @param  cb_data  callback data
+ *
+ * @return  none
+ */
+static void rx_err_cb(const dwt_cb_data_t *cb_data)
+{
+    /* Set corresponding inter-frame delay. */
+    tx_delay_ms = RX_ERR_TX_DELAY_MS;
+    
+    /* TESTING BREAKPOINT LOCATION #3 */
+    usb_print("RX Error!\r\n");
+}
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * @fn tx_conf_cb()
+ *
+ * @brief Callback to process TX confirmation events
+ *
+ * @param  cb_data  callback data
+ *
+ * @return  none
+ */
+static void tx_conf_cb(const dwt_cb_data_t *cb_data)
+{
+    /* This callback has been defined so that a breakpoint can be put here to check it is correctly called but there is actually nothing specific to
+     * do on transmission confirmation in this example. Typically, we could activate reception for the response here but this is automatically handled
+     * by DW1000 using DWT_RESPONSE_EXPECTED parameter when calling dwt_starttx().
+     * An actual application that would not need this callback could simply not define it and set the corresponding field to NULL when calling
+     * dwt_setcallbacks(). The ISR will not call it which will allow to save some interrupt processing time. */
+
+    /* TESTING BREAKPOINT LOCATION #4 */
 }
