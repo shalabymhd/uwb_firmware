@@ -146,10 +146,10 @@ void port_set_deca_isr(port_deca_isr_t deca_isr)
         port_DisableEXT_IRQ();
     }
     port_deca_isr = deca_isr;
-    // if (en)
-    // {
+    if (en)
+    {
         port_EnableEXT_IRQ();
-    // }
+    }
 }
 
 /* @fn      HAL_GPIO_EXTI_Callback
