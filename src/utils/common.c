@@ -38,3 +38,16 @@ void convert_elementR3_to_string(char* str, element_R3 data){
 void usb_print(char* c){
     CDC_Transmit_FS(c,strlen(c));
 }
+
+/**
+  * @brief  Checks whether the specified EXTI line is enabled or not.
+  * @param  EXTI_Line: specifies the EXTI line to check.
+  *   This parameter can be:
+  *     @arg EXTI_Linex: External interrupt line x where x(0..19)
+  * @retval The "enable" state of EXTI_Line (SET or RESET).
+  */
+ITStatus EXTI_GetITEnStatus(uint32_t x)
+{
+    return ((NVIC->ISER[(((uint32_t)x) >> 5UL)] &\
+            (uint32_t)(1UL << (((uint32_t)x) & 0x1FUL)) ) == (uint32_t)RESET)?(RESET):(SET);
+}
