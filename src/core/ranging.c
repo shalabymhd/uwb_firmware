@@ -504,16 +504,18 @@ void uwbReceiveInterruptInit(){
     dwt_setrxaftertxdelay(60);
 
     /* Set response frame timeout. */
-    dwt_setrxtimeout(5000);
+    dwt_setrxtimeout(0);
 
     while (1)
     {
-        /* Write frame data to DW1000 and prepare transmission. See NOTE 7 below. */
-        dwt_writetxdata(sizeof(tx_msg), tx_msg, 0); /* Zero offset in TX buffer. */
-        dwt_writetxfctrl(sizeof(tx_msg), 0, 0); /* Zero offset in TX buffer, no ranging. */
+        // /* Write frame data to DW1000 and prepare transmission. See NOTE 7 below. */
+        // dwt_writetxdata(sizeof(tx_msg), tx_msg, 0); /* Zero offset in TX buffer. */
+        // dwt_writetxfctrl(sizeof(tx_msg), 0, 0); /* Zero offset in TX buffer, no ranging. */
 
-        /* Start transmission, indicating that a response is expected so that reception is enabled immediately after the frame is sent. */
-        dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
+        // /* Start transmission, indicating that a response is expected so that reception is enabled immediately after the frame is sent. */
+        // dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
+
+        dwt_rxenable(DWT_START_RX_IMMEDIATE);
 
         /* Wait for any RX event. */
         while (tx_delay_ms == -1)
