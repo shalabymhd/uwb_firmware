@@ -27,10 +27,10 @@ typedef struct{
 void usb_print(char*);
 void convert_float_to_string(char* stringbuff,float data);
 void convert_elementR3_to_string(char* str, element_R3 data);
+ITStatus EXTI_GetITEnStatus(uint32_t x);
 
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /* __COMMON_H__ */

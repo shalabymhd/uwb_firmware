@@ -24,10 +24,12 @@
 #include "spi.h"
 #include "usb_device.h"
 #include "gpio.h"
+#include "dwt_general.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "common.h"
+#include "ranging.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -94,6 +96,7 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   MX_USB_DEVICE_Init();
+  uwbReceiveInterruptInit();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

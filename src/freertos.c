@@ -134,17 +134,17 @@ void MX_FREERTOS_Init(void) {
   // osThreadDef(usbTransmit, StartUsbTransmit, osPriorityIdle, 0, 128);
   // usbTransmitTaskHandle = osThreadCreate(osThread(usbTransmit), NULL);
 
-  // osThreadDef(usbReceive, StartUsbReceive, osPriorityRealtime, 0, 128);
+  // osThreadDef(usbReceive, StartUsbReceive, osPriorityNormal, 0, 128);
   // usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
 
-  // osThreadDef(imu, StartImuTask, osPriorityRealtime, 0, 128);
+  // osThreadDef(imu, StartImuTask, osPriorityNormal, 0, 128);
   // imuTaskHandle = osThreadCreate(osThread(imu), NULL);
 
-  // osThreadDef(uwb, StartUwbTask, osPriorityRealtime, 0, 128);
+  // osThreadDef(uwb, StartUwbTask, osPriorityNormal, 0, 128);
   // uwbTaskHandle = osThreadCreate(osThread(uwb), NULL);
 
-  osThreadDef(listening, StartListeningTask, osPriorityRealtime, 0, 128);
-  listeningTaskHandle = osThreadCreate(osThread(listening), NULL);
+  // osThreadDef(listening, StartListeningTask, osPriorityNormal, 0, 128);
+  // listeningTaskHandle = osThreadCreate(osThread(listening), NULL);
 
   // osThreadDef(uwbTesting, StartUwbTesting, osPriorityRealtime, 0, 128);
   // uwbTestingTaskHandle = osThreadCreate(osThread(uwbTesting), NULL);
@@ -203,20 +203,20 @@ void StartImuTask(void const *argument){
 }
 
 void StartUwbTask(void const *argument){
-  // uwb_init();
-  // while (1){
-  //   do_owr();
-  //   osDelay(100);
-  // }
-  do_twr();
+  uwb_init();
+  while (1){
+    do_owr();
+    osDelay(1000);
+  }
+  // do_twr();
 }
 
 void StartListeningTask(void const *argument){
-  // uwb_init();
-  // while (1){
-  //   listen();
-  // }
-  listen_twr();
+  uwb_init();
+  while (1){
+    listen();
+  }
+  // listen_twr();
 }
 
 void StartUwbTesting(void const *argument){
