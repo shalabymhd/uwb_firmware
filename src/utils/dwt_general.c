@@ -1,4 +1,40 @@
 /**
+  ******************************************************************************
+  * File Name          : dwt_general.c
+  * Description        : Code for interfacing with the Decawave chips.
+  ******************************************************************************
+  */
+
+/* Includes ------------------------------------------------------------------*/
+#include "dwt_general.h"
+#include "main.h"
+#include "common.h"
+#include "spi.h"
+#include "cmsis_os.h"
+
+#define FINAL_MSG_TS_LEN 4
+
+/* Default communication configuration. 
+In Decawave's examples, the default mode (mode 3) is used. 
+We use here Justin Cano's settings, for the time being. */
+static dwt_config_t config = {
+		2,               /* Channel number. */
+		DWT_PRF_64M,     /* Pulse repetition frequency. */
+		DWT_PLEN_128,   /* Preamble length. Used in TX only. */
+		DWT_PAC8,       /* Preamble acquisition chunk size. Used in RX only. */
+		9,               /* TX preamble code. Used in TX only. */
+		9,               /* RX preamble code. Used in RX only. */
+		0,               /* 0 to use standard SFD, 1 to use non-standard SFD. */
+		DWT_BR_6M8,     /* Data rate. */
+		DWT_PHRMODE_STD, /* PHY header mode. */
+		(129 + 8 - 8) /* SFD timeout (preamble length + 1 + SFD length - PAC size). Used in RX only. */
+};
+
+/* Default antenna delay values for 64 MHz PRF. */
+#define TX_ANT_DLY 16436
+#define RX_ANT_DLY 16436
+
+/**
  * @brief  Initializes DWT_Clock_Cycle_Count for DWT_Delay_us, getInterval functions
  * @return Error DWT counter
  *         1: clock cycle counter not started
@@ -8,11 +44,6 @@
  * https://deepbluembedded.com/stm32-delay-microsecond-millisecond-utility-dwt-delay-timer-delay/
  *
  */
-
-#include "dwt_general.h"
-#include "main.h"
-#include "common.h"
-
 uint32_t DWT_Delay_Init(void) {
     /* Disable TRC */
     CoreDebug->DEMCR &= ~CoreDebug_DEMCR_TRCENA_Msk; // ~0x01000000;
@@ -60,132 +91,145 @@ uint32_t getInterval(uint32_t* previous_ticks_buff){
 	return ret; // return the corrected interval
 }
 
-/* @fn      port_DisableEXT_IRQ
- * @brief   wrapper to disable DW_IRQ pin IRQ
- *          in current implementation it disables all IRQ from lines 5:9
- * */
-__INLINE void port_DisableEXT_IRQ(void)
-{
-    HAL_NVIC_DisableIRQ(DECAIRQ_EXTI_IRQn);
+void uwb_init(void){
+     /* Reset and initialise DW1000.
+     * For initialisation, DW1000 clocks must be temporarily set to crystal speed. After initialisation SPI rate can be increased for optimum
+     * performance. */
+    reset_DW1000(); /* Target specific drive of RSTn line into DW1000 low for a period. */
+    port_set_dw1000_slowrate();
+    if (dwt_initialise(DWT_LOADNONE) == DWT_ERROR)
+    {
+        usb_print("UWB initialization failed. \n");
+        while (1)
+        { };
+    }
+    port_set_dw1000_fastrate();
+
+    /* Configure DW1000. */
+    dwt_configure(&config);
+
+    /* Apply default antenna delay value. See NOTE 1 below. */
+	dwt_setrxantennadelay(RX_ANT_DLY);
+	dwt_settxantennadelay(TX_ANT_DLY);
+
+    usb_print("UWB tag initialized and configured. \n");
 }
 
-/* @fn      port_EnableEXT_IRQ
- * @brief   wrapper to enable DW_IRQ pin IRQ
- *          in current implementation it enables all IRQ from lines 5:9
+/* @fn      reset_DW1000
+ * @brief   DW_RESET pin on DW1000 has 2 functions
+ *          In general it is output, but it also can be used to reset the digital
+ *          part of DW1000 by driving this pin low.
+ *          Note, the DW_RESET pin should not be driven high externally.
  * */
-__INLINE void port_EnableEXT_IRQ(void)
+void reset_DW1000(void)
 {
-    HAL_NVIC_EnableIRQ(DECAIRQ_EXTI_IRQn);
-}
+    GPIO_InitTypeDef    GPIO_InitStruct;
 
-/* @fn      port_GetEXT_IRQStatus
- * @brief   wrapper to read a DW_IRQ pin IRQ status
- * */
-__INLINE uint32_t port_GetEXT_IRQStatus(void)
-{
-    return EXTI_GetITEnStatus(DECAIRQ_EXTI_IRQn);
+    // Enable GPIO used for DW1000 reset as open collector output
+    GPIO_InitStruct.Pin = DW_RESET_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(DW_RESET_GPIO_Port, &GPIO_InitStruct);
+
+    //drive the RSTn pin low
+    HAL_GPIO_WritePin(DW_RESET_GPIO_Port, DW_RESET_Pin, GPIO_PIN_RESET);
+
+    //put the pin back to tri-state ... as input
+	GPIO_InitStruct.Pin = DW_RESET_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+	HAL_GPIO_Init(DW_RESET_GPIO_Port, &GPIO_InitStruct);
+
+    osDelay(2);
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
- * Function: decamutexon()
+ * @fn get_tx_timestamp_u64()
  *
- * Description: This function should disable interrupts. This is called at the start of a critical section
- * It returns the irq state before disable, this value is used to re-enable in decamutexoff call
+ * @brief Get the TX time-stamp in a 64-bit variable.
+ *        /!\ This function assumes that length of time-stamps is 40 bits, for both TX and RX!
  *
- * Note: The body of this function is defined in deca_mutex.c and is platform specific
+ * @param  none
  *
- * input parameters:	
- *
- * output parameters
- *
- * returns the state of the DW1000 interrupt
+ * @return  64-bit value of the read time-stamp.
  */
-decaIrqStatus_t decamutexon(void)           
+uint64 get_tx_timestamp_u64(void)
 {
-	decaIrqStatus_t s = port_GetEXT_IRQStatus();
-
-	if(s) {
-		port_DisableEXT_IRQ(); //disable the external interrupt line
-	}
-	return s ;   // return state before disable, value is used to re-enable in decamutexoff call
+    uint8 ts_tab[5];
+    uint64 ts = 0;
+    int i;
+    dwt_readtxtimestamp(ts_tab);
+    for (i = 4; i >= 0; i--)
+    {
+        ts <<= 8;
+        ts |= ts_tab[i];
+    }
+    return ts;
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
- * Function: decamutexoff()
+ * @fn get_rx_timestamp_u64()
  *
- * Description: This function should re-enable interrupts, or at least restore their state as returned(&saved) by decamutexon 
- * This is called at the end of a critical section
+ * @brief Get the RX time-stamp in a 64-bit variable.
+ *        /!\ This function assumes that length of time-stamps is 40 bits, for both TX and RX!
  *
- * Note: The body of this function is defined in deca_mutex.c and is platform specific
+ * @param  none
  *
- * input parameters:	
- * @param s - the state of the DW1000 interrupt as returned by decamutexon
- *
- * output parameters
- *
- * returns the state of the DW1000 interrupt
+ * @return  64-bit value of the read time-stamp.
  */
-void decamutexoff(decaIrqStatus_t s)        // put a function here that re-enables the interrupt at the end of the critical section
+uint64 get_rx_timestamp_u64(void)
 {
-	if(s) { //need to check the port state as we can't use level sensitive interrupt on the STM ARM
-		port_EnableEXT_IRQ();
-	}
+    uint8 ts_tab[5];
+    uint64 ts = 0;
+    int i;
+    dwt_readrxtimestamp(ts_tab);
+    for (i = 4; i >= 0; i--)
+    {
+        ts <<= 8;
+        ts |= ts_tab[i];
+    }
+    return ts;
 }
 
-/* DW1000 IRQ handler definition. */
-port_deca_isr_t port_deca_isr = NULL;
-
-void port_set_deca_isr(port_deca_isr_t deca_isr)
+/*! ------------------------------------------------------------------------------------------------------------------
+ * @fn final_msg_set_ts()
+ *
+ * @brief Fill a given timestamp field in the final message with the given value. In the timestamp fields of the final
+ *        message, the least significant byte is at the lower address.
+ *
+ * @param  ts_field  pointer on the first byte of the timestamp field to fill
+ *         ts  timestamp value
+ *
+ * @return none
+ */
+void final_msg_set_ts(uint8 *ts_field, uint64 ts)
 {
-    /* Check DW1000 IRQ activation status. */
-    ITStatus en = port_GetEXT_IRQStatus();
-
-    /* If needed, deactivate DW1000 IRQ during the installation of the new handler. */
-    if (en)
+    int i;
+    for (i = 0; i < FINAL_MSG_TS_LEN; i++)
     {
-        port_DisableEXT_IRQ();
-    }
-    port_deca_isr = deca_isr;
-    if (en)
-    {
-        port_EnableEXT_IRQ();
-    }
-}
-
-/* @fn      HAL_GPIO_EXTI_Callback
- * @brief   IRQ HAL call-back for all EXTI configured lines
- *          i.e. DW_RESET_Pin and DW_IRQn_Pin
- * */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-    if (GPIO_Pin == GPIO_PIN_9)
-    {
-        process_deca_irq();
-    }
-    else
-    {
+        ts_field[i] = (uint8) ts;
+        ts >>= 8;
     }
 }
 
-/* @fn      process_deca_irq
- * @brief   main call-back for processing of DW1000 IRQ
- *          it re-enters the IRQ routing and processes all events.
- *          After processing of all events, DW1000 will clear the IRQ line.
- * */
-__INLINE void process_deca_irq(void)
+/*! ------------------------------------------------------------------------------------------------------------------
+ * @fn final_msg_get_ts()
+ *
+ * @brief Read a given timestamp value from the final message. In the timestamp fields of the final message, the least
+ *        significant byte is at the lower address.
+ *
+ * @param  ts_field  pointer on the first byte of the timestamp field to read
+ *         ts  timestamp value
+ *
+ * @return none
+ */
+void final_msg_get_ts(const uint8 *ts_field, uint32 *ts)
 {
-    while(port_CheckEXT_IRQ() != 0)
+    int i;
+    *ts = 0;
+    for (i = 0; i < FINAL_MSG_TS_LEN; i++)
     {
-
-        port_deca_isr();
-
-    } //while DW1000 IRQ line active
-}
-
-/* @fn      port_CheckEXT_IRQ
- * @brief   wrapper to read DW_IRQ input pin state
- * */
-__INLINE uint32_t port_CheckEXT_IRQ(void)
-{
-    return HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9);
+        *ts += ts_field[i] << (i * 8);
+    }
 }

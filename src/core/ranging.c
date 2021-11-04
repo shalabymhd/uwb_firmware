@@ -20,22 +20,7 @@
 #include <stdio.h>
 #include "common.h"
 #include "dwt_general.h"
-
-/* Default communication configuration. 
-In Decawave's examples, the default mode (mode 3) is used. 
-We use here Justin Cano's settings, for the time being. */
-static dwt_config_t config = {
-		2,               /* Channel number. */
-		DWT_PRF_64M,     /* Pulse repetition frequency. */
-		DWT_PLEN_128,   /* Preamble length. Used in TX only. */
-		DWT_PAC8,       /* Preamble acquisition chunk size. Used in RX only. */
-		9,               /* TX preamble code. Used in TX only. */
-		9,               /* RX preamble code. Used in RX only. */
-		0,               /* 0 to use standard SFD, 1 to use non-standard SFD. */
-		DWT_BR_6M8,     /* Data rate. */
-		DWT_PHRMODE_STD, /* PHY header mode. */
-		(129 + 8 - 8) /* SFD timeout (preamble length + 1 + SFD length - PAC size). Used in RX only. */
-};
+#include "dwt_iqr.h"
 
 /* Inter-frame delay period, in milliseconds. */
 #define TX_DELAY_MS 1000
@@ -90,7 +75,6 @@ static uint8 rx_final_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'F', 'I', 'N', 'A', 0x
 #define FINAL_MSG_POLL_TX_TS_IDX 10
 #define FINAL_MSG_RESP_RX_TS_IDX 14
 #define FINAL_MSG_FINAL_TX_TS_IDX 18
-#define FINAL_MSG_TS_LEN 4
 /* Frame sequence number, incremented after each transmission. */
 static uint8 frame_seq_nb = 0;
 
@@ -108,12 +92,6 @@ typedef unsigned long long uint64;
 static uint64 poll_rx_ts;
 static uint64 resp_tx_ts;
 static uint64 final_rx_ts;
-
-/* Declaration of static functions. */
-static uint64 get_tx_timestamp_u64(void);
-static uint64 get_rx_timestamp_u64(void);
-static void final_msg_set_ts(uint8 *ts_field, uint64 ts);
-static void final_msg_get_ts(const uint8 *ts_field, uint32 *ts);
 
 /* Speed of light in air, in metres per second. */
 #define SPEED_OF_LIGHT 299702547
@@ -529,149 +507,6 @@ void uwbReceiveInterruptInit(){
 
         /* Reset the TX delay and event signalling mechanism ready to await the next event. */
         tx_delay_ms = -1;
-    }
-}
-
-void uwb_init(void){
-     /* Reset and initialise DW1000.
-     * For initialisation, DW1000 clocks must be temporarily set to crystal speed. After initialisation SPI rate can be increased for optimum
-     * performance. */
-    reset_DW1000(); /* Target specific drive of RSTn line into DW1000 low for a period. */
-    port_set_dw1000_slowrate();
-    if (dwt_initialise(DWT_LOADNONE) == DWT_ERROR)
-    {
-        usb_print("UWB initialization failed. \n");
-        while (1)
-        { };
-    }
-    port_set_dw1000_fastrate();
-
-    /* Configure DW1000. */
-    dwt_configure(&config);
-
-    /* Apply default antenna delay value. See NOTE 1 below. */
-	dwt_setrxantennadelay(RX_ANT_DLY);
-	dwt_settxantennadelay(TX_ANT_DLY);
-
-    usb_print("UWB tag initialized and configured. \n");
-}
-
-/* @fn      reset_DW1000
- * @brief   DW_RESET pin on DW1000 has 2 functions
- *          In general it is output, but it also can be used to reset the digital
- *          part of DW1000 by driving this pin low.
- *          Note, the DW_RESET pin should not be driven high externally.
- * */
-void reset_DW1000(void)
-{
-    GPIO_InitTypeDef    GPIO_InitStruct;
-
-    // Enable GPIO used for DW1000 reset as open collector output
-    GPIO_InitStruct.Pin = DW_RESET_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(DW_RESET_GPIO_Port, &GPIO_InitStruct);
-
-    //drive the RSTn pin low
-    HAL_GPIO_WritePin(DW_RESET_GPIO_Port, DW_RESET_Pin, GPIO_PIN_RESET);
-
-    //put the pin back to tri-state ... as input
-	GPIO_InitStruct.Pin = DW_RESET_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-	HAL_GPIO_Init(DW_RESET_GPIO_Port, &GPIO_InitStruct);
-
-    osDelay(2);
-}
-
-/*! ------------------------------------------------------------------------------------------------------------------
- * @fn get_tx_timestamp_u64()
- *
- * @brief Get the TX time-stamp in a 64-bit variable.
- *        /!\ This function assumes that length of time-stamps is 40 bits, for both TX and RX!
- *
- * @param  none
- *
- * @return  64-bit value of the read time-stamp.
- */
-static uint64 get_tx_timestamp_u64(void)
-{
-    uint8 ts_tab[5];
-    uint64 ts = 0;
-    int i;
-    dwt_readtxtimestamp(ts_tab);
-    for (i = 4; i >= 0; i--)
-    {
-        ts <<= 8;
-        ts |= ts_tab[i];
-    }
-    return ts;
-}
-
-/*! ------------------------------------------------------------------------------------------------------------------
- * @fn get_rx_timestamp_u64()
- *
- * @brief Get the RX time-stamp in a 64-bit variable.
- *        /!\ This function assumes that length of time-stamps is 40 bits, for both TX and RX!
- *
- * @param  none
- *
- * @return  64-bit value of the read time-stamp.
- */
-static uint64 get_rx_timestamp_u64(void)
-{
-    uint8 ts_tab[5];
-    uint64 ts = 0;
-    int i;
-    dwt_readrxtimestamp(ts_tab);
-    for (i = 4; i >= 0; i--)
-    {
-        ts <<= 8;
-        ts |= ts_tab[i];
-    }
-    return ts;
-}
-
-/*! ------------------------------------------------------------------------------------------------------------------
- * @fn final_msg_set_ts()
- *
- * @brief Fill a given timestamp field in the final message with the given value. In the timestamp fields of the final
- *        message, the least significant byte is at the lower address.
- *
- * @param  ts_field  pointer on the first byte of the timestamp field to fill
- *         ts  timestamp value
- *
- * @return none
- */
-static void final_msg_set_ts(uint8 *ts_field, uint64 ts)
-{
-    int i;
-    for (i = 0; i < FINAL_MSG_TS_LEN; i++)
-    {
-        ts_field[i] = (uint8) ts;
-        ts >>= 8;
-    }
-}
-
-/*! ------------------------------------------------------------------------------------------------------------------
- * @fn final_msg_get_ts()
- *
- * @brief Read a given timestamp value from the final message. In the timestamp fields of the final message, the least
- *        significant byte is at the lower address.
- *
- * @param  ts_field  pointer on the first byte of the timestamp field to read
- *         ts  timestamp value
- *
- * @return none
- */
-static void final_msg_get_ts(const uint8 *ts_field, uint32 *ts)
-{
-    int i;
-    *ts = 0;
-    for (i = 0; i < FINAL_MSG_TS_LEN; i++)
-    {
-        *ts += ts_field[i] << (i * 8);
     }
 }
 
