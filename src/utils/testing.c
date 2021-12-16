@@ -29,5 +29,5 @@ void dw_test(){
   sprintf(print_buff,"Id read = 0x%x \n",id);
   usb_print(print_buff);
   
-  osDelay(10);
+  osDelay(100);
 } // end dw_test()

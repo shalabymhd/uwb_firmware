@@ -469,8 +469,6 @@ void uwbReceiveInterruptInit(){
     /* Install DW1000 IRQ handler. */
     port_set_deca_isr(dwt_isr);
 
-    uwb_init();
-
     /* Register RX call-back. */
     dwt_setcallbacks(&tx_conf_cb, &rx_ok_cb, &rx_to_cb, &rx_err_cb);
 
@@ -484,30 +482,7 @@ void uwbReceiveInterruptInit(){
     /* Set response frame timeout. */
     dwt_setrxtimeout(0);
 
-    while (1)
-    {
-        // /* Write frame data to DW1000 and prepare transmission. See NOTE 7 below. */
-        // dwt_writetxdata(sizeof(tx_msg), tx_msg, 0); /* Zero offset in TX buffer. */
-        // dwt_writetxfctrl(sizeof(tx_msg), 0, 0); /* Zero offset in TX buffer, no ranging. */
-
-        // /* Start transmission, indicating that a response is expected so that reception is enabled immediately after the frame is sent. */
-        // dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
-
-        dwt_rxenable(DWT_START_RX_IMMEDIATE);
-
-        /* Wait for any RX event. */
-        while (tx_delay_ms == -1)
-        { };
-
-        /* Execute the defined delay before next transmission. */
-        if (tx_delay_ms > 0)
-        {
-            osDelay(tx_delay_ms);
-        }
-
-        /* Reset the TX delay and event signalling mechanism ready to await the next event. */
-        tx_delay_ms = -1;
-    }
+    dwt_rxenable(DWT_START_RX_IMMEDIATE);
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
@@ -543,6 +518,8 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data)
 
     /* Set corresponding inter-frame delay. */
     tx_delay_ms = DFLT_TX_DELAY_MS;
+
+    dwt_rxenable(DWT_START_RX_IMMEDIATE);
 
     /* TESTING BREAKPOINT LOCATION #1 */
 }

@@ -96,6 +96,7 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   MX_USB_DEVICE_Init();
+  uwb_init();
   uwbReceiveInterruptInit();
   /* USER CODE END 2 */
 
