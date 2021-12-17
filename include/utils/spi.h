@@ -34,13 +34,14 @@ extern "C" {
 extern SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN Private defines */
-
+#define SPI_TIMEOUT 10
 /* USER CODE END Private defines */
 
 void MX_SPI1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void port_set_dw1000_slowrate(void);
+void port_set_dw1000_fastrate(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

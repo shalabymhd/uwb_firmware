@@ -2,3 +2,9 @@ build
 .cortex-debug.peripherals.state.json
 .cortex-debug.registers.state.json
 .mxproject
+.vscode/tasks.json.orig
+.vscode/tasks_BACKUP_19758.json
+.vscode/tasks_BASE_19758.json
+.vscode/tasks_LOCAL_19758.json
+.vscode/tasks_REMOTE_19758.json
+README.md.orig
