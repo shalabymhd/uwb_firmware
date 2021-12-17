@@ -11,6 +11,7 @@
         "stdint.h": "c",
         "stm32f4xx_hal.h": "c",
         "deca_device_api.h": "c",
-        "dwt_general.h": "c"
+        "dwt_general.h": "c",
+        "testing.h": "c"
     }
 }

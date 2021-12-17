@@ -63,6 +63,8 @@ void Error_Handler(void);
 #define USB_DP_Pin GPIO_PIN_12
 #define USB_DP_GPIO_Port GPIOA
 
+#define BOARD_ID (1); // This is the module's ID.
+
 /* USER CODE BEGIN Private defines */
 #define DW_RESET_Pin GPIO_PIN_11
 #define DW_RESET_GPIO_Port GPIOC
