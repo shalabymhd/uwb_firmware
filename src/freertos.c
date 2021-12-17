@@ -146,8 +146,8 @@ void MX_FREERTOS_Init(void) {
   // osThreadDef(listening, StartListeningTask, osPriorityNormal, 0, 128);
   // listeningTaskHandle = osThreadCreate(osThread(listening), NULL);
 
-  // osThreadDef(uwbTesting, StartUwbTesting, osPriorityRealtime, 0, 128);
-  // uwbTestingTaskHandle = osThreadCreate(osThread(uwbTesting), NULL);
+  osThreadDef(uwbTesting, StartUwbTesting, osPriorityRealtime, 0, 128);
+  uwbTestingTaskHandle = osThreadCreate(osThread(uwbTesting), NULL);
   /* USER CODE END RTOS_THREADS */
 }
 
@@ -203,7 +203,7 @@ void StartImuTask(void const *argument){
 }
 
 void StartUwbTask(void const *argument){
-  uwb_init();
+  // uwb_init();
   while (1){
     do_owr();
     osDelay(1000);
@@ -212,7 +212,7 @@ void StartUwbTask(void const *argument){
 }
 
 void StartListeningTask(void const *argument){
-  uwb_init();
+  // uwb_init();
   while (1){
     listen();
   }
@@ -220,7 +220,7 @@ void StartListeningTask(void const *argument){
 }
 
 void StartUwbTesting(void const *argument){
-  uwb_init();
+  // uwb_init();
   while (1){
     dw_test();
   }

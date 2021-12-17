@@ -27,6 +27,7 @@ extern "C" {
 
 /* USER CODE BEGIN Prototypes */
 void dw_test(void);
+void read_id(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

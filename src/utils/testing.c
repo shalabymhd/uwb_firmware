@@ -29,5 +29,24 @@ void dw_test(){
   sprintf(print_buff,"Id read = 0x%x \n",id);
   usb_print(print_buff);
   
-  osDelay(10);
+  osDelay(100);
+} // end dw_test()
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * Function: read_id()
+ *
+ * The purpose of this function is to test if the UWB module has been
+ * given the ID programmed in main.h.
+ * 
+ */
+void read_id(){
+  uint8_t id;
+  char print_buff[100];
+
+  // id = dwt_readdevid();
+  dwt_geteui(&id);
+  sprintf(print_buff,"Id read = 0x%x \n",id);
+  usb_print(print_buff);
+  
+  osDelay(100);
 } // end dw_test()

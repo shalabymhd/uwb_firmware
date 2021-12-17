@@ -19,6 +19,7 @@
 #include "deca_device_api.h"
 
 #include "dwt_general.h"
+#include "dwt_iqr.h"
 
 // Defines for enable_clocks function
 #define FORCE_SYS_XTI  0
