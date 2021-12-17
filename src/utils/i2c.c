@@ -112,7 +112,21 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
 }
 
 /* USER CODE BEGIN 1 */
+int i2c_write(uint16_t slave_addr, uint16_t reg_addr, uint16_t length, uint8_t* data){
+	//__HAL_I2C_ENABLE(&hi2c2);
+	// The address is always shifted to the left in ST board (documentation)
+	HAL_I2C_Mem_Write(&hi2c2,slave_addr,reg_addr,I2C_MEMADD_SIZE_8BIT,data,length,I2C_TIMEOUT);
+	//__HAL_I2C_DISABLE(&hi2c2);
+	return 0;
+}
 
+int i2c_read(uint16_t slave_addr, uint16_t reg_addr, uint16_t length, uint8_t* data){
+	// __HAL_I2C_ENABLE(&hi2c2);
+	// The address is always shifted to the left in ST board (documentation)
+	HAL_I2C_Mem_Read(&hi2c2,slave_addr,reg_addr,I2C_MEMADD_SIZE_8BIT,data,length,I2C_TIMEOUT);
+	//__HAL_I2C_DISABLE(&hi2c2);
+	return 0;
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -26,6 +26,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "common.h"
+#include "MPU9250.h"
+#include "ranging.h"
+#include "spi.h"
+#include "testing.h"
 
 /* USER CODE END Includes */
 
@@ -46,9 +51,17 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+uint8_t CdcReceiveBuffer[64];
 /* USER CODE END Variables */
+
 osThreadId defaultTaskHandle;
+osThreadId blinkTaskHandle;
+osThreadId usbTransmitTaskHandle;
+osThreadId usbReceiveTaskHandle;
+osThreadId imuTaskHandle;
+osThreadId uwbTaskHandle;
+osThreadId listeningTaskHandle;
+osThreadId uwbTestingTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -56,6 +69,13 @@ osThreadId defaultTaskHandle;
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
+void StartBlinking(void const * argument);
+void StartUsbTransmit(void const * argument);
+void StartUsbReceive(void const * argument);
+void StartImuTask(void const * argument);
+void StartUwbTask(void const * argument);
+void StartListeningTask(void const * argument);
+void StartUwbTesting(void const * argument);
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -104,13 +124,31 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  // osThreadDef(defaultTask, StartDefaultTask, osPriorityIdle, 0, 128);
+  // defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
+  osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
+  blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
+  // osThreadDef(usbTransmit, StartUsbTransmit, osPriorityIdle, 0, 128);
+  // usbTransmitTaskHandle = osThreadCreate(osThread(usbTransmit), NULL);
+
+  // osThreadDef(usbReceive, StartUsbReceive, osPriorityNormal, 0, 128);
+  // usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
+
+  // osThreadDef(imu, StartImuTask, osPriorityNormal, 0, 128);
+  // imuTaskHandle = osThreadCreate(osThread(imu), NULL);
+
+  // osThreadDef(uwb, StartUwbTask, osPriorityNormal, 0, 128);
+  // uwbTaskHandle = osThreadCreate(osThread(uwb), NULL);
+
+  // osThreadDef(listening, StartListeningTask, osPriorityNormal, 0, 128);
+  // listeningTaskHandle = osThreadCreate(osThread(listening), NULL);
+
+  osThreadDef(uwbTesting, StartUwbTesting, osPriorityRealtime, 0, 128);
+  uwbTestingTaskHandle = osThreadCreate(osThread(uwbTesting), NULL);
+  /* USER CODE END RTOS_THREADS */
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -122,8 +160,6 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-  /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
@@ -135,7 +171,60 @@ void StartDefaultTask(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+void StartBlinking(void const *argument){
+  while (1){
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
+    osDelay(1000);
+  }
+}
 
+void StartUsbTransmit(void const *argument){
+  // To read the transmitted data on a computer, execute in a terminal
+  // >> cat /dev/ttyACMx
+  while (1){
+    usb_print("Hello World from USB CDC \n");
+    osDelay(1000);
+  }
+}
+
+void StartUsbReceive(void const *argument){
+  // To receive the data transmitted by a computer, execute in a terminal
+  // >> cat /dev/ttyACMx
+  while (1){
+    usb_print(CdcReceiveBuffer);
+    osDelay(1000);
+  }
+}
+
+void StartImuTask(void const *argument){
+  while (1){
+    imu_main();
+  }
+}
+
+void StartUwbTask(void const *argument){
+  // uwb_init();
+  while (1){
+    do_owr();
+    osDelay(1000);
+  }
+  // do_twr();
+}
+
+void StartListeningTask(void const *argument){
+  // uwb_init();
+  while (1){
+    listen();
+  }
+  // listen_twr();
+}
+
+void StartUwbTesting(void const *argument){
+  // uwb_init();
+  while (1){
+    dw_test();
+  }
+}
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

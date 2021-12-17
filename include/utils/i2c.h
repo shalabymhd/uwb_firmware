@@ -34,13 +34,18 @@ extern "C" {
 extern I2C_HandleTypeDef hi2c2;
 
 /* USER CODE BEGIN Private defines */
-
+#define I2C_TIMEOUT 20
+#define IMU_ADDRESS 0b1101001
+#define IMU_WHOAMI_REGISTER 0x75
+#define IMU_TEMPLOW_REGISTER 0x42
+#define IMU_TEMPHIGH_REGISTER 0x41
 /* USER CODE END Private defines */
 
 void MX_I2C2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+int i2c_write(uint16_t, uint16_t, uint16_t, uint8_t*);
+int i2c_read(uint16_t, uint16_t, uint16_t, uint8_t*);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
