@@ -169,8 +169,6 @@ void StartUsbReceive(void const *argument){
   // >> cat /dev/ttyACMx
   while (1){
     
-    // Trying to read individual messages at a time. DOESNT WORK and seems
-    // to break the USB port. What's going on here.
     char *idx_beg;
     char *idx_end;
 
@@ -179,25 +177,33 @@ void StartUsbReceive(void const *argument){
     idx_beg = &CdcReceiveBuffer;
     idx_end = strstr(CdcReceiveBuffer, "\n");
   
-    int len = idx_end - idx_beg;
-    if (len > 0 && len < 200)
+    uint8_t len = idx_end - idx_beg - 1; // Removing the first entry 
+    if (idx_end > 0)
     {
-      char *res = (char*)malloc(sizeof(char)*(len+1));
+      uint8_t *res = (uint8_t*)malloc(sizeof(uint8_t)*(len+1));
 
       /* if the memory has not been allocated, interrupt operations */
       if (res == NULL) {MemManage_Handler();}
 
-      strncpy(res, idx_beg + 1, len - 1);
-      res[len - 1] = '\0';
+      strncpy(res, idx_beg + 1, len);
+      res[len] = '\0';
       sprintf(print_stat, "'%s'\n", res);
       usb_print(print_stat);
 
-      // usb_print(idx);
+      free(res);
+
+      /* Update the buffer */
+      res = (uint8_t*)malloc(sizeof(uint8_t)*(224 - 1));
+      if (res == NULL) {MemManage_Handler();}
+      memcpy(res, CdcReceiveBuffer + len + 2, 224 - len - 2);
+      memset(CdcReceiveBuffer + 1, '\0', 224 - 1); // clear the buffer
+      memcpy(CdcReceiveBuffer + 1, res, 224 - len - 1);
+      CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len - 1;
 
       free(res);
     }
 
-    memset(CdcReceiveBuffer, '\0', 224); // clear the buffer
+    // memset(CdcReceiveBuffer, '\0', 224); // clear the buffer
     osDelay(1000);
   }
 }
