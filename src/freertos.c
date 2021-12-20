@@ -31,6 +31,7 @@
 #include "ranging.h"
 #include "spi.h"
 #include "testing.h"
+#include "stm32f4xx_it.h"
 
 /* USER CODE END Includes */
 
@@ -51,7 +52,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t CdcReceiveBuffer[64];
+uint8_t CdcReceiveBuffer[224]; 
 /* USER CODE END Variables */
 
 osThreadId defaultTaskHandle;
@@ -131,23 +132,8 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
   blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
-  // osThreadDef(usbTransmit, StartUsbTransmit, osPriorityIdle, 0, 128);
-  // usbTransmitTaskHandle = osThreadCreate(osThread(usbTransmit), NULL);
-
-  // osThreadDef(usbReceive, StartUsbReceive, osPriorityNormal, 0, 128);
-  // usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
-
-  // osThreadDef(imu, StartImuTask, osPriorityNormal, 0, 128);
-  // imuTaskHandle = osThreadCreate(osThread(imu), NULL);
-
-  // osThreadDef(uwb, StartUwbTask, osPriorityNormal, 0, 128);
-  // uwbTaskHandle = osThreadCreate(osThread(uwb), NULL);
-
-  // osThreadDef(listening, StartListeningTask, osPriorityNormal, 0, 128);
-  // listeningTaskHandle = osThreadCreate(osThread(listening), NULL);
-
-  osThreadDef(uwbTesting, StartUwbTesting, osPriorityRealtime, 0, 128);
-  uwbTestingTaskHandle = osThreadCreate(osThread(uwbTesting), NULL);
+  osThreadDef(usbReceive, StartUsbReceive, osPriorityNormal, 0, 128);
+  usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
   /* USER CODE END RTOS_THREADS */
 }
 
@@ -178,51 +164,41 @@ void StartBlinking(void const *argument){
   }
 }
 
-void StartUsbTransmit(void const *argument){
-  // To read the transmitted data on a computer, execute in a terminal
-  // >> cat /dev/ttyACMx
-  while (1){
-    usb_print("Hello World from USB CDC \n");
-    osDelay(1000);
-  }
-}
-
 void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
   while (1){
-    usb_print(CdcReceiveBuffer);
+    
+    // Trying to read individual messages at a time. DOESNT WORK and seems
+    // to break the USB port. What's going on here.
+    char *idx_beg;
+    char *idx_end;
+
+    char print_stat[20]; 
+
+    idx_beg = &CdcReceiveBuffer;
+    idx_end = strstr(CdcReceiveBuffer, "\n");
+  
+    int len = idx_end - idx_beg;
+    if (len > 0 && len < 200)
+    {
+      char *res = (char*)malloc(sizeof(char)*(len+1));
+
+      /* if the memory has not been allocated, interrupt operations */
+      if (res == NULL) {MemManage_Handler();}
+
+      strncpy(res, idx_beg + 1, len - 1);
+      res[len - 1] = '\0';
+      sprintf(print_stat, "'%s'\n", res);
+      usb_print(print_stat);
+
+      // usb_print(idx);
+
+      free(res);
+    }
+
+    memset(CdcReceiveBuffer, '\0', 224); // clear the buffer
     osDelay(1000);
-  }
-}
-
-void StartImuTask(void const *argument){
-  while (1){
-    imu_main();
-  }
-}
-
-void StartUwbTask(void const *argument){
-  // uwb_init();
-  while (1){
-    do_owr();
-    osDelay(1000);
-  }
-  // do_twr();
-}
-
-void StartListeningTask(void const *argument){
-  // uwb_init();
-  while (1){
-    listen();
-  }
-  // listen_twr();
-}
-
-void StartUwbTesting(void const *argument){
-  // uwb_init();
-  while (1){
-    dw_test();
   }
 }
 /* USER CODE END Application */
