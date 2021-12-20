@@ -52,7 +52,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t CdcReceiveBuffer[224]; 
+uint8_t CdcReceiveBuffer[USB_BUFFER_SIZE]; 
 /* USER CODE END Variables */
 
 osThreadId defaultTaskHandle;
@@ -168,7 +168,6 @@ void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
   while (1){
-    
     char *idx_beg;
     char *idx_end;
 
@@ -180,31 +179,30 @@ void StartUsbReceive(void const *argument){
     uint8_t len = idx_end - idx_beg - 1; // Removing the first entry 
     if (idx_end > 0)
     {
-      uint8_t *res = (uint8_t*)malloc(sizeof(uint8_t)*(len+1));
+      /* ----------------------- PROCESS COMMUNICATED INFORMATION ----------------------- */
+      uint8_t *res = (uint8_t*)malloc(sizeof(uint8_t)*(len+1)); // allocated dynamic memory
+      if (res == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
 
-      /* if the memory has not been allocated, interrupt operations */
-      if (res == NULL) {MemManage_Handler();}
-
+      // TODO: temporary - to be replaced with actual global switch variable
       strncpy(res, idx_beg + 1, len);
       res[len] = '\0';
-      sprintf(print_stat, "'%s'\n", res);
+      sprintf(print_stat, "%s\n", res);
       usb_print(print_stat);
 
-      free(res);
+      /* ------------------------------ UPDATE THE BUFFER ------------------------------ */
+      res = realloc(res, sizeof(uint8_t)*(USB_BUFFER_SIZE - 1)); // reallocate dynamic memory
+      if (res == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
+      
+      memcpy(res, CdcReceiveBuffer + len + 2, USB_BUFFER_SIZE - len - 2); // copy unread buffer into temp memory
+      memset(CdcReceiveBuffer + 1, '\0', USB_BUFFER_SIZE - 1); // clear the buffer
+      memcpy(CdcReceiveBuffer + 1, res, USB_BUFFER_SIZE - len - 1); // move data back to buffer
+      CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len - 1; // adjust where to continue writing
 
-      /* Update the buffer */
-      res = (uint8_t*)malloc(sizeof(uint8_t)*(224 - 1));
-      if (res == NULL) {MemManage_Handler();}
-      memcpy(res, CdcReceiveBuffer + len + 2, 224 - len - 2);
-      memset(CdcReceiveBuffer + 1, '\0', 224 - 1); // clear the buffer
-      memcpy(CdcReceiveBuffer + 1, res, 224 - len - 1);
-      CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len - 1;
-
+      // free the temporary memory 
       free(res);
     }
 
-    // memset(CdcReceiveBuffer, '\0', 224); // clear the buffer
-    osDelay(1000);
+    osDelay(1000); // TODO: to be reduced??
   }
 }
 /* USER CODE END Application */

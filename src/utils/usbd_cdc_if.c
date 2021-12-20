@@ -95,7 +95,7 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
-extern uint8_t CdcReceiveBuffer[224];
+extern uint8_t CdcReceiveBuffer[USB_BUFFER_SIZE];
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -265,10 +265,9 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
 
-  // MS: Copy data to global buffer 
-  // memset(CdcReceiveBuffer, '\0', 64); // clear the buffer
+  // MS: Copy data to global buffer without overwriting data that hasn't been read yet.
   uint8_t len = (uint8_t)*Len;
-  uint8_t idx = CdcReceiveBuffer[0]; // do not write old data that hasn't been read yet
+  uint8_t idx = CdcReceiveBuffer[0]; 
   memcpy(CdcReceiveBuffer + idx + 1, Buf, len);  // copy the data to the buffer
   CdcReceiveBuffer[0] = idx + len + 0;
   memset(Buf, '\0', len); // clear the Buf also
