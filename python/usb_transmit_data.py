@@ -11,4 +11,4 @@ while 1:
     # dataToTransmit = "Hello World from the python script.\n"
     dataToTransmit = "Im python.\n"
     ser.write(dataToTransmit.encode())
-    time.sleep(0.5)
+    time.sleep(0.1)
