@@ -16,7 +16,13 @@
   *                             www.st.com/SLA0044
   *
   ******************************************************************************
-  */
+  * @attention
+  *
+  * This script uses the hash table implementation extracted from
+  * Copyright (c) 2005-2021, Troy D. Hanson http://troydhanson.github.io/uthash/
+  * All rights reserved.
+  * 
+  ******************************************************************************
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -32,12 +38,32 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "uthash.h"
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+struct int_params {
+    char key[10];      /* field used as the key */
+    uint8_t value;     /* field used to store integers */
+    UT_hash_handle hh; /* makes this structure hashable */
+};
+struct float_params {
+    char key[10];      /* field used as the key */
+    float value;       /* field used to store integers */
+    UT_hash_handle hh; /* makes this structure hashable */
+};
+struct bool_params {
+    char key[10];      /* field used as the key */
+    bool value;     /* field used to store booleans*/
+    UT_hash_handle hh; /* makes this structure hashable */
+};
+struct str_params {
+    char key[10];      /* field used as the key */
+    char str[20];      /* field used to store string messages */
+    UT_hash_handle hh; /* makes this structure hashable */
+};
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -65,6 +91,7 @@ void Error_Handler(void);
 
 #define BOARD_ID (1) // Module's ID.
 #define USB_BUFFER_SIZE (160) // Size of the USB buffer, in bytes.
+                              // TODO: to be modified?? 
 
 /* USER CODE BEGIN Private defines */
 #define DW_RESET_Pin GPIO_PIN_11

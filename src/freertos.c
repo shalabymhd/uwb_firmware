@@ -42,7 +42,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define INACTIVE_STATE (0)
+#define GET_ID_STATE (1)
+#define RANGING_STATE (2)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -52,11 +54,16 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t CdcReceiveBuffer[USB_BUFFER_SIZE]; // buffer to store received USB data.
+char CdcReceiveBuffer[USB_BUFFER_SIZE]; // buffer to store received USB data.
 uint8_t *FSM_status; // pointer to the status of the finite state machine.
                      // 0 = inactive, tag in receive mode
                      // 1 = initiate an instance two-way ranging
                      // 2 = initiate two-way ranging indefinitely
+
+struct int_params *FSM_int_params = NULL;
+struct float_params *FSM_float_params = NULL;
+struct bool_params *FSM_bool_params = NULL;
+struct str_params *FSM_str_params = NULL;
 /* USER CODE END Variables */
 
 osThreadId defaultTaskHandle;
@@ -70,17 +77,10 @@ osThreadId uwbTestingTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
-/* USER CODE END FunctionPrototypes */
-
 void StartDefaultTask(void const * argument);
 void StartBlinking(void const * argument);
-void StartUsbTransmit(void const * argument);
 void StartUsbReceive(void const * argument);
-void StartImuTask(void const * argument);
-void StartUwbTask(void const * argument);
-void StartListeningTask(void const * argument);
-void StartUwbTesting(void const * argument);
+/* USER CODE END FunctionPrototypes */
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -171,9 +171,31 @@ void StartBlinking(void const *argument){
 void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
+
+  *FSM_status = 0; // setting the initial state of the FSM to be inactive
   while (1){
-    read_usb();
-    osDelay(10); // TODO: to be reduced??
+    readUsb();
+
+    switch (*FSM_status)
+    {
+    case 0:
+      /* code */
+      break;
+    
+    case 1:
+      /* code */
+      break;
+    
+    case 2:
+      usb_print("Status set to RANGING!\n"); // placeholder
+      // *FSM_status = 0;
+      break;
+    
+    default:
+      break;
+    }
+
+    osDelay(1000); // TODO: to be modified?? 
   }
 }
 /* USER CODE END Application */
