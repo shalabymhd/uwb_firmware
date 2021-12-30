@@ -10,6 +10,6 @@ ser = serial.Serial('/dev/ttyACM1', 19200, timeout=1)
 while 1:
     # dataToTransmit = "Hello World from the python script.\n"
     # dataToTransmit = "Im python.\r"
-    dataToTransmit = "C02,1,CATS\r"
+    dataToTransmit = "C02,8,CATS,C1480000,1,0\r"
     ser.write(dataToTransmit.encode())
     time.sleep(1)

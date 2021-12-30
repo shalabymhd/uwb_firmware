@@ -172,7 +172,7 @@ void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
 
-  *FSM_status = 0; // setting the initial state of the FSM to be inactive
+  FSM_status = 0; // setting the initial state of the FSM to be inactive
   while (1){
     readUsb();
 
@@ -188,7 +188,7 @@ void StartUsbReceive(void const *argument){
     
     case 2:
       usb_print("Status set to RANGING!\n"); // placeholder
-      // *FSM_status = 0;
+      FSM_status = 0;
       break;
     
     default:

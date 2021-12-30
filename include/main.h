@@ -23,6 +23,7 @@
   * All rights reserved.
   * 
   ******************************************************************************
+  */
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -44,24 +45,32 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+
+// hash table implementation to store integer parameters
 struct int_params {
     char key[10];      /* field used as the key */
     uint8_t value;     /* field used to store integers */
     UT_hash_handle hh; /* makes this structure hashable */
 };
+
+// hash table implementation to store float parameters
 struct float_params {
     char key[10];      /* field used as the key */
     float value;       /* field used to store integers */
     UT_hash_handle hh; /* makes this structure hashable */
 };
+
+// hash table implementation to store boolean parameters
 struct bool_params {
     char key[10];      /* field used as the key */
     bool value;     /* field used to store booleans*/
     UT_hash_handle hh; /* makes this structure hashable */
 };
+
+// hash table implementation to store string parameters
 struct str_params {
     char key[10];      /* field used as the key */
-    char str[20];      /* field used to store string messages */
+    char value[20];      /* field used to store string messages */
     UT_hash_handle hh; /* makes this structure hashable */
 };
 /* USER CODE END ET */
