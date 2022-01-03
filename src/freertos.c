@@ -157,7 +157,7 @@ void StartDefaultTask(void const * argument)
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
-}
+} // end StartDefaultTask()
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
@@ -166,7 +166,7 @@ void StartBlinking(void const *argument){
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
     osDelay(1000);
   }
-}
+} // end StartBlinking()
 
 void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
@@ -197,7 +197,7 @@ void StartUsbReceive(void const *argument){
 
     osDelay(1000); // TODO: to be modified?? 
   }
-}
+} // end StartUsbReceive()
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

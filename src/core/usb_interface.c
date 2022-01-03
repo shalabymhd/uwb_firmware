@@ -150,10 +150,4 @@ void updateCommandsAndParams(char *msg){
         iter += 1;
         pt = strtok(NULL, ",");
     }
-
-    struct float_params *s = NULL;
-    HASH_FIND_STR(FSM_float_params, "timestamp", s);
-
-    usb_print(s->key);
-
 } // end updateCommandsAndParams()
