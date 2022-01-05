@@ -68,12 +68,7 @@ struct str_params *FSM_str_params = NULL;
 
 osThreadId defaultTaskHandle;
 osThreadId blinkTaskHandle;
-osThreadId usbTransmitTaskHandle;
 osThreadId usbReceiveTaskHandle;
-osThreadId imuTaskHandle;
-osThreadId uwbTaskHandle;
-osThreadId listeningTaskHandle;
-osThreadId uwbTestingTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -174,28 +169,35 @@ void StartUsbReceive(void const *argument){
 
   FSM_status = 0; // setting the initial state of the FSM to be inactive
   while (1){
-    readUsb();
+    bool success;
 
-    switch (*FSM_status)
-    {
-    case 0:
-      /* code */
-      break;
-    
-    case 1:
-      /* code */
-      break;
-    
-    case 2:
-      usb_print("Status set to RANGING!\n"); // placeholder
-      FSM_status = 0;
-      break;
-    
-    default:
-      break;
-    }
+    // readUsb();
 
-    osDelay(1000); // TODO: to be modified?? 
+    // switch (*FSM_status)
+    // {
+    //   case 0:
+    //     /* code */
+    //     break;
+      
+    //   case 1:
+    //     /* code */
+    //     break;
+      
+    //   case 2:
+    //     usb_print("Status set to RANGING!\n"); // placeholder
+        // success = initiateTwrInstance();
+
+    //     if (success){ 
+    //       usb_print("TWR SUCCESS!\n"); // placeholder
+    //       FSM_status = 0;
+    //     }
+    //     break;
+      
+    //   default:
+    //     break;
+    // }
+    // do_owr();
+    osDelay(100); // TODO: to be modified?? 
   }
 } // end StartUsbReceive()
 /* USER CODE END Application */

@@ -129,7 +129,7 @@ void updateCommandsAndParams(char *msg){
             float_bytes[2] = int_temp;
 
             memcpy(char_temp, pt+4, 2); 
-            int_temp = (int)strtol(char_temp, NULL, 16); 
+            int_temp = (int)strtol(char_temp, NULL, 16);
             float_bytes[1] = int_temp;
 
             memcpy(char_temp, pt+6, 2); 

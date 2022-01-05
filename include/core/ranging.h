@@ -18,9 +18,10 @@ extern "C" {
 /* Function Prototypes -------------------------------------------------------*/
 int do_owr(void);
 int do_twr(void);
+int initiateTwrInstance(void);
 void listen(void);
 void listen_twr(void);
-void uwbReceiveInterruptInit(void);
+int twrReceiveCallback(void);
 
 #define UUS_TO_DWT_TIME 65536
 

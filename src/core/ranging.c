@@ -121,7 +121,7 @@ volatile static int32 tx_delay_ms = -1;
 
 int do_owr(void){
     int result;
-    
+
     /* Write frame data to DW1000 and prepare transmission. See NOTE 4 below.*/
     dwt_writetxdata(sizeof(tx_msg), tx_msg, 0); /* Zero offset in TX buffer. */
     dwt_writetxfctrl(sizeof(tx_msg), 0, 0); /* Zero offset in TX buffer, no ranging. */
@@ -257,6 +257,127 @@ int do_twr(void){
         // /* Execute a delay between ranging exchanges. */
         // osDelay(RNG_DELAY_MS);
     }
+}
+
+int initiateTwrInstance(void){
+	/* Set expected response's delay and timeout.
+     * As this example only handles one incoming frame with always the same delay and
+       timeout, those values can be set here once for all. */
+    // dwt_setrxaftertxdelay(40); //dwt_setrxaftertxdelay(POLL_TX_TO_RESP_RX_DLY_UUS);
+    // dwt_setrxtimeout(0); // dwt_setrxtimeout(RESP_RX_TIMEOUT_UUS);
+    // dwt_setpreambledetecttimeout(PRE_TIMEOUT);
+
+    decaIrqStatus_t stat;
+    
+    dwt_forcetrxoff();
+    stat = decamutexon();
+
+    /* Write frame data to DW1000 and prepare transmission. See NOTE 8 below. */
+    tx_poll_msg[ALL_MSG_SN_IDX] = frame_seq_nb;
+    dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_TXFRS);
+    dwt_writetxdata(sizeof(tx_poll_msg), tx_poll_msg, 0); /* Zero offset in TX buffer. */
+    dwt_writetxfctrl(sizeof(tx_poll_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
+
+    /* Start transmission, indicating that a response is expected so that reception is 
+        enabled automatically after the frame is sent and the delay set by 
+        dwt_setrxaftertxdelay() has elapsed. */
+    dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
+
+    // usb_print("Poll message transmitted. \n");
+    // dwt_setrxtimeout(2000*UUS_TO_DWT_TIME); /* Set response frame timeout. */
+    dwt_rxenable(DWT_START_RX_IMMEDIATE);
+
+    /* We assume that the transmission is achieved correctly, poll for reception of a frame or error/timeout. See NOTE 9 below. */
+    int iter = 0;
+    while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
+    { 
+        iter = iter + 1;
+        if (iter>10000){
+            return 0;
+        }
+    };
+
+    /* Increment frame sequence number after transmission of the poll message (modulo 256). */
+    frame_seq_nb++;
+
+    if (status_reg & SYS_STATUS_RXFCG)
+    {
+        uint32 frame_len;
+
+        /* Clear good RX frame event and TX frame sent in the DW1000 status register. */
+        dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
+
+        /* A frame has been received, read it into the local buffer. */
+        frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_MASK;
+        if (frame_len <= RX_BUF_LEN)
+        {
+            dwt_readrxdata(rx_buffer, frame_len, 0);
+        }
+
+        /* Check that the frame is the expected response from the companion "DS TWR responder" example.
+            * As the sequence number field of the frame is not relevant, it is cleared to simplify the validation of the frame. */
+        rx_buffer[ALL_MSG_SN_IDX] = 0;
+        if (memcmp(rx_buffer, rx_resp_msg, ALL_MSG_COMMON_LEN) == 0)
+        {
+            uint32 final_tx_time;
+            int ret;
+
+            // usb_print("Resp message received. \n");
+
+            /* Retrieve poll transmission and response reception timestamp. */
+            poll_tx_ts = get_tx_timestamp_u64();
+            resp_rx_ts = get_rx_timestamp_u64();
+
+            /* Compute final message transmission time. See NOTE 10 below. */
+            // final_tx_time = (resp_rx_ts + (RESP_RX_TO_FINAL_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
+            final_tx_time = (resp_rx_ts + (600 * UUS_TO_DWT_TIME)) >> 8;
+            dwt_setdelayedtrxtime(final_tx_time);
+
+            // /* Final TX timestamp is the transmission time we programmed plus the TX antenna delay. */
+            // final_tx_ts = (((uint64)(final_tx_time & 0xFFFFFFFEUL)) << 8) + TX_ANT_DLY;
+
+            /* Write all timestamps in the final message. See NOTE 11 below. */
+            final_msg_set_ts(&tx_final_msg[FINAL_MSG_POLL_TX_TS_IDX], poll_tx_ts);
+            final_msg_set_ts(&tx_final_msg[FINAL_MSG_RESP_RX_TS_IDX], resp_rx_ts);
+            final_msg_set_ts(&tx_final_msg[FINAL_MSG_FINAL_TX_TS_IDX], final_tx_ts);
+
+            /* Write and send final message. See NOTE 8 below. */
+            tx_final_msg[ALL_MSG_SN_IDX] = frame_seq_nb;
+            dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
+            dwt_writetxfctrl(sizeof(tx_final_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
+            ret = dwt_starttx(DWT_START_TX_DELAYED);
+
+            /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 12 below. */
+            if (ret == DWT_SUCCESS)
+            {
+                usb_print("Final message transmitted. \n");
+
+                /* Poll DW1000 until TX frame sent event set. See NOTE 9 below. */
+                while (!(dwt_read32bitreg(SYS_STATUS_ID) & SYS_STATUS_TXFRS))
+                { };
+
+                /* Clear TXFRS event. */
+                dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_TXFRS);
+
+                /* Increment frame sequence number after transmission of the final message (modulo 256). */
+                frame_seq_nb++;
+                
+                decamutexoff(stat);
+                return 1;
+            }
+        }
+    }
+    else
+    {
+        /* Clear RX error/timeout events in the DW1000 status register. */
+        dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
+
+        /* Reset RX to properly reinitialise LDE operation. */
+        dwt_rxreset();
+    }
+
+    decamutexoff(stat);
+    return 0;
 }
 
 void listen(){
@@ -465,6 +586,8 @@ void listen_twr(void){
     }
 }
 
+
+
 void uwbReceiveInterruptInit(){
     /* Install DW1000 IRQ handler. */
     port_set_deca_isr(dwt_isr);
@@ -513,8 +636,8 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data)
 
     usb_print("Frame received through interrupt!\r\n");
     //Good candidate
-    usb_print(rx_buffer);
-    usb_print(" \n");
+    // usb_print(rx_buffer);
+    // usb_print(" \n");
 
     /* Set corresponding inter-frame delay. */
     tx_delay_ms = DFLT_TX_DELAY_MS;
