@@ -97,7 +97,7 @@ void uwb_init(void){
      * performance. */
     reset_DW1000(); /* Target specific drive of RSTn line into DW1000 low for a period. */
     port_set_dw1000_slowrate();
-    if (dwt_initialise(DWT_LOADNONE) == DWT_ERROR)
+    if (dwt_initialise(DWT_LOADUCODE) == DWT_ERROR)
     {
         usb_print("UWB initialization failed. \n");
         while (1)

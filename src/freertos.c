@@ -55,10 +55,10 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 char CdcReceiveBuffer[USB_BUFFER_SIZE]; // buffer to store received USB data.
-uint8_t *FSM_status; // pointer to the status of the finite state machine.
-                     // 0 = inactive, tag in receive mode
-                     // 1 = initiate an instance two-way ranging
-                     // 2 = initiate two-way ranging indefinitely
+uint8_t FSM_status; // pointer to the status of the finite state machine.
+                    // 0 = inactive, tag in receive mode
+                    // 1 = initiate an instance two-way ranging
+                    // 2 = initiate two-way ranging indefinitely
 
 struct int_params *FSM_int_params = NULL;
 struct float_params *FSM_float_params = NULL;
@@ -69,12 +69,14 @@ struct str_params *FSM_str_params = NULL;
 osThreadId defaultTaskHandle;
 osThreadId blinkTaskHandle;
 osThreadId usbReceiveTaskHandle;
+osThreadId twrInterruptTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 void StartDefaultTask(void const * argument);
 void StartBlinking(void const * argument);
 void StartUsbReceive(void const * argument);
+void twrInterruptTask(void const * argument);
 /* USER CODE END FunctionPrototypes */
 
 extern void MX_USB_DEVICE_Init(void);
@@ -128,11 +130,14 @@ void MX_FREERTOS_Init(void) {
   // defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
+  osThreadDef(blink, StartBlinking, osPriorityNormal, 0, 128);
   blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
-  osThreadDef(usbReceive, StartUsbReceive, osPriorityNormal, 0, 128);
+  osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 128);
   usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
+
+  osThreadDef(twrInterrupt, twrInterruptTask, osPriorityRealtime, 0, 128);
+  twrInterruptTaskHandle = osThreadCreate(osThread(twrInterrupt), NULL);
   /* USER CODE END RTOS_THREADS */
 }
 
@@ -159,7 +164,7 @@ void StartDefaultTask(void const * argument)
 void StartBlinking(void const *argument){
   while (1){
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
-    osDelay(1000);
+    osDelay(100);
   }
 } // end StartBlinking()
 
@@ -167,39 +172,59 @@ void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
 
-  FSM_status = 0; // setting the initial state of the FSM to be inactive
+  // FSM_status = 0; // setting the initial state of the FSM to be inactive
   while (1){
     bool success;
 
-    // readUsb();
+  //   readUsb();
 
-    // switch (*FSM_status)
-    // {
-    //   case 0:
-    //     /* code */
-    //     break;
+  //   switch (FSM_status)
+  //   {
+  //     case 0:
+  //       /* code */
+  //       break;
       
-    //   case 1:
-    //     /* code */
-    //     break;
+  //     case 1:
+  //       /* code */
+  //       break;
       
-    //   case 2:
-    //     usb_print("Status set to RANGING!\n"); // placeholder
-        // success = initiateTwrInstance();
+  //     case 2:
+        // usb_print("Status set to RANGING!\n"); // placeholder
+        success = twrInitiateInstance();
+        // do_twr();
+        // listen_twr();
 
     //     if (success){ 
     //       usb_print("TWR SUCCESS!\n"); // placeholder
     //       FSM_status = 0;
     //     }
     //     break;
-      
+
+    //   case 3:
+    //     usb_print("Status set to TWR Receiver!\n"); // placeholder
+        // success = twrReceiveCallback();
+
+    //     if (success){ 
+    //       usb_print("TWR SUCCESS!\n"); // placeholder
+    //       FSM_status = 0;
+    //     }
+    //     break;
+
     //   default:
     //     break;
     // }
-    // do_owr();
-    osDelay(100); // TODO: to be modified?? 
+    osDelay(1); // TODO: to be modified?? 
   }
 } // end StartUsbReceive()
+
+/* Private application code --------------------------------------------------*/
+/* USER CODE BEGIN Application */
+void twrInterruptTask(void const *argument){
+  while (1){
+    osThreadSuspend(NULL);
+    twrReceiveCallback();
+  }
+} // end twrInterruptTask()
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
