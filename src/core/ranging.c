@@ -163,7 +163,7 @@ int twrInitiateInstance(void){
        timeout, those values can be set here once for all. */
     dwt_setrxaftertxdelay(40); //dwt_setrxaftertxdelay(POLL_TX_TO_RESP_RX_DLY_UUS);
     dwt_setrxtimeout(800); // dwt_setrxtimeout(RESP_RX_TIMEOUT_UUS);
-    dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
+    // dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
 
     /* Write frame data to DW1000 and prepare transmission. See NOTE 8 below. */
     tx_poll_msg[ALL_MSG_SN_IDX] = frame_seq_nb;
@@ -228,6 +228,8 @@ int twrInitiateInstance(void){
             final_msg_set_ts(&tx_final_msg[FINAL_MSG_RESP_RX_TS_IDX], resp_rx_ts);
             final_msg_set_ts(&tx_final_msg[FINAL_MSG_FINAL_TX_TS_IDX], final_tx_ts);
 
+            dwt_forcetrxoff();
+
             /* Write and send final message. See NOTE 8 below. */
             tx_final_msg[ALL_MSG_SN_IDX] = frame_seq_nb;
             dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
@@ -282,7 +284,7 @@ int twrReceiveCallback(void){
     stat = decamutexon();
 
     /* Set preamble timeout for expected frames. See NOTE 6 below. */
-    dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
+    // dwt_setpreambledetecttimeout(PRE_TIMEOUT*1000);
 
     /* Clear reception timeout to start next ranging process. */
     dwt_setrxtimeout(2000*UUS_TO_DWT_TIME); //dwt_setrxtimeout(0);
@@ -325,6 +327,8 @@ int twrReceiveCallback(void){
             // resp_tx_time = (poll_rx_ts + (POLL_RX_TO_RESP_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
             resp_tx_time = (poll_rx_ts + (450 * UUS_TO_DWT_TIME)) >> 8;
             dwt_setdelayedtrxtime(resp_tx_time);
+
+            // dwt_forcetrxoff();
 
             /* Write and send the response message. See NOTE 10 below.*/
             tx_resp_msg[ALL_MSG_SN_IDX] = frame_seq_nb;
@@ -423,7 +427,7 @@ int twrReceiveCallback(void){
                 dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
 
                 /* Reset RX to properly reinitialise LDE operation. */
-                dwt_rxreset();
+                // dwt_rxreset();
             }
         }
     }
@@ -433,7 +437,7 @@ int twrReceiveCallback(void){
         dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
 
         /* Reset RX to properly reinitialise LDE operation. */
-        dwt_rxreset();
+        // dwt_rxreset();
     }
     
     dwt_setrxtimeout(0);
@@ -509,11 +513,9 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data)
  */
 static void rx_to_cb(const dwt_cb_data_t *cb_data)
 {
-    /* Set corresponding inter-frame delay. */
-    tx_delay_ms = RX_TO_TX_DELAY_MS;
-
-    /* TESTING BREAKPOINT LOCATION #2 */
     usb_print("RX Timeout!\r\n");
+
+    dwt_rxenable(DWT_START_RX_IMMEDIATE);
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
@@ -527,9 +529,7 @@ static void rx_to_cb(const dwt_cb_data_t *cb_data)
  */
 static void rx_err_cb(const dwt_cb_data_t *cb_data)
 {
-    /* Set corresponding inter-frame delay. */
-    tx_delay_ms = RX_ERR_TX_DELAY_MS;
-    
-    /* TESTING BREAKPOINT LOCATION #3 */
     usb_print("RX Error!\r\n");
+
+    dwt_rxenable(DWT_START_RX_IMMEDIATE);
 }

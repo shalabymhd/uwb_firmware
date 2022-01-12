@@ -213,7 +213,7 @@ void StartUsbReceive(void const *argument){
     //   default:
     //     break;
     // }
-    osDelay(1); // TODO: to be modified?? 
+    osDelay(5); // TODO: to be modified?? 
   }
 } // end StartUsbReceive()
 
