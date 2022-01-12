@@ -12,4 +12,4 @@ while 1:
     # dataToTransmit = "Im python.\r"
     dataToTransmit = "C02,8,CATS,C1480000,1,0,4386B000\r"
     ser.write(dataToTransmit.encode())
-    time.sleep(1)
+    time.sleep(0.01)

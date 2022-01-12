@@ -163,7 +163,7 @@ int twrInitiateInstance(void){
        timeout, those values can be set here once for all. */
     dwt_setrxaftertxdelay(40); //dwt_setrxaftertxdelay(POLL_TX_TO_RESP_RX_DLY_UUS);
     dwt_setrxtimeout(800); // dwt_setrxtimeout(RESP_RX_TIMEOUT_UUS);
-    // dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
+    dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
 
     /* Write frame data to DW1000 and prepare transmission. See NOTE 8 below. */
     tx_poll_msg[ALL_MSG_SN_IDX] = frame_seq_nb;
@@ -228,7 +228,7 @@ int twrInitiateInstance(void){
             final_msg_set_ts(&tx_final_msg[FINAL_MSG_RESP_RX_TS_IDX], resp_rx_ts);
             final_msg_set_ts(&tx_final_msg[FINAL_MSG_FINAL_TX_TS_IDX], final_tx_ts);
 
-            dwt_forcetrxoff();
+            // dwt_forcetrxoff();
 
             /* Write and send final message. See NOTE 8 below. */
             tx_final_msg[ALL_MSG_SN_IDX] = frame_seq_nb;
@@ -239,7 +239,7 @@ int twrInitiateInstance(void){
             /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 12 below. */
             if (ret == DWT_SUCCESS)
             {
-                usb_print("Final message transmitted. \n");
+                // usb_print("Final message transmitted. \n");
 
                 /* Poll DW1000 until TX frame sent event set. See NOTE 9 below. */
                 while (!(dwt_read32bitreg(SYS_STATUS_ID) & SYS_STATUS_TXFRS))
@@ -265,7 +265,7 @@ int twrInitiateInstance(void){
         dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
 
         /* Reset RX to properly reinitialise LDE operation. */
-        // dwt_rxreset();
+        dwt_rxreset();
     }
 
     dwt_setpreambledetecttimeout(0);
@@ -284,7 +284,7 @@ int twrReceiveCallback(void){
     stat = decamutexon();
 
     /* Set preamble timeout for expected frames. See NOTE 6 below. */
-    // dwt_setpreambledetecttimeout(PRE_TIMEOUT*1000);
+    dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
 
     /* Clear reception timeout to start next ranging process. */
     dwt_setrxtimeout(2000*UUS_TO_DWT_TIME); //dwt_setrxtimeout(0);
@@ -427,7 +427,7 @@ int twrReceiveCallback(void){
                 dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
 
                 /* Reset RX to properly reinitialise LDE operation. */
-                // dwt_rxreset();
+                dwt_rxreset();
             }
         }
     }
@@ -437,7 +437,7 @@ int twrReceiveCallback(void){
         dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
 
         /* Reset RX to properly reinitialise LDE operation. */
-        // dwt_rxreset();
+        dwt_rxreset();
     }
     
     dwt_setrxtimeout(0);

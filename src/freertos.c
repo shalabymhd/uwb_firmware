@@ -164,7 +164,7 @@ void StartDefaultTask(void const * argument)
 void StartBlinking(void const *argument){
   while (1){
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
-    osDelay(100);
+    osDelay(1000);
   }
 } // end StartBlinking()
 
@@ -176,44 +176,35 @@ void StartUsbReceive(void const *argument){
   while (1){
     bool success;
 
-  //   readUsb();
+    readUsb();
 
-  //   switch (FSM_status)
-  //   {
-  //     case 0:
-  //       /* code */
-  //       break;
+    switch (FSM_status)
+    {
+      case 0:
+        /* code */
+        break;
       
-  //     case 1:
-  //       /* code */
-  //       break;
+      case 1:
+        /* code */
+        break;
       
-  //     case 2:
-        // usb_print("Status set to RANGING!\n"); // placeholder
+      case 2:
+        // usb_print("Status set to RANGING!\r\n"); // placeholder
         success = twrInitiateInstance();
-        // do_twr();
-        // listen_twr();
 
-    //     if (success){ 
-    //       usb_print("TWR SUCCESS!\n"); // placeholder
-    //       FSM_status = 0;
-    //     }
-    //     break;
+        if (success){ 
+          usb_print("TWR SUCCESS!\r\n"); // placeholder
+          FSM_status = 0;
+        }
+        else {
+          usb_print("TWR FAIL!\r\n");
+        }
+        break;
 
-    //   case 3:
-    //     usb_print("Status set to TWR Receiver!\n"); // placeholder
-        // success = twrReceiveCallback();
-
-    //     if (success){ 
-    //       usb_print("TWR SUCCESS!\n"); // placeholder
-    //       FSM_status = 0;
-    //     }
-    //     break;
-
-    //   default:
-    //     break;
-    // }
-    osDelay(5); // TODO: to be modified?? 
+      default:
+        break;
+    }
+    osDelay(1); // TODO: to be modified?? 
   }
 } // end StartUsbReceive()
 
@@ -223,6 +214,7 @@ void twrInterruptTask(void const *argument){
   while (1){
     osThreadSuspend(NULL);
     twrReceiveCallback();
+    osDelay(1);
   }
 } // end twrInterruptTask()
 /* USER CODE END Application */
