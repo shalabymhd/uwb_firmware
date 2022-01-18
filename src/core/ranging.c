@@ -278,10 +278,6 @@ int twrInitiateInstance(void){
 int twrReceiveCallback(void){
     /* String used to display measured distance on UART. */
     char dist_str[30] = {0};
-    decaIrqStatus_t stat;
-
-    // dwt_forcetrxoff();
-    stat = decamutexon();
 
     /* Set preamble timeout for expected frames. See NOTE 6 below. */
     dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
@@ -347,8 +343,6 @@ int twrReceiveCallback(void){
             {
                 dwt_setrxtimeout(0);
                 dwt_setpreambledetecttimeout(0);
-                dwt_rxenable(DWT_START_RX_IMMEDIATE);
-                decamutexoff(stat);
                 return 0;
             }
 
@@ -416,8 +410,6 @@ int twrReceiveCallback(void){
                     
                     dwt_setrxtimeout(0);
                     dwt_setpreambledetecttimeout(0);
-                    dwt_rxenable(DWT_START_RX_IMMEDIATE);
-                    decamutexoff(stat);
                     return 1;
                 }
             }
@@ -442,8 +434,6 @@ int twrReceiveCallback(void){
     
     dwt_setrxtimeout(0);
     dwt_setpreambledetecttimeout(0);
-    dwt_rxenable(DWT_START_RX_IMMEDIATE);
-    decamutexoff(stat);
     return 0;
 }
 
@@ -498,8 +488,6 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data)
     // FSM_status = 3;
 
     osThreadResume(twrInterruptTaskHandle);
-
-    dwt_rxenable(DWT_START_RX_IMMEDIATE);
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
@@ -515,7 +503,7 @@ static void rx_to_cb(const dwt_cb_data_t *cb_data)
 {
     usb_print("RX Timeout!\r\n");
 
-    dwt_rxenable(DWT_START_RX_IMMEDIATE);
+    dwt_rxenable(DWT_START_RX_IMMEDIATE); 
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
@@ -531,5 +519,5 @@ static void rx_err_cb(const dwt_cb_data_t *cb_data)
 {
     usb_print("RX Error!\r\n");
 
-    dwt_rxenable(DWT_START_RX_IMMEDIATE);
+    dwt_rxenable(DWT_START_RX_IMMEDIATE); 
 }

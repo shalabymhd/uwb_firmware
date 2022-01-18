@@ -130,13 +130,13 @@ void MX_FREERTOS_Init(void) {
   // defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  osThreadDef(blink, StartBlinking, osPriorityNormal, 0, 128);
+  osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
   blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
-  osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 128);
+  osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 256);
   usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
 
-  osThreadDef(twrInterrupt, twrInterruptTask, osPriorityRealtime, 0, 128);
+  osThreadDef(twrInterrupt, twrInterruptTask, osPriorityRealtime, 0, 256);
   twrInterruptTaskHandle = osThreadCreate(osThread(twrInterrupt), NULL);
   /* USER CODE END RTOS_THREADS */
 }
@@ -211,10 +211,14 @@ void StartUsbReceive(void const *argument){
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 void twrInterruptTask(void const *argument){
+  decaIrqStatus_t stat;
   while (1){
     osThreadSuspend(NULL);
+    stat = decamutexon();
     twrReceiveCallback();
     osDelay(1);
+    decamutexoff(stat);
+    dwt_rxenable(DWT_START_RX_IMMEDIATE); 
   }
 } // end twrInterruptTask()
 /* USER CODE END Application */
