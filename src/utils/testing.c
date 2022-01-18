@@ -1,8 +1,7 @@
 /**
   ******************************************************************************
-  * @file    spi.c
-  * @brief   This file provides code for the configuration
-  *          of the SPI instances.
+  * @file    testing.c
+  * @brief   This file provides sample tests to be utilized in development.
   ******************************************************************************
   */
 

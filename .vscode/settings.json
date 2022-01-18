@@ -12,6 +12,9 @@
         "stm32f4xx_hal.h": "c",
         "deca_device_api.h": "c",
         "dwt_general.h": "c",
-        "testing.h": "c"
-    }
+        "testing.h": "c",
+        "freertos.h": "c",
+        "ranging.h": "c"
+    },
+    "cortex-debug.variableUseNaturalFormat": true
 }

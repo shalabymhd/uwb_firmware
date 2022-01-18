@@ -10,19 +10,7 @@
 #include "common.h"
 
 void convert_float_to_string(char* str,float data){
-	int int_part, dec_part;
-	int_part = (int) data;
-	dec_part = (int) ((data-(float)int_part)*10000.0);
-
-	if (dec_part < 0 && int_part >= 0){
-		sprintf(str,(char*)"-%d.%d",int_part,-dec_part);
-	}
-	else if (dec_part < 0){
-		sprintf(str,(char*)"%d.%d",int_part,-dec_part);
-	}
-	else{
-		sprintf(str,(char*)"%d.%d",int_part,dec_part);
-	} 
+	gcvt(data,6,str);
 }
 
 void convert_elementR3_to_string(char* str, element_R3 data){

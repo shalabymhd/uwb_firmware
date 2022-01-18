@@ -16,6 +16,13 @@
   *                             www.st.com/SLA0044
   *
   ******************************************************************************
+  * @attention
+  *
+  * This script uses the hash table implementation extracted from
+  * Copyright (c) 2005-2021, Troy D. Hanson http://troydhanson.github.io/uthash/
+  * All rights reserved.
+  * 
+  ******************************************************************************
   */
 /* USER CODE END Header */
 
@@ -32,12 +39,40 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "uthash.h"
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
+// hash table implementation to store integer parameters
+struct int_params {
+    char key[10];      /* field used as the key */
+    uint8_t value;     /* field used to store integers */
+    UT_hash_handle hh; /* makes this structure hashable */
+};
+
+// hash table implementation to store float parameters
+struct float_params {
+    char key[10];      /* field used as the key */
+    float value;       /* field used to store integers */
+    UT_hash_handle hh; /* makes this structure hashable */
+};
+
+// hash table implementation to store boolean parameters
+struct bool_params {
+    char key[10];      /* field used as the key */
+    bool value;     /* field used to store booleans*/
+    UT_hash_handle hh; /* makes this structure hashable */
+};
+
+// hash table implementation to store string parameters
+struct str_params {
+    char key[10];      /* field used as the key */
+    char value[20];      /* field used to store string messages */
+    UT_hash_handle hh; /* makes this structure hashable */
+};
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -63,7 +98,9 @@ void Error_Handler(void);
 #define USB_DP_Pin GPIO_PIN_12
 #define USB_DP_GPIO_Port GPIOA
 
-#define BOARD_ID (1); // This is the module's ID.
+#define BOARD_ID (1) // Module's ID.
+#define USB_BUFFER_SIZE (160) // Size of the USB buffer, in bytes.
+                              // TODO: to be modified?? 
 
 /* USER CODE BEGIN Private defines */
 #define DW_RESET_Pin GPIO_PIN_11
