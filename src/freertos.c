@@ -133,7 +133,7 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
   blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
-  osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 256);
+  osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 1024);
   usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
 
   osThreadDef(twrInterrupt, twrInterruptTask, osPriorityRealtime, 0, 256);
@@ -172,11 +172,14 @@ void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
 
+  bool success;
+  decaIrqStatus_t stat;
+
   // FSM_status = 0; // setting the initial state of the FSM to be inactive
   while (1){
-    bool success;
-
+    stat = decamutexon();
     readUsb();
+    decamutexoff(stat);
 
     switch (FSM_status)
     {
@@ -197,7 +200,7 @@ void StartUsbReceive(void const *argument){
           FSM_status = 0;
         }
         else {
-          usb_print("TWR FAIL!\r\n");
+          // usb_print("TWR FAIL!\r\n");
         }
         break;
 
