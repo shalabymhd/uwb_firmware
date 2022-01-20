@@ -133,7 +133,7 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
   blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
-  osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 1024);
+  osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 512);
   usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
 
   osThreadDef(twrInterrupt, twrInterruptTask, osPriorityRealtime, 0, 256);
@@ -219,9 +219,9 @@ void twrInterruptTask(void const *argument){
     osThreadSuspend(NULL);
     stat = decamutexon();
     twrReceiveCallback();
-    osDelay(1);
+    // osDelay(1);
     decamutexoff(stat);
-    dwt_rxenable(DWT_START_RX_IMMEDIATE); 
+    dwt_rxenable(DWT_START_RX_IMMEDIATE);
   }
 } // end twrInterruptTask()
 /* USER CODE END Application */

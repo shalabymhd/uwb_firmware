@@ -155,8 +155,8 @@ int do_owr(void){
 int twrInitiateInstance(void){
     decaIrqStatus_t stat;
 
-    dwt_forcetrxoff();
     stat = decamutexon();
+    dwt_forcetrxoff();
 
 	/* Set expected response's delay and timeout.
      * As this example only handles one incoming frame with always the same delay and
@@ -444,11 +444,11 @@ void uwbReceiveInterruptInit(){
     port_set_deca_isr(dwt_isr);
 
     /* Register RX call-back. */
-    dwt_setcallbacks(NULL, &rx_ok_cb, &rx_to_cb, &rx_err_cb);
+    dwt_setcallbacks(NULL, &rx_ok_cb, NULL, NULL);
 
     /* Enable wanted interrupts (TX confirmation, RX good frames, RX timeouts and RX errors). */
-    dwt_setinterrupt(DWT_INT_RFCG | DWT_INT_RFTO | DWT_INT_RXPTO | DWT_INT_RPHE | DWT_INT_RFCE | DWT_INT_RFSL | DWT_INT_SFDT, 1);
-    // dwt_setinterrupt(DWT_INT_RFCG, 1);
+    // dwt_setinterrupt(DWT_INT_RFCG | DWT_INT_RFTO | DWT_INT_RXPTO | DWT_INT_RPHE | DWT_INT_RFCE | DWT_INT_RFSL | DWT_INT_SFDT, 1);
+    dwt_setinterrupt(DWT_INT_RFCG, 1);
 
     /* Set delay to turn reception on after transmission of the frame. See NOTE 2 below. */
     dwt_setrxaftertxdelay(60);
