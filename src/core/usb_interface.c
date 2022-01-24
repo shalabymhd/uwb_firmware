@@ -77,6 +77,9 @@ void readUsb(){
 void updateCommandsAndParams(char *msg){
     char *pt = strtok(msg,","); // break the string using the comma delimiter, to read each entry separately
     int iter = -1;
+          
+    deleteOldParams(); // delete all old params
+
     while (pt != NULL) { // while there still exists an unread parameter 
         if (iter == -1){
           FSM_status = atoi(pt+1); // the first entry of "msg" corresponds to the command number
@@ -87,7 +90,6 @@ void updateCommandsAndParams(char *msg){
           {
           case 1:{
             struct int_params *param_temp;
-            struct int_params *old_params;
 
             param_temp = malloc(sizeof(struct int_params));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
@@ -95,43 +97,38 @@ void updateCommandsAndParams(char *msg){
             strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
             param_temp->value = atoi(pt);
             
-            HASH_REPLACE_STR(FSM_int_params, key, param_temp, old_params);
-            
-            free(old_params);
+            HASH_ADD_STR(FSM_int_params, key, param_temp);
 
             break;
           }
           case 2:{
             struct str_params *param_temp;
-            struct str_params *old_params;
 
             param_temp = malloc(sizeof(struct str_params));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
+            
             strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
             strcpy(param_temp->value, pt);
-            HASH_REPLACE_STR(FSM_str_params, key, param_temp, old_params);
-
-            free(old_params);
+            
+            HASH_ADD_STR(FSM_str_params, key, param_temp);
 
             break;
           }
           case 3:{
             struct bool_params *param_temp;
-            struct bool_params *old_params;
 
             param_temp = malloc(sizeof(struct bool_params));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
+            
             strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
             param_temp->value = pt;
-            HASH_REPLACE_STR(FSM_bool_params, key, param_temp, old_params);
-
-            free(old_params);
+            
+            HASH_ADD_STR(FSM_bool_params, key, param_temp);
 
             break;
           }
           case 4:{
             struct float_params *param_temp;
-            struct float_params *old_params;
             
             char char_temp[2];
             int int_temp;
@@ -159,9 +156,8 @@ void updateCommandsAndParams(char *msg){
             
             strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
             memcpy(&(param_temp->value), &float_bytes, 4);
-            HASH_REPLACE_STR(FSM_float_params, key, param_temp, old_params);
             
-            free(old_params);
+            HASH_ADD_STR(FSM_float_params, key, param_temp);
             
             break;
           }
@@ -174,3 +170,39 @@ void updateCommandsAndParams(char *msg){
         pt = strtok(NULL, ","); // gets read of read parameter, sets current parameter to the next one
     }
 } // end updateCommandsAndParams()
+
+
+void deleteOldParams() {
+
+  /* Delete int params */
+  struct int_params *current_int, *tmp_int;
+
+  HASH_ITER(hh, FSM_int_params, current_int, tmp_int) {
+    HASH_DEL(FSM_int_params, current_int);  /* delete; advances to next param */
+    free(current_int);    
+  }
+
+  /* Delete str params */
+  struct str_params *current_str, *tmp_str;
+
+  HASH_ITER(hh, FSM_str_params, current_str, tmp_str) {
+    HASH_DEL(FSM_str_params, current_str);  /* delete; advances to next param */
+    free(current_str);    
+  }
+
+  /* Delete bool params */
+  struct bool_params *current_bool, *tmp_bool;
+
+  HASH_ITER(hh, FSM_bool_params, current_bool, tmp_bool) {
+    HASH_DEL(FSM_bool_params, current_bool);  /* delete; advances to next param */
+    free(current_bool);    
+  }
+
+  /* Delete float params */
+  struct float_params *current_float, *tmp_float;
+
+  HASH_ITER(hh, FSM_float_params, current_float, tmp_float) {
+    HASH_DEL(FSM_float_params, current_float);  /* delete; advances to next param */
+    free(current_float);    
+  }
+}
