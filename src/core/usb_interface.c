@@ -75,16 +75,14 @@ void readUsb(){
  * 
  */
 void updateCommandsAndParams(char *msg){
-    char *pt = strtok (msg,",");
+    char *pt = strtok(msg,","); // break the string using the comma delimiter, to read each entry separately
     int iter = -1;
-    while (pt != NULL) {
-        // char a = atoi(pt);
-        // printf("%d\n", a);
+    while (pt != NULL) { // while there still exists an unread parameter 
         if (iter == -1){
-          FSM_status = atoi(pt+1);
+          FSM_status = atoi(pt+1); // the first entry of "msg" corresponds to the command number
         }
         else{
-          int type = atoi(CO2_types[iter]);
+          int type = atoi(CO2_types[iter]); // TODO: generalize
           switch (type)
           {
           case 1:{
@@ -93,13 +91,13 @@ void updateCommandsAndParams(char *msg){
 
             param_temp = malloc(sizeof(struct int_params));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
-            strcpy(param_temp->key, CO2_fields[iter]);
+
+            strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
             param_temp->value = atoi(pt);
+            
             HASH_REPLACE_STR(FSM_int_params, key, param_temp, old_params);
             
-            // if (old_params != NULL){
-              free(old_params);
-            // }
+            free(old_params);
 
             break;
           }
@@ -109,13 +107,11 @@ void updateCommandsAndParams(char *msg){
 
             param_temp = malloc(sizeof(struct str_params));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
-            strcpy(param_temp->key, CO2_fields[iter]);
+            strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
             strcpy(param_temp->value, pt);
             HASH_REPLACE_STR(FSM_str_params, key, param_temp, old_params);
 
-            // if (old_params != NULL){
-              free(old_params);
-            // }
+            free(old_params);
 
             break;
           }
@@ -125,13 +121,11 @@ void updateCommandsAndParams(char *msg){
 
             param_temp = malloc(sizeof(struct bool_params));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
-            strcpy(param_temp->key, CO2_fields[iter]);
+            strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
             param_temp->value = pt;
             HASH_REPLACE_STR(FSM_bool_params, key, param_temp, old_params);
 
-            // if (old_params != NULL){
-              free(old_params);
-            // }
+            free(old_params);
 
             break;
           }
@@ -143,6 +137,7 @@ void updateCommandsAndParams(char *msg){
             int int_temp;
             char float_bytes[4];
 
+            /* Hex string to float conversion */ 
             memcpy(char_temp, pt, 2); 
             int_temp = (int)strtol(char_temp, NULL, 16); 
             float_bytes[3] = int_temp;
@@ -162,13 +157,11 @@ void updateCommandsAndParams(char *msg){
             param_temp = malloc(sizeof(struct float_params));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
             
-            strcpy(param_temp->key, CO2_fields[iter]);
+            strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
             memcpy(&(param_temp->value), &float_bytes, 4);
             HASH_REPLACE_STR(FSM_float_params, key, param_temp, old_params);
             
-            // if (old_params != NULL){
-              free(old_params);
-            // }
+            free(old_params);
             
             break;
           }
@@ -178,6 +171,6 @@ void updateCommandsAndParams(char *msg){
         }
 
         iter += 1;
-        pt = strtok(NULL, ",");
+        pt = strtok(NULL, ","); // gets read of read parameter, sets current parameter to the next one
     }
 } // end updateCommandsAndParams()

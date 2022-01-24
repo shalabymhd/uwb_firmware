@@ -266,14 +266,15 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
 
   if (*Len>1){ // prevents the subsequent code from getting triggered by usb_print
-    // MS: Copy data to global buffer without overwriting data that hasn't been read yet.
+    // Copy data to global buffer without overwriting data that hasn't been read yet.
     uint8_t len = (uint8_t)*Len;
-    uint8_t idx = CdcReceiveBuffer[0]; 
+    uint8_t idx = CdcReceiveBuffer[0]; // The first entry of CdcReceiveBuffer stores the
+                                       // index where the previously stored messages end
     memcpy(CdcReceiveBuffer + idx + 1, Buf, len);  // copy the data to the buffer
-    CdcReceiveBuffer[0] = idx + len + 0;
-    memset(Buf, '\0', len); // clear the Buf also
+    CdcReceiveBuffer[0] = idx + len; // Update the first entry 
+    memset(Buf, '\0', len); // clear the temporary buffer
   }
-
+  
   return (USBD_OK);
   /* USER CODE END 6 */
 }

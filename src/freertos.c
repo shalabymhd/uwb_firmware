@@ -216,12 +216,13 @@ void StartUsbReceive(void const *argument){
 void twrInterruptTask(void const *argument){
   decaIrqStatus_t stat;
   while (1){
-    osThreadSuspend(NULL);
-    stat = decamutexon();
-    twrReceiveCallback();
-    // osDelay(1);
-    decamutexoff(stat);
-    dwt_rxenable(DWT_START_RX_IMMEDIATE);
+    osThreadSuspend(NULL); // suspend the thread, re-enabled using uwb receive interrupt
+    
+    /* Executes right after a dw1000 receive interrupt */
+    stat = decamutexon(); // disable dw1000 interrupts
+    twrReceiveCallback(); // complete TWR 
+    decamutexoff(stat); // re-enable dw1000 interrupts
+    dwt_rxenable(DWT_START_RX_IMMEDIATE); // turn on uwb receiver
   }
 } // end twrInterruptTask()
 /* USER CODE END Application */
