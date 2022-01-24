@@ -13,10 +13,10 @@
 #include "common.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include "fsm.h"
 
 /* Variables -----------------------------------------------------------------*/
 extern char CdcReceiveBuffer[USB_BUFFER_SIZE];
-extern uint8_t FSM_status;
 extern struct int_params *FSM_int_params;
 extern struct float_params *FSM_float_params;
 extern struct bool_params *FSM_bool_params;

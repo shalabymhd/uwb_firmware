@@ -32,6 +32,7 @@
 #include "spi.h"
 #include "testing.h"
 #include "usb_interface.h"
+#include "fsm.h"
 
 /* USER CODE END Includes */
 
@@ -50,16 +51,16 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-/* USER CODE BEGIN Variables */
-char CdcReceiveBuffer[USB_BUFFER_SIZE]; // buffer to store received USB data.
 uint8_t FSM_status; // pointer to the status of the finite state machine.
                     // 0 = inactive, tag in receive mode
                     // 1 = initiate an instance two-way ranging
                     // 2 = initiate two-way ranging indefinitely
 
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+/* USER CODE BEGIN Variables */
+char CdcReceiveBuffer[USB_BUFFER_SIZE]; // buffer to store received USB data.
 struct int_params *FSM_int_params = NULL;
 struct float_params *FSM_float_params = NULL;
 struct bool_params *FSM_bool_params = NULL;
@@ -172,7 +173,7 @@ void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
 
-  bool success;
+
   decaIrqStatus_t stat;
 
   // FSM_status = 0; // setting the initial state of the FSM to be inactive
@@ -180,33 +181,7 @@ void StartUsbReceive(void const *argument){
     stat = decamutexon();
     readUsb();
     decamutexoff(stat);
-
-    switch (FSM_status)
-    {
-      case 0:
-        /* code */
-        break;
-      
-      case 1:
-        /* code */
-        break;
-      
-      case 2:
-        // usb_print("Status set to RANGING!\r\n"); // placeholder
-        success = twrInitiateInstance();
-
-        if (success){ 
-          usb_print("TWR SUCCESS!\r\n"); // placeholder
-          FSM_status = 0;
-        }
-        else {
-          // usb_print("TWR FAIL!\r\n");
-        }
-        break;
-
-      default:
-        break;
-    }
+    fsmLoop();
     osDelay(1); // TODO: to be modified?? 
   }
 } // end StartUsbReceive()

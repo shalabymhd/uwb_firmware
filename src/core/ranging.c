@@ -23,7 +23,6 @@
 #include "dwt_iqr.h"
 
 extern osThreadId twrInterruptTaskHandle;
-extern uint8_t FSM_status;
 
 /* Inter-frame delay period, in milliseconds. */
 #define TX_DELAY_MS 1000
