@@ -14,7 +14,8 @@
         "dwt_general.h": "c",
         "testing.h": "c",
         "freertos.h": "c",
-        "ranging.h": "c"
+        "ranging.h": "c",
+        "usb_interface.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": true
 }

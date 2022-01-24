@@ -23,6 +23,7 @@ extern "C" {
 /* Function Prototypes -------------------------------------------------------*/
 void readUsb();
 void updateCommandsAndParams(char *msg);
+void deleteOldParams();
 
 /* Variables -----------------------------------------------------------*/
 static const char *CO2_fields[] = {"target", "msg", "timestamp", "loop", "cir", "float2"}; // can't be more than 10 characters

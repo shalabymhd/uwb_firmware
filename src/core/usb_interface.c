@@ -75,104 +75,134 @@ void readUsb(){
  * 
  */
 void updateCommandsAndParams(char *msg){
-    char *pt = strtok (msg,",");
+    char *pt = strtok(msg,","); // break the string using the comma delimiter, to read each entry separately
     int iter = -1;
-    while (pt != NULL) {
-        // char a = atoi(pt);
-        // printf("%d\n", a);
+          
+    deleteOldParams(); // delete all old params
+
+    while (pt != NULL) { // while there still exists an unread parameter 
         if (iter == -1){
-          FSM_status = atoi(pt+1);
+          FSM_status = atoi(pt+1); // the first entry of "msg" corresponds to the command number
         }
-        // else{
-        //   int type = atoi(CO2_types[iter]);
-        //   switch (type)
-        //   {
-        //   case 1:{
-        //     struct int_params *param_temp;
-        //     struct int_params *old_params;
+        else{
+          int type = atoi(CO2_types[iter]); // TODO: generalize
+          switch (type)
+          {
+          case 1:{
+            struct int_params *param_temp;
 
-        //     param_temp = malloc(sizeof(struct int_params));
-        //     strcpy(param_temp->key, CO2_fields[iter]);
-        //     param_temp->value = atoi(pt);
-        //     HASH_REPLACE_STR(FSM_int_params, key, param_temp, old_params);
+            param_temp = malloc(sizeof(struct int_params));
+            if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
+
+            strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
+            param_temp->value = atoi(pt);
             
-        //     if (old_params != NULL){
-        //       free(old_params);
-        //     }
+            HASH_ADD_STR(FSM_int_params, key, param_temp);
 
-        //     break;
-        //   }
-          // case 2:{
-          //   struct str_params *param_temp;
-          //   struct int_params *old_params;
+            break;
+          }
+          case 2:{
+            struct str_params *param_temp;
 
-          //   param_temp = malloc(sizeof(struct str_params));
-          //   strcpy(param_temp->key, CO2_fields[iter]);
-          //   strcpy(param_temp->value, pt);
-          //   HASH_REPLACE_STR(FSM_str_params, key, param_temp, old_params);
-
-          //   if (old_params != NULL){
-          //     free(old_params);
-          //   }
-
-          //   break;
-          // }
-        //   case 3:{
-        //     struct bool_params *param_temp;
-        //     struct int_params *old_params;
-
-        //     param_temp = malloc(sizeof(struct bool_params));
-        //     strcpy(param_temp->key, CO2_fields[iter]);
-        //     param_temp->value = pt;
-        //     HASH_REPLACE_STR(FSM_bool_params, key, param_temp, old_params);
-
-        //     if (old_params != NULL){
-        //       free(old_params);
-        //     }
-
-        //     break;
-        //   }
-        //   case 4:{
-        //     struct float_params *param_temp;
-        //     struct int_params *old_params;
+            param_temp = malloc(sizeof(struct str_params));
+            if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
             
-        //     char char_temp[2];
-        //     int int_temp;
-        //     char float_bytes[4];
-
-        //     memcpy(char_temp, pt, 2); 
-        //     int_temp = (int)strtol(char_temp, NULL, 16); 
-        //     float_bytes[3] = int_temp;
-
-        //     memcpy(char_temp, pt+2, 2); 
-        //     int_temp = (int)strtol(char_temp, NULL, 16); 
-        //     float_bytes[2] = int_temp;
-
-        //     memcpy(char_temp, pt+4, 2); 
-        //     int_temp = (int)strtol(char_temp, NULL, 16);
-        //     float_bytes[1] = int_temp;
-
-        //     memcpy(char_temp, pt+6, 2); 
-        //     int_temp = (int)strtol(char_temp, NULL, 16); 
-        //     float_bytes[0] = int_temp;
-
-        //     param_temp = malloc(sizeof(struct float_params));
-        //     strcpy(param_temp->key, CO2_fields[iter]);
-        //     memcpy(&(param_temp->value), &float_bytes, 4);
-        //     HASH_REPLACE_STR(FSM_float_params, key, param_temp, old_params);
+            strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
+            strcpy(param_temp->value, pt);
             
-        //     if (old_params != NULL){
-        //       free(old_params);
-        //     }
+            HASH_ADD_STR(FSM_str_params, key, param_temp);
+
+            break;
+          }
+          case 3:{
+            struct bool_params *param_temp;
+
+            param_temp = malloc(sizeof(struct bool_params));
+            if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
             
-        //     break;
-        //   }
-        //   default:
-        //     break;
-        //   }
-        // }
+            strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
+            param_temp->value = pt;
+            
+            HASH_ADD_STR(FSM_bool_params, key, param_temp);
+
+            break;
+          }
+          case 4:{
+            struct float_params *param_temp;
+            
+            char char_temp[2];
+            int int_temp;
+            char float_bytes[4];
+
+            /* Hex string to float conversion */ 
+            memcpy(char_temp, pt, 2); 
+            int_temp = (int)strtol(char_temp, NULL, 16); 
+            float_bytes[3] = int_temp;
+
+            memcpy(char_temp, pt+2, 2); 
+            int_temp = (int)strtol(char_temp, NULL, 16); 
+            float_bytes[2] = int_temp;
+
+            memcpy(char_temp, pt+4, 2); 
+            int_temp = (int)strtol(char_temp, NULL, 16);
+            float_bytes[1] = int_temp;
+
+            memcpy(char_temp, pt+6, 2); 
+            int_temp = (int)strtol(char_temp, NULL, 16); 
+            float_bytes[0] = int_temp;
+
+            param_temp = malloc(sizeof(struct float_params));
+            if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
+            
+            strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
+            memcpy(&(param_temp->value), &float_bytes, 4);
+            
+            HASH_ADD_STR(FSM_float_params, key, param_temp);
+            
+            break;
+          }
+          default:
+            break;
+          }
+        }
 
         iter += 1;
-        pt = strtok(NULL, ",");
+        pt = strtok(NULL, ","); // gets read of read parameter, sets current parameter to the next one
     }
 } // end updateCommandsAndParams()
+
+
+void deleteOldParams() {
+
+  /* Delete int params */
+  struct int_params *current_int, *tmp_int;
+
+  HASH_ITER(hh, FSM_int_params, current_int, tmp_int) {
+    HASH_DEL(FSM_int_params, current_int);  /* delete; advances to next param */
+    free(current_int);    
+  }
+
+  /* Delete str params */
+  struct str_params *current_str, *tmp_str;
+
+  HASH_ITER(hh, FSM_str_params, current_str, tmp_str) {
+    HASH_DEL(FSM_str_params, current_str);  /* delete; advances to next param */
+    free(current_str);    
+  }
+
+  /* Delete bool params */
+  struct bool_params *current_bool, *tmp_bool;
+
+  HASH_ITER(hh, FSM_bool_params, current_bool, tmp_bool) {
+    HASH_DEL(FSM_bool_params, current_bool);  /* delete; advances to next param */
+    free(current_bool);    
+  }
+
+  /* Delete float params */
+  struct float_params *current_float, *tmp_float;
+
+  HASH_ITER(hh, FSM_float_params, current_float, tmp_float) {
+    HASH_DEL(FSM_float_params, current_float);  /* delete; advances to next param */
+    free(current_float);    
+  }
+}

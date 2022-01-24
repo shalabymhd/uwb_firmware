@@ -133,7 +133,7 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
   blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
-  osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 256);
+  osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 512);
   usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
 
   osThreadDef(twrInterrupt, twrInterruptTask, osPriorityRealtime, 0, 256);
@@ -172,11 +172,14 @@ void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
 
+  bool success;
+  decaIrqStatus_t stat;
+
   // FSM_status = 0; // setting the initial state of the FSM to be inactive
   while (1){
-    bool success;
-
+    stat = decamutexon();
     readUsb();
+    decamutexoff(stat);
 
     switch (FSM_status)
     {
@@ -197,7 +200,7 @@ void StartUsbReceive(void const *argument){
           FSM_status = 0;
         }
         else {
-          usb_print("TWR FAIL!\r\n");
+          // usb_print("TWR FAIL!\r\n");
         }
         break;
 
@@ -213,12 +216,13 @@ void StartUsbReceive(void const *argument){
 void twrInterruptTask(void const *argument){
   decaIrqStatus_t stat;
   while (1){
-    osThreadSuspend(NULL);
-    stat = decamutexon();
-    twrReceiveCallback();
-    osDelay(1);
-    decamutexoff(stat);
-    dwt_rxenable(DWT_START_RX_IMMEDIATE); 
+    osThreadSuspend(NULL); // suspend the thread, re-enabled using uwb receive interrupt
+    
+    /* Executes right after a dw1000 receive interrupt */
+    stat = decamutexon(); // disable dw1000 interrupts
+    twrReceiveCallback(); // complete TWR 
+    decamutexoff(stat); // re-enable dw1000 interrupts
+    dwt_rxenable(DWT_START_RX_IMMEDIATE); // turn on uwb receiver
   }
 } // end twrInterruptTask()
 /* USER CODE END Application */
