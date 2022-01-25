@@ -8,19 +8,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "ranging.h"
-#include "deca_device_api.h"
-#include "deca_regs.h"
-#include "deca_types.h"
-#include "spi.h"
-#include "stm32f4xx_hal_conf.h"
-#include "main.h"
-#include "common.h"
-
-#include "cmsis_os.h"
-#include <stdio.h>
-#include "common.h"
-#include "dwt_general.h"
-#include "dwt_iqr.h"
 
 extern osThreadId twrInterruptTaskHandle;
 extern uint8_t FSM_status;
@@ -38,8 +25,6 @@ static uint8 rx_buffer[RX_BUF_LEN];
 
 /* Hold copy of status register state here for reference so that it can be examined at a debug breakpoint. */
 static uint32 status_reg = 0;
-
-static uint8 tx_msg[] = {0xC5, 0, 'D', 'E', 'C', 'A', 'W', 'A', 'V', 'E', 0, 0};
 
 /* Delay between frames, in UWB microseconds. See NOTE 4 below. */
 /* This is the delay from the end of the frame transmission to the enable of the receiver, as programmed for the DW1000's wait for response feature. */
@@ -62,22 +47,26 @@ static uint8 tx_msg[] = {0xC5, 0, 'D', 'E', 'C', 'A', 'W', 'A', 'V', 'E', 0, 0};
 #define FINAL_RX_TIMEOUT_UUS 600 //3300
 
 /* Frames used in the ranging process. See NOTE 2 below. */
-static uint8 tx_poll_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'W', 'A', 'V', 'E', 0x21, 0, 0};
-static uint8 rx_resp_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'V', 'E', 'W', 'A', 0x10, 0x02, 0, 0, 0, 0};
-static uint8 tx_final_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'F', 'I', 'N', 'A', 0x23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static uint8 tx_poll_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xA, 0, 0};
+static uint8 rx_resp_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xB, 0, 0};
+static uint8 tx_final_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Frames used in the ranging process. See NOTE 2 below. */
-static uint8 rx_poll_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'W', 'A', 'V', 'E', 0x21, 0, 0};
-static uint8 tx_resp_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'V', 'E', 'W', 'A', 0x10, 0x02, 0, 0, 0, 0};
-static uint8 rx_final_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'F', 'I', 'N', 'A', 0x23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static uint8 rx_poll_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xA, 0, 0};
+static uint8 tx_resp_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xB, 0, 0};
+static uint8 rx_final_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Length of the common part of the message (up to and including the function code, see NOTE 2 below). */
-#define ALL_MSG_COMMON_LEN 10
+#define ALL_MSG_COMMON_LEN (5)
 /* Indexes to access some of the fields in the frames defined above. */
-#define ALL_MSG_SN_IDX 2
-#define FINAL_MSG_POLL_TX_TS_IDX 10
-#define FINAL_MSG_RESP_RX_TS_IDX 14
-#define FINAL_MSG_FINAL_TX_TS_IDX 18
+#define MSG_SEQ_IDX 2
+#define TX_BOARD_IDX (3)
+#define RX_BOARD_IDX (4)
+#define MSG_TYPE_IDX (5)
+#define FINAL_MSG_POLL_TX_TS_IDX (6)
+#define FINAL_MSG_RESP_RX_TS_IDX (10)
+#define FINAL_MSG_FINAL_TX_TS_IDX (14)
+
 /* Frame sequence number, incremented after each transmission. */
 static uint8 frame_seq_nb = 0;
 
@@ -116,43 +105,9 @@ static void rx_err_cb(const dwt_cb_data_t *cb_data);
 /* Inter-frame delay period in case of RX error, in milliseconds.
  * In case of RX error, assume the receiver is present but its response has not been received for any reason and retry blink transmission immediately. */
 #define RX_ERR_TX_DELAY_MS 0
-/* Current inter-frame delay period.
- * This global static variable is also used as the mechanism to signal events to the background main loop from the interrupt handler callbacks,
- * which set it to positive delay values. */
-volatile static int32 tx_delay_ms = -1;
 
-int do_owr(void){
-    int result;
-
-    /* Write frame data to DW1000 and prepare transmission. See NOTE 4 below.*/
-    dwt_writetxdata(sizeof(tx_msg), tx_msg, 0); /* Zero offset in TX buffer. */
-    dwt_writetxfctrl(sizeof(tx_msg), 0, 0); /* Zero offset in TX buffer, no ranging. */
-
-    /* Start transmission. */
-    result = dwt_starttx(DWT_START_TX_IMMEDIATE);
-
-    /* Poll DW1000 until TX frame sent event set. See NOTE 5 below.
-        * STATUS register is 5 bytes long but, as the event we are looking at is in the first byte of the register, we can use this simplest API
-        * function to access it.*/
-    while (!(dwt_read32bitreg(SYS_STATUS_ID) & SYS_STATUS_TXFRS))
-    { };
-
-    /* Clear TX frame sent event. */
-    dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_TXFRS);
-
-    /* Execute a delay between transmissions. */
-    deca_sleep(TX_DELAY_MS);
-
-    if(result==DWT_SUCCESS){
-
-		return 1; // Msg correctly sent
-	}
-	else{
-		return 0; // Error
-	}
-}
-
-int twrInitiateInstance(void){
+/* MAIN RANGING FUNCTIONS ---------------------------------------- */ 
+int twrInitiateInstance(uint8_t target_ID){
     decaIrqStatus_t stat;
 
     stat = decamutexon();
@@ -165,8 +120,13 @@ int twrInitiateInstance(void){
     dwt_setrxtimeout(800); // dwt_setrxtimeout(RESP_RX_TIMEOUT_UUS);
     dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
 
+    /* Include Target board in all communication messages. */
+    tx_poll_msg[RX_BOARD_IDX] = target_ID;
+    rx_resp_msg[TX_BOARD_IDX] = target_ID;
+    tx_final_msg[RX_BOARD_IDX] = target_ID;
+
     /* Write frame data to DW1000 and prepare transmission. See NOTE 8 below. */
-    tx_poll_msg[ALL_MSG_SN_IDX] = frame_seq_nb;
+    tx_poll_msg[MSG_SEQ_IDX] = frame_seq_nb;
     dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_TXFRS);
     dwt_writetxdata(sizeof(tx_poll_msg), tx_poll_msg, 0); /* Zero offset in TX buffer. */
     dwt_writetxfctrl(sizeof(tx_poll_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
@@ -175,11 +135,7 @@ int twrInitiateInstance(void){
         enabled automatically after the frame is sent and the delay set by 
         dwt_setrxaftertxdelay() has elapsed. */
     dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
-
-    // usb_print("Poll message transmitted. \n");
     
-    // dwt_rxenable(DWT_START_RX_IMMEDIATE);
-
     /* We assume that the transmission is achieved correctly, poll for reception of a frame or error/timeout. See NOTE 9 below. */
     while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
     { };
@@ -203,7 +159,8 @@ int twrInitiateInstance(void){
 
         /* Check that the frame is the expected response from the companion "DS TWR responder" example.
             * As the sequence number field of the frame is not relevant, it is cleared to simplify the validation of the frame. */
-        rx_buffer[ALL_MSG_SN_IDX] = 0;
+        // rx_buffer[RX_BOARD_IDX] = target_ID;
+        rx_buffer[MSG_SEQ_IDX] = 0;
         if (memcmp(rx_buffer, rx_resp_msg, ALL_MSG_COMMON_LEN) == 0)
         {
             uint32 final_tx_time;
@@ -231,7 +188,7 @@ int twrInitiateInstance(void){
             // dwt_forcetrxoff();
 
             /* Write and send final message. See NOTE 8 below. */
-            tx_final_msg[ALL_MSG_SN_IDX] = frame_seq_nb;
+            tx_final_msg[MSG_SEQ_IDX] = frame_seq_nb;
             dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
             dwt_writetxfctrl(sizeof(tx_final_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
             ret = dwt_starttx(DWT_START_TX_DELAYED);
@@ -250,7 +207,7 @@ int twrInitiateInstance(void){
 
                 /* Increment frame sequence number after transmission of the final message (modulo 256). */
                 frame_seq_nb++;
-                
+
                 dwt_setpreambledetecttimeout(0);
                 dwt_setrxtimeout(0);
                 dwt_rxenable(DWT_START_RX_IMMEDIATE);
@@ -285,11 +242,18 @@ int twrReceiveCallback(void){
     /* Clear reception timeout to start next ranging process. */
     dwt_setrxtimeout(2000*UUS_TO_DWT_TIME); //dwt_setrxtimeout(0);
 
+    /* Extract the initiator's ID */
+    uint8_t initiator_ID = rx_buffer[TX_BOARD_IDX];
+    
+    /* Update all the messages to incorporate the initiator's ID */
+    rx_poll_msg[TX_BOARD_IDX] = initiator_ID;
+    tx_resp_msg[RX_BOARD_IDX] = initiator_ID;
+    rx_final_msg[TX_BOARD_IDX] = initiator_ID;
+
     uint32 frame_len;
 
-    /* Check that the frame is a poll sent by "DS TWR initiator" example.
-        * As the sequence number field of the frame is not relevant, it is cleared to simplify the validation of the frame. */
-    rx_buffer[ALL_MSG_SN_IDX] = 0;
+    /* Check that the frame is a poll sent by "DS TWR initiator" example. */
+    rx_buffer[MSG_SEQ_IDX] = 0;
     if (memcmp(rx_buffer, rx_poll_msg, ALL_MSG_COMMON_LEN) == 0)
     {
         uint32 resp_tx_time;
@@ -299,21 +263,18 @@ int twrReceiveCallback(void){
 
         /* Retrieve poll reception timestamp. */
         poll_rx_ts = get_rx_timestamp_u64();
-
+        
         /* Set send time for response. See NOTE 9 below. */
         // resp_tx_time = (poll_rx_ts + (POLL_RX_TO_RESP_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
         resp_tx_time = (poll_rx_ts + (450 * UUS_TO_DWT_TIME)) >> 8;
         dwt_setdelayedtrxtime(resp_tx_time);
-
         // dwt_forcetrxoff();
 
         /* Write and send the response message. See NOTE 10 below.*/
-        tx_resp_msg[ALL_MSG_SN_IDX] = frame_seq_nb;
+        tx_resp_msg[MSG_SEQ_IDX] = frame_seq_nb;
         dwt_writetxdata(sizeof(tx_resp_msg), tx_resp_msg, 0); /* Zero offset in TX buffer. */
         dwt_writetxfctrl(sizeof(tx_resp_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
         ret = dwt_starttx(DWT_START_TX_DELAYED | DWT_RESPONSE_EXPECTED);
-
-        // usb_print("Resp message transmitted.\n");
 
         // /* Set expected delay and timeout for final message reception. See NOTE 4 and 5 below. */
         dwt_setrxaftertxdelay(RESP_TX_TO_FINAL_RX_DLY_UUS);
@@ -349,7 +310,7 @@ int twrReceiveCallback(void){
 
             /* Check that the frame is a final message sent by "DS TWR initiator" example.
                 * As the sequence number field of the frame is not used in this example, it can be zeroed to ease the validation of the frame. */
-            rx_buffer[ALL_MSG_SN_IDX] = 0;
+            rx_buffer[MSG_SEQ_IDX] = 0;
             if (memcmp(rx_buffer, rx_final_msg, ALL_MSG_COMMON_LEN) == 0)
             {
                 uint32 poll_tx_ts, resp_rx_ts, final_tx_ts;

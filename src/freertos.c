@@ -174,8 +174,9 @@ void StartUsbReceive(void const *argument){
 
   bool success;
   decaIrqStatus_t stat;
-
+  struct int_params *s;
   uint8_t reg_state;
+  uint8_t target_ID;
 
   // FSM_status = 0; // setting the initial state of the FSM to be inactive
   while (1){
@@ -184,7 +185,7 @@ void StartUsbReceive(void const *argument){
     decamutexoff(stat);
 
     /* RX is supposed to be enabled from the interrupt task. If not, re-enable */
-    reg_state = dwt_read8bitoffsetreg(0x19, 1); // read RX status
+    reg_state = dwt_read8bitoffsetreg(SYS_STATE_ID, 1); // read RX status
     if (!reg_state){
       dwt_rxenable(DWT_START_RX_IMMEDIATE); // turn on uwb receiver
     } 
@@ -200,15 +201,22 @@ void StartUsbReceive(void const *argument){
         break;
       
       case 2:
-        // usb_print("Status set to RANGING!\r\n"); // placeholder
-        success = twrInitiateInstance();
+        HASH_FIND_STR(FSM_int_params, "target", s);
+        target_ID = s->value;
+        
+        if (target_ID == BOARD_ID){
+          usb_print("TWR FAIL: The target ID is the same as the initiator's ID.\r\n");
+          break;
+        }
+
+        success = twrInitiateInstance(target_ID);
 
         if (success){ 
           usb_print("TWR SUCCESS!\r\n"); // placeholder
           FSM_status = 0;
         }
         else {
-          usb_print("TWR FAIL!\r\n");
+          usb_print("TWR FAIL: No successful response.\r\n");
         }
         break;
 
