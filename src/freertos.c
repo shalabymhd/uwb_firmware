@@ -174,7 +174,8 @@ void StartUsbReceive(void const *argument){
 
   bool success;
   decaIrqStatus_t stat;
-
+  struct int_params *s;
+  
   // FSM_status = 0; // setting the initial state of the FSM to be inactive
   while (1){
     stat = decamutexon();
@@ -192,8 +193,8 @@ void StartUsbReceive(void const *argument){
         break;
       
       case 2:
-        // usb_print("Status set to RANGING!\r\n"); // placeholder
-        success = twrInitiateInstance();
+        HASH_FIND_STR(FSM_int_params, "target", s);
+        success = twrInitiateInstance(s->value);
 
         if (success){ 
           usb_print("TWR SUCCESS!\r\n"); // placeholder
