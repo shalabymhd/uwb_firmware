@@ -164,7 +164,7 @@ void StartDefaultTask(void const * argument)
 void StartBlinking(void const *argument){
   while (1){
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
-    osDelay(1000);
+    osDelay(250);
   }
 } // end StartBlinking()
 
@@ -175,12 +175,20 @@ void StartUsbReceive(void const *argument){
   bool success;
   decaIrqStatus_t stat;
 
+  uint8_t reg_state;
+
   // FSM_status = 0; // setting the initial state of the FSM to be inactive
   while (1){
     stat = decamutexon();
     readUsb();
     decamutexoff(stat);
 
+    /* RX is supposed to be enabled from the interrupt task. If not, re-enable */
+    reg_state = dwt_read8bitoffsetreg(0x19, 1); // read RX status
+    if (!reg_state){
+      dwt_rxenable(DWT_START_RX_IMMEDIATE); // turn on uwb receiver
+    } 
+    
     switch (FSM_status)
     {
       case 0:
@@ -200,7 +208,7 @@ void StartUsbReceive(void const *argument){
           FSM_status = 0;
         }
         else {
-          // usb_print("TWR FAIL!\r\n");
+          usb_print("TWR FAIL!\r\n");
         }
         break;
 
@@ -215,6 +223,9 @@ void StartUsbReceive(void const *argument){
 /* USER CODE BEGIN Application */
 void twrInterruptTask(void const *argument){
   decaIrqStatus_t stat;
+
+  dwt_setrxaftertxdelay(40);
+
   while (1){
     osThreadSuspend(NULL); // suspend the thread, re-enabled using uwb receive interrupt
     
