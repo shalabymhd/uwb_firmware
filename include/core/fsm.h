@@ -18,7 +18,7 @@ extern "C" {
 #include "stdint.h"
 
 /* Private typedef -----------------------------------------------------------*/               
-extern enum FSM_status {
+extern enum FSM_all_states {
 	IDLE,        // 0 = inactive, tag in receive mode
 	INFINITE_TWR,// 1 = initiate two-way ranging indefinitely
 	INITIATE_TWR,// 2 = initiate an instance two-way ranging
