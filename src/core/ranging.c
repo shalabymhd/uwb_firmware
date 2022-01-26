@@ -46,7 +46,7 @@ static uint32 status_reg = 0;
 #define FINAL_RX_TIMEOUT_UUS 600 //3300
 
 /* Frames used in the ranging process. See NOTE 2 below. */
-static uint8 tx_poll_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xA, 0, 0};
+static uint8 tx_poll_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xA, 0, 0, 0};
 static uint8 rx_resp_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xB, 0, 0};
 static uint8 tx_final_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -62,6 +62,7 @@ static uint8 rx_final_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xC, 0, 0, 0, 0, 0, 0
 #define ALL_TX_BOARD_IDX (3)
 #define ALL_RX_BOARD_IDX (4)
 #define ALL_MSG_TYPE_IDX (5)
+#define TX_POLL_TARG_MEAS_IDX (6) // the index associated with the target meas boolean
 #define FINAL_POLL_TX_TS_IDX (6)
 #define FINAL_RESP_RX_TS_IDX (10)
 #define FINAL_FINAL_TX_TS_IDX (14)
@@ -106,7 +107,7 @@ static void rx_err_cb(const dwt_cb_data_t *cb_data);
 #define RX_ERR_TX_DELAY_MS 0
 
 /* MAIN RANGING FUNCTIONS ---------------------------------------- */ 
-int twrInitiateInstance(uint8_t target_ID, bool rec_meas_bool){
+int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool){
     decaIrqStatus_t stat;
 
     stat = decamutexon();
@@ -123,6 +124,10 @@ int twrInitiateInstance(uint8_t target_ID, bool rec_meas_bool){
     tx_poll_msg[ALL_RX_BOARD_IDX] = target_ID;
     rx_resp_msg[ALL_TX_BOARD_IDX] = target_ID;
     tx_final_msg[ALL_RX_BOARD_IDX] = target_ID;
+    rx_final_msg[ALL_TX_BOARD_IDX] = target_ID;
+
+    /* Indicate whether the Target board will also compute the range measurement */
+    tx_poll_msg[TX_POLL_TARG_MEAS_IDX] = target_meas_bool;    
 
     /* Write frame data to DW1000 and prepare transmission. See NOTE 8 below. */
     tx_poll_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
@@ -155,19 +160,31 @@ int twrInitiateInstance(uint8_t target_ID, bool rec_meas_bool){
         {
             dwt_readrxdata(rx_buffer, frame_len, 0);
         }
-
+    
         /* Check that the frame is the expected response from the companion "DS TWR responder" example.
             * As the sequence number field of the frame is not relevant, it is cleared to simplify the validation of the frame. */
         // rx_buffer[ALL_RX_BOARD_IDX] = target_ID;
         rx_buffer[ALL_MSG_SEQ_IDX] = 0;
         if (memcmp(rx_buffer, rx_resp_msg, ALL_MSG_COMMON_LEN) == 0)
         {
-            if (finalTx()){   
-                dwt_setpreambledetecttimeout(0);
-                dwt_setrxtimeout(0);
-                dwt_rxenable(DWT_START_RX_IMMEDIATE);
-                decamutexoff(stat);
-                return 1;
+            /* Await the third signal and compute the range measurement */
+            if (rxFinal()){
+                if (target_meas_bool){
+                    if (txFinal()){   
+                        dwt_setpreambledetecttimeout(0);
+                        dwt_setrxtimeout(0);
+                        dwt_rxenable(DWT_START_RX_IMMEDIATE);
+                        decamutexoff(stat);
+                        return 1;
+                    }
+                }
+                else{
+                    dwt_setpreambledetecttimeout(0);
+                    dwt_setrxtimeout(0);
+                    dwt_rxenable(DWT_START_RX_IMMEDIATE);
+                    decamutexoff(stat);
+                    return 1;
+                }
             }
         }
     }
@@ -187,7 +204,7 @@ int twrInitiateInstance(uint8_t target_ID, bool rec_meas_bool){
     return 0;
 }
 
-int finalTx(void){
+int txFinal(void){
     uint32 final_tx_time;
     int ret;
 
@@ -199,7 +216,12 @@ int finalTx(void){
 
     /* Compute final message transmission time. See NOTE 10 below. */
     // final_tx_time = (resp_rx_ts + (RESP_RX_TO_FINAL_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
-    final_tx_time = (resp_rx_ts + (600 * UUS_TO_DWT_TIME)) >> 8;
+    if (resp_rx_ts > poll_tx_ts){
+        final_tx_time = (resp_rx_ts + (600 * UUS_TO_DWT_TIME)) >> 8;
+    }
+    else{
+        final_tx_time = (poll_tx_ts + (600 * UUS_TO_DWT_TIME)) >> 8;
+    }
     dwt_setdelayedtrxtime(final_tx_time);
 
     // /* Final TX timestamp is the transmission time we programmed plus the TX antenna delay. */
@@ -253,6 +275,10 @@ int twrReceiveCallback(void){
     rx_poll_msg[ALL_TX_BOARD_IDX] = initiator_ID;
     tx_resp_msg[ALL_RX_BOARD_IDX] = initiator_ID;
     rx_final_msg[ALL_TX_BOARD_IDX] = initiator_ID;
+    tx_final_msg[ALL_RX_BOARD_IDX] = initiator_ID;
+
+    /* Extract the boolean defining whether a 4th signal is expected */
+    bool target_meas_bool = rx_buffer[TX_POLL_TARG_MEAS_IDX];
 
     /* Check that the frame is a poll sent by "DS TWR initiator" example. */
     rx_buffer[ALL_MSG_SEQ_IDX] = 0;
@@ -276,11 +302,7 @@ int twrReceiveCallback(void){
         tx_resp_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
         dwt_writetxdata(sizeof(tx_resp_msg), tx_resp_msg, 0); /* Zero offset in TX buffer. */
         dwt_writetxfctrl(sizeof(tx_resp_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
-        ret = dwt_starttx(DWT_START_TX_DELAYED | DWT_RESPONSE_EXPECTED);
-
-        // /* Set expected delay and timeout for final message reception. See NOTE 4 and 5 below. */
-        dwt_setrxaftertxdelay(RESP_TX_TO_FINAL_RX_DLY_UUS);
-        dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS);
+        ret = dwt_starttx(DWT_START_TX_DELAYED);
 
         /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 11 below. */
         if (ret == DWT_ERROR)
@@ -290,8 +312,35 @@ int twrReceiveCallback(void){
             return 0;
         }
 
-        if (rxFinal()){
-            return 1;
+        // osDelay(1);
+        /* Poll DW1000 until TX frame sent event set. See NOTE 9 below. */
+        while (!(dwt_read32bitreg(SYS_STATUS_ID) & SYS_STATUS_TXFRS))
+        { };
+
+        /* Clear TXFRS event. */
+        dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_TXFRS);
+
+        /* Increment frame sequence number after transmission of the final message (modulo 256). */
+        frame_seq_nb++;
+
+        if (txFinal()){
+            if (target_meas_bool){
+
+                // /* Set expected delay and timeout for final message reception. See NOTE 4 and 5 below. */
+                dwt_setrxaftertxdelay(RESP_TX_TO_FINAL_RX_DLY_UUS);
+                dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS);
+
+                if (rxFinal()){   
+                    dwt_setpreambledetecttimeout(0);
+                    dwt_setrxtimeout(0);
+                    return 1;
+                }
+            }
+            else{
+                dwt_setpreambledetecttimeout(0);
+                dwt_setrxtimeout(0);
+                return 1;
+            }
         }
     }
     
@@ -304,6 +353,8 @@ int rxFinal(void){
     /* String used to display measured distance on UART. */
     char dist_str[30] = {0};
     uint32 frame_len;
+
+    dwt_rxenable(DWT_START_RX_IMMEDIATE);
 
     /* Poll for reception of expected "final" frame or error/timeout. See NOTE 8 below. */
     while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
@@ -330,42 +381,42 @@ int rxFinal(void){
         rx_buffer[ALL_MSG_SEQ_IDX] = 0;
         if (memcmp(rx_buffer, rx_final_msg, ALL_MSG_COMMON_LEN) == 0)
         {
-            uint32 poll_tx_ts, resp_rx_ts, final_tx_ts;
-            uint32 poll_rx_ts_32, resp_tx_ts_32;
-            // uint32 final_rx_ts_32;
-            double Ra, Db;
-            // double Rb, Da;
-            int64 tof_dtu;
+            // uint32 poll_tx_ts, resp_rx_ts, final_tx_ts;
+            // uint32 poll_rx_ts_32, resp_tx_ts_32;
+            // // uint32 final_rx_ts_32;
+            // double Ra, Db;
+            // // double Rb, Da;
+            // int64 tof_dtu;
 
-            // usb_print("Final message received.\n");
+            // // usb_print("Final message received.\n");
 
-            /* Retrieve response transmission and final reception timestamps. */
-            resp_tx_ts = get_tx_timestamp_u64();
-            final_rx_ts = get_rx_timestamp_u64();
+            // /* Retrieve response transmission and final reception timestamps. */
+            // resp_tx_ts = get_tx_timestamp_u64();
+            // final_rx_ts = get_rx_timestamp_u64();
 
-            /* Get timestamps embedded in the final message. */
-            final_msg_get_ts(&rx_buffer[FINAL_POLL_TX_TS_IDX], &poll_tx_ts);
-            final_msg_get_ts(&rx_buffer[FINAL_RESP_RX_TS_IDX], &resp_rx_ts);
-            final_msg_get_ts(&rx_buffer[FINAL_FINAL_TX_TS_IDX], &final_tx_ts);
+            // /* Get timestamps embedded in the final message. */
+            // final_msg_get_ts(&rx_buffer[FINAL_POLL_TX_TS_IDX], &poll_tx_ts);
+            // final_msg_get_ts(&rx_buffer[FINAL_RESP_RX_TS_IDX], &resp_rx_ts);
+            // final_msg_get_ts(&rx_buffer[FINAL_FINAL_TX_TS_IDX], &final_tx_ts);
 
-            /* Compute time of flight. 32-bit subtractions give correct answers even if clock has wrapped. See NOTE 12 below. */
-            poll_rx_ts_32 = (uint32)poll_rx_ts;
-            resp_tx_ts_32 = (uint32)resp_tx_ts;
-            // final_rx_ts_32 = (uint32)final_rx_ts;
-            Ra = (double)(resp_rx_ts - poll_tx_ts);
-            // Rb = (double)(final_rx_ts_32 - resp_tx_ts_32);
-            // Da = (double)(final_tx_ts - resp_rx_ts);
-            Db = (double)(resp_tx_ts_32 - poll_rx_ts_32);
-            // tof_dtu = (int64)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db));
-            tof_dtu = (int64)((Ra - Db) / (2));
+            // /* Compute time of flight. 32-bit subtractions give correct answers even if clock has wrapped. See NOTE 12 below. */
+            // poll_rx_ts_32 = (uint32)poll_rx_ts;
+            // resp_tx_ts_32 = (uint32)resp_tx_ts;
+            // // final_rx_ts_32 = (uint32)final_rx_ts;
+            // Ra = (double)(resp_rx_ts - poll_tx_ts);
+            // // Rb = (double)(final_rx_ts_32 - resp_tx_ts_32);
+            // // Da = (double)(final_tx_ts - resp_rx_ts);
+            // Db = (double)(resp_tx_ts_32 - poll_rx_ts_32);
+            // // tof_dtu = (int64)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db));
+            // tof_dtu = (int64)((Ra - Db) / (2));
 
-            tof = tof_dtu * DWT_TIME_UNITS;
-            distance = tof * SPEED_OF_LIGHT;
+            // tof = tof_dtu * DWT_TIME_UNITS;
+            // distance = tof * SPEED_OF_LIGHT;
 
-            /* Display computed distance. */
-            convert_float_to_string(dist_str,distance);
-            sprintf(dist_str, "%s \n", dist_str);
-            usb_print(dist_str);
+            // /* Display computed distance. */
+            // convert_float_to_string(dist_str,distance);
+            // sprintf(dist_str, "%s \n", dist_str);
+            // usb_print(dist_str);
             
             dwt_setrxtimeout(0);
             dwt_setpreambledetecttimeout(0);

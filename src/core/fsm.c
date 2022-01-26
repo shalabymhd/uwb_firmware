@@ -17,7 +17,7 @@
 bool success;
 uint8_t target_ID;
 struct int_params *i;
-uint8_t rec_meas_bool;
+uint8_t target_meas_bool;
 struct bool_params *b;
 
 
@@ -44,9 +44,9 @@ void fsmLoop(){
         target_ID = i->value;
         free(i);
 
-        /* Extract the toggle that dictates if the receiver computes range measurements */
-        HASH_FIND_STR(FSM_bool_params, "rec_meas", b);
-        rec_meas_bool = b->value;
+        /* Extract the toggle that dictates if the target computes range measurements */
+        HASH_FIND_STR(FSM_bool_params, "targ_meas", b);
+        target_meas_bool = b->value;
         free(b);
 
         if (target_ID == BOARD_ID){
@@ -54,7 +54,7 @@ void fsmLoop(){
           break;
         }
 
-        success = twrInitiateInstance(target_ID, rec_meas_bool);
+        success = twrInitiateInstance(target_ID, target_meas_bool);
 
         if (success){ 
           usb_print("TWR SUCCESS!\r\n"); // placeholder
