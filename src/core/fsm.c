@@ -5,17 +5,23 @@
   ******************************************************************************
   */
 
+/* Includes ------------------------------------------------------------------*/
 #include "fsm.h"
 #include "common.h"
 #include "ranging.h"
 #include "uthash.h"
 #include "main.h" // TODO: 
 #include <stdbool.h>
-uint8_t target_ID;
-bool success;
-struct int_params *s;
 
-FsmAllStates FSM_status = IDLE;
+/* Variable declarations ------------------------------------------------------------------*/
+bool success;
+uint8_t target_ID;
+struct int_params *i;
+uint8_t rec_meas_bool;
+struct bool_params *b;
+
+
+FsmAllStates FSM_status = IDLE; // TODO: Why is this here?
 
 void fsmLoop(){
   
@@ -33,15 +39,22 @@ void fsmLoop(){
       }
       case INITIATE_TWR:
       {
-        HASH_FIND_STR(FSM_int_params, "target", s);
-        target_ID = s->value;
-        
+        /* Extract the target */
+        HASH_FIND_STR(FSM_int_params, "target", i);
+        target_ID = i->value;
+        free(i);
+
+        /* Extract the toggle that dictates if the receiver computes range measurements */
+        HASH_FIND_STR(FSM_bool_params, "rec_meas", b);
+        rec_meas_bool = b->value;
+        free(b);
+
         if (target_ID == BOARD_ID){
           usb_print("TWR FAIL: The target ID is the same as the initiator's ID.\r\n");
           break;
         }
 
-        success = twrInitiateInstance(target_ID);
+        success = twrInitiateInstance(target_ID, rec_meas_bool);
 
         if (success){ 
           usb_print("TWR SUCCESS!\r\n"); // placeholder

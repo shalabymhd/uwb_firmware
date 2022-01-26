@@ -106,7 +106,7 @@ static void rx_err_cb(const dwt_cb_data_t *cb_data);
 #define RX_ERR_TX_DELAY_MS 0
 
 /* MAIN RANGING FUNCTIONS ---------------------------------------- */ 
-int twrInitiateInstance(uint8_t target_ID){
+int twrInitiateInstance(uint8_t target_ID, bool rec_meas_bool){
     decaIrqStatus_t stat;
 
     stat = decamutexon();

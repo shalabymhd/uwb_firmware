@@ -26,8 +26,8 @@ void updateCommandsAndParams(char *msg);
 void deleteOldParams();
 
 /* Variables -----------------------------------------------------------*/
-static const char *CO2_fields[] = {"target", "msg", "timestamp", "loop", "cir", "float2"}; // can't be more than 10 characters
-static const char *CO2_types[] = {"1", "2", "4", "3", "3", "4"}; // 1=int, 2=str, 3=bool, 4=float
+static const char *CO2_fields[] = {"target", "rec_meas"}; // can't be more than 10 characters
+static const char *CO2_types[] = {"1", "3"}; // 1=int, 2=str, 3=bool, 4=float
 
 #ifdef __cplusplus
 }

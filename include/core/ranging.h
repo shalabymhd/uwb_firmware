@@ -28,7 +28,7 @@ extern "C" {
 #include "dwt_iqr.h"
 
 /* Function Prototypes -------------------------------------------------------*/
-int twrInitiateInstance(uint8_t target_ID);
+int twrInitiateInstance(uint8_t target_ID, bool rec_meas_bool);
 int twrReceiveCallback(void);
 void uwbReceiveInterruptInit(void);
 
