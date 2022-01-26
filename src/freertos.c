@@ -177,7 +177,6 @@ void StartUsbReceive(void const *argument){
   decaIrqStatus_t stat;
   struct int_params *s;
   uint8_t reg_state;
-  uint8_t target_ID;
 
   // FSM_status = 0; // setting the initial state of the FSM to be inactive
   while (1){

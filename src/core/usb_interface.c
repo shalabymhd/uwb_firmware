@@ -17,10 +17,6 @@
 
 /* Variables -----------------------------------------------------------------*/
 extern char CdcReceiveBuffer[USB_BUFFER_SIZE];
-extern struct int_params *FSM_int_params;
-extern struct float_params *FSM_float_params;
-extern struct bool_params *FSM_bool_params;
-extern struct str_params *FSM_str_params;
 
 
 /*! ------------------------------------------------------------------------------------------------------------------
