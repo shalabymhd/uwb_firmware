@@ -31,6 +31,8 @@ extern "C" {
 int twrInitiateInstance(uint8_t target_ID, bool rec_meas_bool);
 int twrReceiveCallback(void);
 void uwbReceiveInterruptInit(void);
+int finalTx(void);
+int rxFinal(void);
 
 #define UUS_TO_DWT_TIME 65536
 
