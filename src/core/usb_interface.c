@@ -16,8 +16,9 @@
 #include "fsm.h"
 
 /* Variables -----------------------------------------------------------------*/
-extern char CdcReceiveBuffer[USB_BUFFER_SIZE];
-
+typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4} FieldTypes;
+static const char *CO2_fields[] = {"target", "msg", "timestamp", "loop", "cir", "float2"}; // can't be more than 10 characters
+static const FieldTypes CO2_types[] = {INT, STR, FLOAT, BOOL, BOOL, FLOAT}; // 1=int, 2=str, 3=bool, 4=float
 
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: readUsb()
@@ -73,18 +74,21 @@ void readUsb(){
 void updateCommandsAndParams(char *msg){
     char *pt = strtok(msg,","); // break the string using the comma delimiter, to read each entry separately
     int iter = -1;
-          
+    int command_number = -1;
+    char *msg_types = NULL;
+
     deleteOldParams(); // delete all old params
 
     while (pt != NULL) { // while there still exists an unread parameter 
         if (iter == -1){
-          FSM_status = atoi(pt+1); // the first entry of "msg" corresponds to the command number
+          command_number = atoi(pt+1); // the first entry of "msg" corresponds to the command number
+          FSM_status = command_number;
         }
         else{
-          int type = atoi(CO2_types[iter]); // TODO: generalize
+          FieldTypes type = CO2_types[iter]; // TODO: generalize
           switch (type)
           {
-          case 1:{
+          case INT:{
             struct int_params *param_temp;
 
             param_temp = malloc(sizeof(struct int_params));
@@ -97,7 +101,7 @@ void updateCommandsAndParams(char *msg){
 
             break;
           }
-          case 2:{
+          case STR:{
             struct str_params *param_temp;
 
             param_temp = malloc(sizeof(struct str_params));
@@ -110,7 +114,7 @@ void updateCommandsAndParams(char *msg){
 
             break;
           }
-          case 3:{
+          case BOOL:{
             struct bool_params *param_temp;
 
             param_temp = malloc(sizeof(struct bool_params));
@@ -123,7 +127,7 @@ void updateCommandsAndParams(char *msg){
 
             break;
           }
-          case 4:{
+          case FLOAT:{
             struct float_params *param_temp;
             
             char char_temp[2];
