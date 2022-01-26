@@ -32,6 +32,7 @@
 #include "spi.h"
 #include "testing.h"
 #include "usb_interface.h"
+#include "fsm.h"
 
 /* USER CODE END Includes */
 
@@ -50,16 +51,16 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-/* USER CODE BEGIN Variables */
-char CdcReceiveBuffer[USB_BUFFER_SIZE]; // buffer to store received USB data.
 uint8_t FSM_status; // pointer to the status of the finite state machine.
                     // 0 = inactive, tag in receive mode
                     // 1 = initiate an instance two-way ranging
                     // 2 = initiate two-way ranging indefinitely
 
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+/* USER CODE BEGIN Variables */
+char CdcReceiveBuffer[USB_BUFFER_SIZE]; // buffer to store received USB data.
 struct int_params *FSM_int_params = NULL;
 struct float_params *FSM_float_params = NULL;
 struct bool_params *FSM_bool_params = NULL;
@@ -172,57 +173,22 @@ void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
 
-  bool success;
+
   decaIrqStatus_t stat;
   struct int_params *s;
   uint8_t reg_state;
-  uint8_t target_ID;
 
   // FSM_status = 0; // setting the initial state of the FSM to be inactive
   while (1){
     stat = decamutexon();
     readUsb();
     decamutexoff(stat);
-
     /* RX is supposed to be enabled from the interrupt task. If not, re-enable */
     reg_state = dwt_read8bitoffsetreg(SYS_STATE_ID, 1); // read RX status
     if (!reg_state){
       dwt_rxenable(DWT_START_RX_IMMEDIATE); // turn on uwb receiver
     } 
-    
-    switch (FSM_status)
-    {
-      case 0:
-        /* code */
-        break;
-      
-      case 1:
-        /* code */
-        break;
-      
-      case 2:
-        HASH_FIND_STR(FSM_int_params, "target", s);
-        target_ID = s->value;
-        
-        if (target_ID == BOARD_ID){
-          usb_print("TWR FAIL: The target ID is the same as the initiator's ID.\r\n");
-          break;
-        }
-
-        success = twrInitiateInstance(target_ID);
-
-        if (success){ 
-          usb_print("TWR SUCCESS!\r\n"); // placeholder
-          FSM_status = 0;
-        }
-        else {
-          usb_print("TWR FAIL: No successful response.\r\n");
-        }
-        break;
-
-      default:
-        break;
-    }
+    fsmLoop();
     osDelay(1); // TODO: to be modified?? 
   }
 } // end StartUsbReceive()
