@@ -270,8 +270,16 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
     uint8_t len = (uint8_t)*Len;
     uint8_t idx = CdcReceiveBuffer[0]; // The first entry of CdcReceiveBuffer stores the
                                        // index where the previously stored messages end
-    memcpy(CdcReceiveBuffer + idx + 1, Buf, len);  // copy the data to the buffer
-    CdcReceiveBuffer[0] = idx + len; // Update the first entry 
+
+    /* Check if the CDC Receive Buffer is already full to prevent overflowing */
+    if (idx + len > sizeof(CdcReceiveBuffer)){
+      usb_print("USB receive buffer is full! Message rejected to prevent overflow.\r\n");
+    }
+    else{
+      memcpy(CdcReceiveBuffer + idx + 1, Buf, len);  // copy the data to the buffer
+      CdcReceiveBuffer[0] = idx + len; // Update the first entry 
+    }
+
     memset(Buf, '\0', len); // clear the temporary buffer
   }
   
