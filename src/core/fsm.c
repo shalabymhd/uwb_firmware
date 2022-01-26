@@ -9,21 +9,17 @@
 #include "common.h"
 #include "ranging.h"
 #include "uthash.h"
-#include "main.h" // TODO: 
+#include "main.h" 
 #include <stdbool.h>
-uint8_t target_ID;
-bool success;
-struct int_params *s;
 
 FsmAllStates FSM_status = IDLE;
 
 void fsmLoop(){
-  
+
   switch (FSM_status)
   {
       case IDLE:
       {
-        /* code */
         break;
       }
       case GET_ID:
@@ -42,6 +38,9 @@ void fsmLoop(){
       }
       case INITIATE_TWR:
       {
+        struct int_params *s;
+        uint8_t target_ID;
+        bool success;
         HASH_FIND_STR(FSM_int_params, "target", s);
         target_ID = s->value;
         
