@@ -17,12 +17,13 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stdint.h"
 
-/* Private typedef -----------------------------------------------------------*/               
-extern enum FSM_status {
+/* Private typedef -----------------------------------------------------------*/   
+// Global variable            
+enum FSM_all_states {
 	IDLE,        // 0 = inactive, tag in receive mode
 	INFINITE_TWR,// 1 = initiate two-way ranging indefinitely
 	INITIATE_TWR,// 2 = initiate an instance two-way ranging
-} FSM_status;
+} FSM_status; // Initialized here to IDLE state by default
 
 /* Function Prototypes -------------------------------------------------------*/
 void fsmLoop();

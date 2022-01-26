@@ -43,18 +43,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define INACTIVE_STATE (0)
-#define GET_ID_STATE (1)
-#define RANGING_STATE (2)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
-uint8_t FSM_status; // pointer to the status of the finite state machine.
-                    // 0 = inactive, tag in receive mode
-                    // 1 = initiate an instance two-way ranging
-                    // 2 = initiate two-way ranging indefinitely
 
 /* USER CODE END PM */
 
@@ -175,10 +167,8 @@ void StartUsbReceive(void const *argument){
 
 
   decaIrqStatus_t stat;
-  struct int_params *s;
   uint8_t reg_state;
 
-  // FSM_status = 0; // setting the initial state of the FSM to be inactive
   while (1){
     stat = decamutexon();
     readUsb();
