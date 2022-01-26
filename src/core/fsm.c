@@ -15,6 +15,8 @@ uint8_t target_ID;
 bool success;
 struct int_params *s;
 
+FsmAllStates FSM_status = IDLE;
+
 void fsmLoop(){
   
   switch (FSM_status)
