@@ -15,20 +15,21 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stdint.h"
+#include <stdint.h>
 
 /* Private typedef -----------------------------------------------------------*/   
-// Global variable            
-enum FSM_all_states {
-	IDLE,        // 0 = inactive, tag in receive mode
+      
+typedef enum {
+	IDLE = 0,        // 0 = inactive, tag in receive mode
 	INFINITE_TWR,// 1 = initiate two-way ranging indefinitely
 	INITIATE_TWR,// 2 = initiate an instance two-way ranging
-} FSM_status; // Initialized here to IDLE state by default
+} FsmAllStates; 
 
 /* Function Prototypes -------------------------------------------------------*/
 void fsmLoop();
 
 /* Variables -----------------------------------------------------------*/
+extern FsmAllStates FSM_status;
 extern struct int_params *FSM_int_params;
 extern struct float_params *FSM_float_params;
 extern struct bool_params *FSM_bool_params;
