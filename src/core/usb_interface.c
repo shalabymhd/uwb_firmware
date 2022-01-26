@@ -14,13 +14,27 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include "fsm.h"
+/* Typedefs ------------------------------------------------------------------*/
+typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4} FieldTypes;
 
 /* Variables -----------------------------------------------------------------*/
-typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4} FieldTypes;
-static const char *CO2_fields[] = {"target", "msg", "timestamp", "loop", "cir", "float2"}; // can't be more than 10 characters
-static const FieldTypes CO2_types[] = {INT, STR, FLOAT, BOOL, BOOL, FLOAT}; // 1=int, 2=str, 3=bool, 4=float
+static const char *c00_fields[] = {"target", "msg", "timestamp", "loop", "cir", "float2"}; // can't be more than 10 characters
+static const FieldTypes c00_types[] = {INT, STR, FLOAT, BOOL, BOOL, FLOAT}; // 1=int, 2=str, 3=bool, 4=float
+static const char *c01_fields[] = {"target", "msg", "timestamp", "loop", "cir", "float2"}; // can't be more than 10 characters
+static const FieldTypes c01_types[] = {INT, STR, FLOAT, BOOL, BOOL, FLOAT}; // 1=int, 2=str, 3=bool, 4=float
+static const char *c02_fields[] = {"target", "msg", "timestamp", "loop", "cir", "float2"}; // can't be more than 10 characters
+static const FieldTypes c02_types[] = {INT, STR, FLOAT, BOOL, BOOL, FLOAT}; // 1=int, 2=str, 3=bool, 4=float
 
-/*! ------------------------------------------------------------------------------------------------------------------
+static const char **all_command_fields[] = {c00_fields, c01_fields, c02_fields};
+static const FieldTypes *all_command_types[] = {c00_types, c01_types, c02_types};
+
+
+
+/* Private Functions ----------------------------------------------------------*/
+void parseMessageIntoHashTables(char *msg);
+void deleteOldParams();
+
+/*! ----------------------------------------------------------------------------
  * Function: readUsb()
  *
  * The purpose of this function is to read the oldest message at the USB port,
@@ -47,7 +61,7 @@ void readUsb(){
         strncpy(dyn, CdcReceiveBuffer + 1, len);
         dyn[len] = '\0';
 
-        updateCommandsAndParams(dyn); 
+        parseMessageIntoHashTables(dyn); 
 
         /* ------------------------------ UPDATE THE BUFFER ------------------------------ */
         dyn = realloc(dyn, sizeof(char)*(USB_BUFFER_SIZE - 1)); // reallocate dynamic memory
@@ -71,11 +85,12 @@ void readUsb(){
  * corresponding params.
  * 
  */
-void updateCommandsAndParams(char *msg){
+void parseMessageIntoHashTables(char *msg){
     char *pt = strtok(msg,","); // break the string using the comma delimiter, to read each entry separately
     int iter = -1;
     int command_number = -1;
-    char *msg_types = NULL;
+    const FieldTypes *msg_types; // Pointer to array
+    const char **msg_fields; // Pointer to array of pointers
 
     deleteOldParams(); // delete all old params
 
@@ -83,9 +98,11 @@ void updateCommandsAndParams(char *msg){
         if (iter == -1){
           command_number = atoi(pt+1); // the first entry of "msg" corresponds to the command number
           FSM_status = command_number;
+          msg_types = all_command_types[command_number];
+          msg_fields = all_command_fields[command_number];
         }
         else{
-          FieldTypes type = CO2_types[iter]; // TODO: generalize
+          FieldTypes type = msg_types[iter]; 
           switch (type)
           {
           case INT:{
@@ -94,7 +111,7 @@ void updateCommandsAndParams(char *msg){
             param_temp = malloc(sizeof(struct int_params));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
 
-            strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
+            strcpy(param_temp->key, msg_fields[iter]);
             param_temp->value = atoi(pt);
             
             HASH_ADD_STR(FSM_int_params, key, param_temp);
@@ -107,7 +124,7 @@ void updateCommandsAndParams(char *msg){
             param_temp = malloc(sizeof(struct str_params));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
             
-            strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
+            strcpy(param_temp->key, msg_fields[iter]); 
             strcpy(param_temp->value, pt);
             
             HASH_ADD_STR(FSM_str_params, key, param_temp);
@@ -120,7 +137,7 @@ void updateCommandsAndParams(char *msg){
             param_temp = malloc(sizeof(struct bool_params));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
             
-            strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
+            strcpy(param_temp->key, msg_fields[iter]); 
             param_temp->value = pt;
             
             HASH_ADD_STR(FSM_bool_params, key, param_temp);
@@ -154,7 +171,7 @@ void updateCommandsAndParams(char *msg){
             param_temp = malloc(sizeof(struct float_params));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
             
-            strcpy(param_temp->key, CO2_fields[iter]); // TODO: generalize
+            strcpy(param_temp->key, msg_fields[iter]); 
             memcpy(&(param_temp->value), &float_bytes, 4);
             
             HASH_ADD_STR(FSM_float_params, key, param_temp);

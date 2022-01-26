@@ -22,9 +22,6 @@ extern "C" {
 
 /* Function Prototypes -------------------------------------------------------*/
 void readUsb();
-void updateCommandsAndParams(char *msg);
-void deleteOldParams();
-
 /* Variables -----------------------------------------------------------*/
 extern char CdcReceiveBuffer[USB_BUFFER_SIZE]; // TODO: should this be in header?
 #ifdef __cplusplus
