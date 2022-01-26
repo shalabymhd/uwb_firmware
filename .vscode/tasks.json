@@ -3,6 +3,16 @@
     "tasks":
     [
         {
+            "label": "Clean Firmware",
+            "type": "shell",
+            "command": "make clean",
+            "args": [],
+            "problemMatcher": [],
+            "presentation": {
+                "focus": true
+            }
+        },
+        {
             "label": "Build Firmware",
             "group": {
                 "kind": "build",
