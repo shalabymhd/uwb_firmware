@@ -22,13 +22,11 @@ extern "C" {
 
 /* Function Prototypes -------------------------------------------------------*/
 void readUsb();
-void updateCommandsAndParams(char *msg);
-void deleteOldParams();
-
 /* Variables -----------------------------------------------------------*/
 static const char *CO2_fields[] = {"target", "rec_meas"}; // can't be more than 10 characters
 static const char *CO2_types[] = {"1", "3"}; // 1=int, 2=str, 3=bool, 4=float
 
+extern char CdcReceiveBuffer[USB_BUFFER_SIZE]; // TODO: should this be in header?
 #ifdef __cplusplus
 }
 #endif
