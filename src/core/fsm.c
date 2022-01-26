@@ -26,9 +26,18 @@ void fsmLoop(){
         /* code */
         break;
       }
-      case INFINITE_TWR:
-      {
-        /* code */
+      case GET_ID:
+      { 
+        uint8_t my_id;
+        dwt_geteui(&my_id);
+        if(my_id != BOARD_ID){
+          usb_print("Decawave ID and BOARD_ID do not match.");
+        }
+
+        char id_str[3];
+        sprintf(id_str, "%i \n", my_id); // TODO: Standardize the response.
+        usb_print(id_str);
+        FSM_status = IDLE;
         break;
       }
       case INITIATE_TWR:
