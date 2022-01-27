@@ -61,7 +61,7 @@ void fsmLoop(){
           FSM_status = IDLE;
         }
         else {
-          usb_print("TWR FAIL: No successful response.\r\n");
+          // usb_print("TWR FAIL: No successful response.\r\n");
         }
         break;
       }

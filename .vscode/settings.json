@@ -17,7 +17,8 @@
         "ranging.h": "c",
         "usb_interface.h": "c",
         "stm32f4xx_hal_conf.h": "c",
-        "fsm.h": "c"
+        "fsm.h": "c",
+        "stdlib.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": true
 }

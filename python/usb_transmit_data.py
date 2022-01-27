@@ -6,7 +6,7 @@ This script publishes a message to the USB port continuously until terminated.
 """
 
 ser1 = serial.Serial('/dev/ttyACM1', 19200, timeout=1)
-ser2 = serial.Serial('/dev/ttyACM2', 19200, timeout=1)
+# ser2 = serial.Serial('/dev/ttyACM2', 19200, timeout=1)
 # ser3 = serial.Serial('/dev/ttyACM3', 19200, timeout=1)
 
 while True:
