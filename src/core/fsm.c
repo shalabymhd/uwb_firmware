@@ -30,8 +30,8 @@ void fsmLoop(){
           usb_print("Decawave ID and BOARD_ID do not match.");
         }
 
-        char id_str[3];
-        sprintf(id_str, "%i \n", my_id); // TODO: Standardize the response.
+        char id_str[34];
+        sprintf(id_str, "Extended Unique Identifier: %i \n", my_id); // TODO: Standardize the response.
         usb_print(id_str);
         FSM_status = IDLE;
         break;
