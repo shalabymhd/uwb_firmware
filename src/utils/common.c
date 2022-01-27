@@ -7,10 +7,19 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdio.h>
+#include <math.h>   
 #include "common.h"
 
 void convert_float_to_string(char* str,float data){
-	gcvt(data,6,str);
+  char *tmpSign = (data < 0) ? "-" : "";
+  float tmpVal = (data < 0) ? -data : data;
+
+  int tmpInt1 = tmpVal;                  // Get the integer (678).
+  float tmpFrac = tmpVal - tmpInt1;      // Get fraction (0.0123).
+  int tmpInt2 = trunc(tmpFrac * 10000);  // Turn into integer (123).
+
+  // Print as parts, note that you need 0-padding for fractional bit.
+  sprintf(str, "%s%d.%04d\r\n", tmpSign, tmpInt1, tmpInt2);
 }
 
 void convert_elementR3_to_string(char* str, element_R3 data){
