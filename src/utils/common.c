@@ -33,7 +33,9 @@ void convert_elementR3_to_string(char* str, element_R3 data){
 }
 
 void usb_print(char* c){
-    CDC_Transmit_FS(c,strlen(c));
+  // TODO: can this be overloaded so that we can allow a format specifier like
+  // sprintf? 
+  CDC_Transmit_FS(c,strlen(c));
 }
 
 /**
