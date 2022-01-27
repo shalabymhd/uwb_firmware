@@ -138,9 +138,6 @@ int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool){
     {
         uint32 frame_len;
 
-        /* Retrieve the transmission timestamp */
-        tx_ts = get_tx_timestamp_u64();
-
         /* Clear good RX frame event and TX frame sent in the DW1000 status register. */
         dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
 
@@ -157,6 +154,9 @@ int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool){
         rx_buffer[ALL_MSG_SEQ_IDX] = 0;
         if (memcmp(rx_buffer, rx_resp_msg, ALL_MSG_COMMON_LEN) == 0)
         {
+            /* Retrieve the transmission timestamp */
+            tx_ts = get_tx_timestamp_u64();
+
             /* Retrieve the reception timestamp */
             rx_ts = get_rx_timestamp_u64();
 
@@ -223,7 +223,8 @@ int txFinal(uint64 poll_tx_ts, uint64 resp_rx_ts){
     tx_final_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
     dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
     dwt_writetxfctrl(sizeof(tx_final_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
-    ret = dwt_starttx(DWT_START_TX_DELAYED);
+    // ret = dwt_starttx(DWT_START_TX_DELAYED);
+    ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
 
     /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 12 below. */
     if (ret == DWT_SUCCESS)
