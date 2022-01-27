@@ -15,10 +15,10 @@ while True:
     dataToTransmit = "C02,6,1\r"
     ser1.write(dataToTransmit.encode())
     # print(ser1.readline().decode())
-    time.sleep(0.01)
-    # dataToTransmit = "C02,4,1\r"
-    # ser2.write(dataToTransmit.encode())
-    # time.sleep(0.01)
+    time.sleep(0.005)
+    dataToTransmit = "C02,4,1\r"
+    ser2.write(dataToTransmit.encode())
+    time.sleep(0.005)
     # dataToTransmit = "C02,6,0\r"
     # ser3.write(dataToTransmit.encode())
     # time.sleep(0.01)

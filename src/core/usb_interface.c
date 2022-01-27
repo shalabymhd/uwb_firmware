@@ -138,7 +138,7 @@ void parseMessageIntoHashTables(char *msg){
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
             
             strcpy(param_temp->key, msg_fields[iter]); 
-            param_temp->value = pt;
+            param_temp->value = atoi(pt);
             
             HASH_ADD_STR(FSM_bool_params, key, param_temp);
 

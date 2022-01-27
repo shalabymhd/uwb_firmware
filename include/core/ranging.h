@@ -35,8 +35,8 @@ typedef unsigned long long uint64;
 int twrInitiateInstance(uint8_t, bool);
 int twrReceiveCallback(void);
 void uwbReceiveInterruptInit(void);
-int txFinal(uint64, uint64);
-int rxFinal(uint64, uint64);
+int txTimestamps(uint64, uint64);
+int rxTimestamps(uint64, uint64);
 
 #define UUS_TO_DWT_TIME 65536
 

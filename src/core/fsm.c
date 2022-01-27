@@ -17,7 +17,7 @@
 bool success;
 uint8_t target_ID;
 struct int_params *i;
-uint8_t target_meas_bool;
+bool target_meas_bool;
 struct bool_params *b;
 
 
@@ -60,7 +60,7 @@ void fsmLoop(){
           usb_print("TWR SUCCESS!\r\n"); // placeholder
         }
         else {
-          // usb_print("TWR FAIL: No successful response.\r\n");
+          usb_print("TWR FAIL: No successful response.\r\n");
         }
         FSM_status = IDLE;
         break;
