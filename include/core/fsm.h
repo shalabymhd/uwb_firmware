@@ -21,8 +21,9 @@ extern "C" {
       
 typedef enum {
 	IDLE = 0,        // 0 = inactive, tag in receive mode
-	INFINITE_TWR,// 1 = initiate two-way ranging indefinitely
+  GET_ID,       // 1 = Getting board 1D
 	INITIATE_TWR,// 2 = initiate an instance two-way ranging
+	INFINITE_TWR,// 3 = do two-way ranging indefinitely
 } FsmAllStates; 
 
 /* Function Prototypes -------------------------------------------------------*/

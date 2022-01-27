@@ -9,30 +9,38 @@
 #include "common.h"
 #include "ranging.h"
 #include "uthash.h"
-#include "main.h" // TODO: 
+#include "main.h" 
 #include <stdbool.h>
-uint8_t target_ID;
-bool success;
-struct int_params *s;
 
 FsmAllStates FSM_status = IDLE;
 
 void fsmLoop(){
-  
+
   switch (FSM_status)
   {
       case IDLE:
       {
-        /* code */
         break;
       }
-      case INFINITE_TWR:
-      {
-        /* code */
+      case GET_ID:
+      { 
+        uint8_t my_id;
+        dwt_geteui(&my_id);
+        if(my_id != BOARD_ID){
+          usb_print("Decawave ID and BOARD_ID do not match.");
+        }
+
+        char id_str[34];
+        sprintf(id_str, "Extended Unique Identifier: %i \n", my_id); // TODO: Standardize the response.
+        usb_print(id_str);
+        FSM_status = IDLE;
         break;
       }
       case INITIATE_TWR:
       {
+        struct int_params *s;
+        uint8_t target_ID;
+        bool success;
         HASH_FIND_STR(FSM_int_params, "target", s);
         target_ID = s->value;
         
