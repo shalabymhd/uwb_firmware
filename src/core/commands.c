@@ -31,18 +31,28 @@ int c01_get_id(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_boo
 }
 
 int c02_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
-    IntParams *s;
-    uint8_t target_ID;
     bool success;
-    HASH_FIND_STR(msg_ints, "target", s);
-    target_ID = s->value;
-    
+    uint8_t target_ID;
+    IntParams *i;
+    bool target_meas_bool;
+    BoolParams *b;
+
+    /* Extract the target */
+    HASH_FIND_STR(msg_ints, "target", i);
+    target_ID = i->value;
+    free(i);
+
+    /* Extract the toggle that dictates if the target computes range measurements */
+    HASH_FIND_STR(msg_bools, "targ_meas", b);
+    target_meas_bool = b->value;
+    free(b);
+
     if (target_ID == BOARD_ID){
         usb_print("TWR FAIL: The target ID is the same as the initiator's ID.\r\n");
         return 0;
     }
 
-    success = twrInitiateInstance(target_ID);
+    success = twrInitiateInstance(target_ID, target_meas_bool);
 
     if (success){ 
         usb_print("TWR SUCCESS!\r\n"); // placeholder
@@ -52,59 +62,4 @@ int c02_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
         usb_print("TWR FAIL: No successful response.\r\n");
         return 0;
     }
-    
 }
-
-// TODO: passing structs by value. we could pass them by address.
-// void fsmLoop(){
-
-//   switch (FSM_status)
-//   {
-//       case IDLE:
-//       {
-//         break;
-//       }
-//       case GET_ID:
-//       { 
-//         uint8_t my_id;
-//         dwt_geteui(&my_id);
-//         if(my_id != BOARD_ID){
-//           usb_print("Decawave ID and BOARD_ID do not match.");
-//         }
-
-//         char id_str[3];
-//         sprintf(id_str, "%i \n", my_id); // TODO: Standardize the response.
-//         usb_print(id_str);
-//         FSM_status = IDLE;
-//         break;
-//       }
-//       case INITIATE_TWR:
-//       {
-//         struct int_params *s;
-//         uint8_t target_ID;
-//         bool success;
-//         HASH_FIND_STR(FSM_int_params, "target", s);
-//         target_ID = s->value;
-        
-//         if (target_ID == BOARD_ID){
-//           usb_print("TWR FAIL: The target ID is the same as the initiator's ID.\r\n");
-//           break;
-//         }
-
-//         success = twrInitiateInstance(target_ID);
-
-//         if (success){ 
-//           usb_print("TWR SUCCESS!\r\n"); // placeholder
-//           FSM_status = IDLE;
-//         }
-//         else {
-//           usb_print("TWR FAIL: No successful response.\r\n");
-//         }
-//         break;
-//       }
-//       default:
-//         break;
-      
-//   }
-
-// }

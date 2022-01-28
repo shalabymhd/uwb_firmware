@@ -22,8 +22,8 @@ static const char *c00_fields[1]; // No fields. Empty array of size 1
 static const FieldTypes c00_types[1];  // No fields. Empty array of size 1
 static const char *c01_fields[1]; // No fields. Empty array of size 1
 static const FieldTypes c01_types[1]; // No fields. Empty array of size 1
-static const char *c02_fields[] = {"target", "msg", "timestamp", "loop", "cir", "float2"}; // can't be more than 10 characters
-static const FieldTypes c02_types[] = {INT, STR, FLOAT, BOOL, BOOL, FLOAT}; // 1=int, 2=str, 3=bool, 4=float
+static const char *c02_fields[] = {"target", "targ_meas"}; // can't be more than 10 characters
+static const FieldTypes c02_types[] = {INT, BOOL}; // 1=int, 2=str, 3=bool, 4=float
 
 static const char **all_command_fields[] = {
   c00_fields,
@@ -156,7 +156,7 @@ void parseMessageIntoHashTables(char *msg){
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
             
             strcpy(param_temp->key, msg_fields[iter]); 
-            param_temp->value = pt;
+            param_temp->value = atoi(pt);
             
             HASH_ADD_STR(msg_bools, key, param_temp);
 

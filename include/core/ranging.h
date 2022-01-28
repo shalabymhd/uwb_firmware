@@ -27,10 +27,16 @@ extern "C" {
 #include "dwt_general.h"
 #include "dwt_iqr.h"
 
+/* Typedef -------------------------------------------------------------------*/
+typedef signed long long int64;
+typedef unsigned long long uint64;
+
 /* Function Prototypes -------------------------------------------------------*/
-int twrInitiateInstance(uint8_t target_ID);
+int twrInitiateInstance(uint8_t, bool);
 int twrReceiveCallback(void);
 void uwbReceiveInterruptInit(void);
+int txTimestamps(uint64, uint64);
+int rxTimestamps(uint64, uint64);
 
 #define UUS_TO_DWT_TIME 65536
 
