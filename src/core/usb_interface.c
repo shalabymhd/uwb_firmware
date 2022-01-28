@@ -46,7 +46,12 @@ static const int (*all_command_funcs[])(IntParams*, FloatParams*, BoolParams*, S
   c02_initiate_twr
   };
 
-static IntParams *msg_ints; // TODO: these can be made truly local
+/* TODO: can below be made local variables if defined in
+ parseMessageIntoHashTables and passed to deleteOldParams() ? Or would we lose
+ the handle to these variables after the function exits, and they would exist in 
+ the hash tables without any way for us to free the memory. 
+*/
+static IntParams *msg_ints; 
 static FloatParams *msg_floats;
 static BoolParams *msg_bools;
 static StrParams *msg_strs;
@@ -102,6 +107,18 @@ void readUsb(){
     
     decamutexoff(stat);
     
+    /* 
+    NOTE: currently ALL commands are endlessly retried until they return a 
+    value of 1, or until a new command sent over USB overwrites. This might not 
+    be the desired behavior for some future functions, where they might just 
+    want to report a failure and not retry. 
+
+    A simple solution is to extend the possible return values of the commands:
+    -1: Fail, retry me.
+    0: Fail
+    1: success
+    */
+
     // Call if a valid command number was detected
     int num_commands = sizeof(all_command_funcs) / sizeof(all_command_funcs[0]);
     if (command_number >= 0 && command_number <= num_commands){

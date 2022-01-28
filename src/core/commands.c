@@ -1,7 +1,19 @@
 /**
   ******************************************************************************
   * @file    commands.c
-  * @brief   The main file for all the USB command implementations.
+  * @brief   The main file for all the USB command implementations. All commands
+  *          functions must have the same inputs and outputs.
+  * 
+    NOTE: currently ALL commands are endlessly retried until they return a 
+    value of 1, or until a new command sent over USB overwrites. This might not 
+    be the desired behavior for some future functions, where they might just 
+    want to report a failure and not retry. 
+
+    A simple solution is to extend the possible return values of the commands:
+    -1: Fail, retry me.
+    0: Fail, 
+    1: success
+    
   ******************************************************************************
   */
 
