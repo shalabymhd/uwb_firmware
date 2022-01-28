@@ -191,6 +191,12 @@ void HAL_NVIC_EnableIRQ(IRQn_Type IRQn)
   
   /* Enable interrupt */
   NVIC_EnableIRQ(IRQn);
+
+  /* Lower the priority of the interrupt to call an ISR safe FreeRTOS API function.
+     Futher information are provided at:
+     https://www.freertos.org/RTOS-Cortex-M3-M4.html.
+     */
+  NVIC_SetPriority(IRQn, 5);
 }
 
 /**

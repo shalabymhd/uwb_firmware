@@ -124,12 +124,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
  * */
 __INLINE void process_deca_irq(void)
 {
-    while(port_CheckEXT_IRQ() != 0)
-    {
+    // while(port_CheckEXT_IRQ() != 0)
+    // {
 
         port_deca_isr();
 
-    } //while DW1000 IRQ line active
+    // } //while DW1000 IRQ line active
 }
 
 /* @fn      port_CheckEXT_IRQ

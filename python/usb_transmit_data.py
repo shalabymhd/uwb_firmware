@@ -2,12 +2,21 @@
 import serial
 import time
 """
-This script publishes a message to the USB port continuously until terminated. 
+This script publishes a message to the USB port continuously until terminated.
 """
 
-ser = serial.Serial('/dev/ttyACM1', 19200, timeout=1)
+ser1 = serial.Serial('/dev/ttyACM0', 19200, timeout=1)\
+# ser3 = serial.Serial('/dev/ttyACM3', 19200, timeout=1)
 
-while 1:
-    dataToTransmit = "Hello World from the python script.\n"
-    ser.write(dataToTransmit.encode())
-    time.sleep(0.1)
+while True:
+    # dataToTransmit = "Hello World from the python script.\n"
+    # dataToTransmit = "Im python.\r"
+    dataToTransmit = "C02,4,1\r"
+    ser1.write(dataToTransmit.encode())
+    print(ser1.readline().decode())
+    time.sleep(0.005)
+    # dataToTransmit = "C02,6,0\r"
+    # ser3.write(dataToTransmit.encode())
+    # time.sleep(0.01)
+
+ser1.close()

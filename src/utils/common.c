@@ -7,22 +7,19 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdio.h>
+#include <math.h>   
 #include "common.h"
 
 void convert_float_to_string(char* str,float data){
-	int int_part, dec_part;
-	int_part = (int) data;
-	dec_part = (int) ((data-(float)int_part)*10000.0);
+  char *tmpSign = (data < 0) ? "-" : "";
+  float tmpVal = (data < 0) ? -data : data;
 
-	if (dec_part < 0 && int_part >= 0){
-		sprintf(str,(char*)"-%d.%d",int_part,-dec_part);
-	}
-	else if (dec_part < 0){
-		sprintf(str,(char*)"%d.%d",int_part,-dec_part);
-	}
-	else{
-		sprintf(str,(char*)"%d.%d",int_part,dec_part);
-	} 
+  int tmpInt1 = tmpVal;                  // Get the integer (678).
+  float tmpFrac = tmpVal - tmpInt1;      // Get fraction (0.0123).
+  int tmpInt2 = trunc(tmpFrac * 10000);  // Turn into integer (123).
+
+  // Print as parts, note that you need 0-padding for fractional bit.
+  sprintf(str, "%s%d.%04d\r\n", tmpSign, tmpInt1, tmpInt2);
 }
 
 void convert_elementR3_to_string(char* str, element_R3 data){
@@ -36,7 +33,9 @@ void convert_elementR3_to_string(char* str, element_R3 data){
 }
 
 void usb_print(char* c){
-    CDC_Transmit_FS(c,strlen(c));
+  // TODO: can this be overloaded so that we can allow a format specifier like
+  // sprintf? 
+  CDC_Transmit_FS(c,strlen(c));
 }
 
 /**

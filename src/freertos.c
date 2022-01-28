@@ -31,6 +31,8 @@
 #include "ranging.h"
 #include "spi.h"
 #include "testing.h"
+#include "usb_interface.h"
+#include "commands.h"
 
 /* USER CODE END Includes */
 
@@ -41,7 +43,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,31 +52,25 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t CdcReceiveBuffer[64];
+char CdcReceiveBuffer[USB_BUFFER_SIZE]; // buffer to store received USB data.
+struct int_params *FSM_int_params = NULL;
+struct float_params *FSM_float_params = NULL;
+struct bool_params *FSM_bool_params = NULL;
+struct str_params *FSM_str_params = NULL;
 /* USER CODE END Variables */
 
 osThreadId defaultTaskHandle;
 osThreadId blinkTaskHandle;
-osThreadId usbTransmitTaskHandle;
 osThreadId usbReceiveTaskHandle;
-osThreadId imuTaskHandle;
-osThreadId uwbTaskHandle;
-osThreadId listeningTaskHandle;
-osThreadId uwbTestingTaskHandle;
+osThreadId twrInterruptTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
-/* USER CODE END FunctionPrototypes */
-
 void StartDefaultTask(void const * argument);
 void StartBlinking(void const * argument);
-void StartUsbTransmit(void const * argument);
 void StartUsbReceive(void const * argument);
-void StartImuTask(void const * argument);
-void StartUwbTask(void const * argument);
-void StartListeningTask(void const * argument);
-void StartUwbTesting(void const * argument);
+void twrInterruptTask(void const * argument);
+/* USER CODE END FunctionPrototypes */
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -131,23 +126,11 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
   blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
-  // osThreadDef(usbTransmit, StartUsbTransmit, osPriorityIdle, 0, 128);
-  // usbTransmitTaskHandle = osThreadCreate(osThread(usbTransmit), NULL);
+  osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 512);
+  usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
 
-  // osThreadDef(usbReceive, StartUsbReceive, osPriorityNormal, 0, 128);
-  // usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
-
-  // osThreadDef(imu, StartImuTask, osPriorityNormal, 0, 128);
-  // imuTaskHandle = osThreadCreate(osThread(imu), NULL);
-
-  // osThreadDef(uwb, StartUwbTask, osPriorityNormal, 0, 128);
-  // uwbTaskHandle = osThreadCreate(osThread(uwb), NULL);
-
-  // osThreadDef(listening, StartListeningTask, osPriorityNormal, 0, 128);
-  // listeningTaskHandle = osThreadCreate(osThread(listening), NULL);
-
-  osThreadDef(uwbTesting, StartUwbTesting, osPriorityRealtime, 0, 128);
-  uwbTestingTaskHandle = osThreadCreate(osThread(uwbTesting), NULL);
+  osThreadDef(twrInterrupt, twrInterruptTask, osPriorityRealtime, 0, 256);
+  twrInterruptTaskHandle = osThreadCreate(osThread(twrInterrupt), NULL);
   /* USER CODE END RTOS_THREADS */
 }
 
@@ -167,64 +150,53 @@ void StartDefaultTask(void const * argument)
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
-}
+} // end StartDefaultTask()
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 void StartBlinking(void const *argument){
   while (1){
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
-    osDelay(1000);
+    osDelay(250);
   }
-}
-
-void StartUsbTransmit(void const *argument){
-  // To read the transmitted data on a computer, execute in a terminal
-  // >> cat /dev/ttyACMx
-  while (1){
-    usb_print("Hello World from USB CDC \n");
-    osDelay(1000);
-  }
-}
+} // end StartBlinking()
 
 void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
-  while (1){
-    usb_print(CdcReceiveBuffer);
-    osDelay(1000);
-  }
-}
 
-void StartImuTask(void const *argument){
-  while (1){
-    imu_main();
-  }
-}
+  uint8_t reg_state;
 
-void StartUwbTask(void const *argument){
-  // uwb_init();
   while (1){
-    do_owr();
-    osDelay(1000);
-  }
-  // do_twr();
-}
+    /* Disable UWB interrupts and read the USB buffer */
+    readUsb();
 
-void StartListeningTask(void const *argument){
-  // uwb_init();
-  while (1){
-    listen();
+    /* RX is supposed to be enabled from the interrupt task. If not, re-enable */
+    reg_state = dwt_read8bitoffsetreg(SYS_STATE_ID, 1); // read RX status
+    if (!reg_state){
+      dwt_rxenable(DWT_START_RX_IMMEDIATE); // turn on uwb receiver
+    } 
+    osDelay(1); // TODO: to be modified?? 
   }
-  // listen_twr();
-}
+} // end StartUsbReceive()
 
-void StartUwbTesting(void const *argument){
-  // uwb_init();
+/* Private application code --------------------------------------------------*/
+/* USER CODE BEGIN Application */
+void twrInterruptTask(void const *argument){
+  decaIrqStatus_t stat;
+
+  dwt_setrxaftertxdelay(40);
+
   while (1){
-    dw_test();
+    osThreadSuspend(NULL); // suspend the thread, re-enabled using uwb receive interrupt
+    
+    /* Executes right after a dw1000 receive interrupt */
+    stat = decamutexon(); // disable dw1000 interrupts
+    twrReceiveCallback(); // complete TWR 
+    decamutexoff(stat); // re-enable dw1000 interrupts
+    dwt_rxenable(DWT_START_RX_IMMEDIATE); // turn on uwb receiver
   }
-}
+} // end twrInterruptTask()
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

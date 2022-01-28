@@ -14,16 +14,31 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "deca_types.h"
+#include "deca_device_api.h"
+#include "deca_regs.h"
+#include "spi.h"
+#include "stm32f4xx_hal_conf.h"
+#include "main.h"
+#include "common.h"
+#include "cmsis_os.h"
+#include <stdio.h>
+#include "common.h"
+#include "dwt_general.h"
+#include "dwt_iqr.h"
+
+/* Typedef -------------------------------------------------------------------*/
+typedef signed long long int64;
+typedef unsigned long long uint64;
 
 /* Function Prototypes -------------------------------------------------------*/
-int do_owr(void);
-int do_twr(void);
-void listen(void);
-void listen_twr(void);
+int twrInitiateInstance(uint8_t, bool);
+int twrReceiveCallback(void);
 void uwbReceiveInterruptInit(void);
+int txTimestamps(uint64, uint64);
+int rxTimestamps(uint64, uint64);
 
 #define UUS_TO_DWT_TIME 65536
-
 
 #ifdef __cplusplus
 }

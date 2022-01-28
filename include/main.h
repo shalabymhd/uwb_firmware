@@ -16,6 +16,13 @@
   *                             www.st.com/SLA0044
   *
   ******************************************************************************
+  * @attention
+  *
+  * This script uses the hash table implementation extracted from
+  * Copyright (c) 2005-2021, Troy D. Hanson http://troydhanson.github.io/uthash/
+  * All rights reserved.
+  * 
+  ******************************************************************************
   */
 /* USER CODE END Header */
 
@@ -32,11 +39,12 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+
 
 /* USER CODE END ET */
 
@@ -63,7 +71,9 @@ void Error_Handler(void);
 #define USB_DP_Pin GPIO_PIN_12
 #define USB_DP_GPIO_Port GPIOA
 
-#define BOARD_ID (1); // This is the module's ID.
+#define BOARD_ID (5) // Module's ID.
+#define USB_BUFFER_SIZE (160) // Size of the USB buffer, in bytes.
+                              // TODO: to be modified?? 
 
 /* USER CODE BEGIN Private defines */
 #define DW_RESET_Pin GPIO_PIN_11

@@ -3,24 +3,28 @@
     "tasks":
     [
         {
+            "label": "Clean Firmware",
+            "type": "shell",
+            "command": "make clean",
+            "args": [],
+            "problemMatcher": [],
+            "presentation": {
+                "focus": true
+            }
+        },
+        {
             "label": "Build Firmware",
-            "group":
-            {
+            "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "type": "shell",
             "command": "make all",
-            "args":
-            [
-
-            ],
-            "problemMatcher":
-            [
+            "args": [],
+            "problemMatcher": [
                 "$gcc"
             ],
-            "presentation":
-            {
+            "presentation": {
                 "focus": true
             }
         },
@@ -28,22 +32,26 @@
             "label": "Upload Firmware V2",
             "type": "shell",
             "command": "openocd",
-            "args":
-            [
-                "-f","interface/stlink-v2-1.cfg",
-                "-f","target/stm32f4x.cfg",
-                "-c","'program ./build/config_stm32f4.elf verify reset exit'"
+            "args": [
+                "-f",
+                "interface/stlink-v2-1.cfg",
+                "-f",
+                "target/stm32f4x.cfg",
+                "-c",
+                "'program ./build/config_stm32f4.elf verify reset exit'"
             ]
         },
         {
             "label": "Upload Firmware V1",
             "type": "shell",
             "command": "openocd",
-            "args":
-            [
-                "-f","board/stm32f4discovery.cfg",
-				"-c","'program build/config_stm32f4.elf verify reset exit'"
-            ]
+            "args": [
+                "-f",
+                "board/stm32f4discovery.cfg",
+                "-c",
+                "'program build/config_stm32f4.elf verify reset exit'"
+            ],
+            "problemMatcher": []
         }
     ]
 }
