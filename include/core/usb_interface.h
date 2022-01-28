@@ -23,7 +23,10 @@ extern "C" {
 /* Function Prototypes -------------------------------------------------------*/
 void readUsb();
 /* Variables -----------------------------------------------------------*/
-extern char CdcReceiveBuffer[USB_BUFFER_SIZE]; // TODO: should this be in header?
+// TODO: this variable seems to be declared here, defined in freertos.c, 
+// and an identically named variable exists in usbd_cdc_if.c
+// something tells me this isnt best practice.
+extern char CdcReceiveBuffer[USB_BUFFER_SIZE]; 
 #ifdef __cplusplus
 }
 #endif

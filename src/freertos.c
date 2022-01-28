@@ -32,7 +32,7 @@
 #include "spi.h"
 #include "testing.h"
 #include "usb_interface.h"
-#include "fsm.h"
+#include "commands.h"
 
 /* USER CODE END Includes */
 
@@ -165,24 +165,17 @@ void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
 
-  decaIrqStatus_t stat;
   uint8_t reg_state;
 
   while (1){
     /* Disable UWB interrupts and read the USB buffer */
-    stat = decamutexon();
     readUsb();
-    decamutexoff(stat);
 
     /* RX is supposed to be enabled from the interrupt task. If not, re-enable */
     reg_state = dwt_read8bitoffsetreg(SYS_STATE_ID, 1); // read RX status
     if (!reg_state){
       dwt_rxenable(DWT_START_RX_IMMEDIATE); // turn on uwb receiver
     } 
-
-    /* Call the finite state machine function */
-    fsmLoop();
-
     osDelay(1); // TODO: to be modified?? 
   }
 } // end StartUsbReceive()

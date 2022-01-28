@@ -13,11 +13,14 @@
 #include "common.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include "fsm.h"
+#include "commands.h"
+#include "dwt_iqr.h"
 /* Typedefs ------------------------------------------------------------------*/
 typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4} FieldTypes;
 
 /* Variables -----------------------------------------------------------------*/
+static int command_number = -1;
+
 static const char *c00_fields[1]; // No fields. Empty array of size 1
 static const FieldTypes c00_types[1];  // No fields. Empty array of size 1
 static const char *c01_fields[1]; // No fields. Empty array of size 1
@@ -25,10 +28,33 @@ static const FieldTypes c01_types[1]; // No fields. Empty array of size 1
 static const char *c02_fields[] = {"target", "targ_meas"}; // can't be more than 10 characters
 static const FieldTypes c02_types[] = {INT, BOOL}; // 1=int, 2=str, 3=bool, 4=float
 
-static const char **all_command_fields[] = {c00_fields, c01_fields, c02_fields};
-static const FieldTypes *all_command_types[] = {c00_types, c01_types, c02_types};
+static const char **all_command_fields[] = {
+  c00_fields,
+  c01_fields,
+  c02_fields
+  };
 
+static const FieldTypes *all_command_types[] = {
+  c00_types,
+  c01_types,
+  c02_types
+  };
 
+static const int (*all_command_funcs[])(IntParams*, FloatParams*, BoolParams*, StrParams*) = {
+  c00_set_inactive,
+  c01_get_id,
+  c02_initiate_twr
+  };
+
+/* TODO: can below be made local variables if defined in
+ parseMessageIntoHashTables and passed to deleteOldParams() ? Or would we lose
+ the handle to these variables after the function exits, and they would exist in 
+ the hash tables without any way for us to free the memory. 
+*/
+static IntParams *msg_ints; 
+static FloatParams *msg_floats;
+static BoolParams *msg_bools;
+static StrParams *msg_strs;
 
 /* Private Functions ----------------------------------------------------------*/
 void parseMessageIntoHashTables(char *msg);
@@ -44,10 +70,13 @@ void deleteOldParams();
  * 
  */
 void readUsb(){
+  
+    decaIrqStatus_t stat;
+    stat = decamutexon();
     char *idx_end;
 
     // char print_stat[20];
-
+    
     idx_end = strstr(CdcReceiveBuffer, "\r"); // address where to stop reading the message
 
     uint8_t len = idx_end - CdcReceiveBuffer - 1; // Removing the first entry 
@@ -75,6 +104,35 @@ void readUsb(){
         // free the temporary memory 
         free(dyn);
     }
+    
+    decamutexoff(stat);
+    
+    /* 
+    NOTE: currently ALL commands are endlessly retried until they return a 
+    value of 1, or until a new command sent over USB overwrites. This might not 
+    be the desired behavior for some future functions, where they might just 
+    want to report a failure and not retry. 
+
+    A simple solution is to extend the possible return values of the commands:
+    -1: Fail, retry me.
+    0: Fail
+    1: success
+    */
+
+    // Call if a valid command number was detected
+    int num_commands = sizeof(all_command_funcs) / sizeof(all_command_funcs[0]);
+    if (command_number >= 0 && command_number <= num_commands){
+      bool success;
+      success = (*all_command_funcs[command_number])(
+        msg_ints,
+        msg_floats,
+        msg_bools,
+        msg_strs);
+
+      if (success){
+        command_number = -1;
+      }
+    }
 } // end readUsb()
 
 
@@ -88,16 +146,15 @@ void readUsb(){
 void parseMessageIntoHashTables(char *msg){
     char *pt = strtok(msg,","); // break the string using the comma delimiter, to read each entry separately
     int iter = -1;
-    int command_number = -1;
     const FieldTypes *msg_types; // Pointer to array
     const char **msg_fields; // Pointer to array of pointers
+    // TODO: lol indent with 2 spaces or 4 spaces?
 
     deleteOldParams(); // delete all old params
 
     while (pt != NULL) { // while there still exists an unread parameter 
         if (iter == -1){
           command_number = atoi(pt+1); // the first entry of "msg" corresponds to the command number
-          FSM_status = command_number;
           msg_types = all_command_types[command_number];
           msg_fields = all_command_fields[command_number];
         }
@@ -106,46 +163,46 @@ void parseMessageIntoHashTables(char *msg){
           switch (type)
           {
           case INT:{
-            struct int_params *param_temp;
+            IntParams *param_temp;
 
-            param_temp = malloc(sizeof(struct int_params));
+            param_temp = malloc(sizeof(IntParams));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
 
             strcpy(param_temp->key, msg_fields[iter]);
             param_temp->value = atoi(pt);
             
-            HASH_ADD_STR(FSM_int_params, key, param_temp);
+            HASH_ADD_STR(msg_ints, key, param_temp);
 
             break;
           }
           case STR:{
-            struct str_params *param_temp;
+            StrParams *param_temp;
 
-            param_temp = malloc(sizeof(struct str_params));
+            param_temp = malloc(sizeof(StrParams));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
             
             strcpy(param_temp->key, msg_fields[iter]); 
             strcpy(param_temp->value, pt);
             
-            HASH_ADD_STR(FSM_str_params, key, param_temp);
+            HASH_ADD_STR(msg_strs, key, param_temp);
 
             break;
           }
           case BOOL:{
-            struct bool_params *param_temp;
+            BoolParams *param_temp;
 
-            param_temp = malloc(sizeof(struct bool_params));
+            param_temp = malloc(sizeof(BoolParams));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
             
             strcpy(param_temp->key, msg_fields[iter]); 
             param_temp->value = atoi(pt);
             
-            HASH_ADD_STR(FSM_bool_params, key, param_temp);
+            HASH_ADD_STR(msg_bools, key, param_temp);
 
             break;
           }
           case FLOAT:{
-            struct float_params *param_temp;
+            FloatParams *param_temp;
             
             char char_temp[2];
             int int_temp;
@@ -168,13 +225,13 @@ void parseMessageIntoHashTables(char *msg){
             int_temp = (int)strtol(char_temp, NULL, 16); 
             float_bytes[0] = int_temp;
 
-            param_temp = malloc(sizeof(struct float_params));
+            param_temp = malloc(sizeof(FloatParams));
             if (param_temp == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
             
             strcpy(param_temp->key, msg_fields[iter]); 
             memcpy(&(param_temp->value), &float_bytes, 4);
             
-            HASH_ADD_STR(FSM_float_params, key, param_temp);
+            HASH_ADD_STR(msg_floats, key, param_temp);
             
             break;
           }
@@ -192,34 +249,34 @@ void parseMessageIntoHashTables(char *msg){
 void deleteOldParams() {
 
   /* Delete int params */
-  struct int_params *current_int, *tmp_int;
+  IntParams *current_int, *tmp_int;
 
-  HASH_ITER(hh, FSM_int_params, current_int, tmp_int) {
-    HASH_DEL(FSM_int_params, current_int);  /* delete; advances to next param */
+  HASH_ITER(hh, msg_ints, current_int, tmp_int) {
+    HASH_DEL(msg_ints, current_int);  /* delete; advances to next param */
     free(current_int);    
   }
 
   /* Delete str params */
-  struct str_params *current_str, *tmp_str;
+  StrParams *current_str, *tmp_str;
 
-  HASH_ITER(hh, FSM_str_params, current_str, tmp_str) {
-    HASH_DEL(FSM_str_params, current_str);  /* delete; advances to next param */
+  HASH_ITER(hh, msg_strs, current_str, tmp_str) {
+    HASH_DEL(msg_strs, current_str);  /* delete; advances to next param */
     free(current_str);    
   }
 
   /* Delete bool params */
-  struct bool_params *current_bool, *tmp_bool;
+  BoolParams *current_bool, *tmp_bool;
 
-  HASH_ITER(hh, FSM_bool_params, current_bool, tmp_bool) {
-    HASH_DEL(FSM_bool_params, current_bool);  /* delete; advances to next param */
+  HASH_ITER(hh, msg_bools, current_bool, tmp_bool) {
+    HASH_DEL(msg_bools, current_bool);  /* delete; advances to next param */
     free(current_bool);    
   }
 
   /* Delete float params */
-  struct float_params *current_float, *tmp_float;
+  FloatParams *current_float, *tmp_float;
 
-  HASH_ITER(hh, FSM_float_params, current_float, tmp_float) {
-    HASH_DEL(FSM_float_params, current_float);  /* delete; advances to next param */
+  HASH_ITER(hh, msg_floats, current_float, tmp_float) {
+    HASH_DEL(msg_floats, current_float);  /* delete; advances to next param */
     free(current_float);    
   }
 }
