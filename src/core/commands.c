@@ -40,12 +40,10 @@ int c02_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
     /* Extract the target */
     HASH_FIND_STR(msg_ints, "target", i);
     target_ID = i->value;
-    free(i);
 
     /* Extract the toggle that dictates if the target computes range measurements */
     HASH_FIND_STR(msg_bools, "targ_meas", b);
     target_meas_bool = b->value;
-    free(b);
 
     if (target_ID == BOARD_ID){
         usb_print("TWR FAIL: The target ID is the same as the initiator's ID.\r\n");

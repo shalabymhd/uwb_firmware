@@ -18,6 +18,8 @@
 typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4} FieldTypes;
 
 /* Variables -----------------------------------------------------------------*/
+static int command_number = -1;
+
 static const char *c00_fields[1]; // No fields. Empty array of size 1
 static const FieldTypes c00_types[1];  // No fields. Empty array of size 1
 static const char *c01_fields[1]; // No fields. Empty array of size 1
@@ -93,6 +95,21 @@ void readUsb(){
         // free the temporary memory 
         free(dyn);
     }
+
+    // Call if a valid command number was detected
+    // TODO: safeguard against command number larger than total number of commands.
+    if (command_number >= 0){
+      bool success;
+      success = (*all_command_funcs[command_number])(
+        msg_ints,
+        msg_floats,
+        msg_bools,
+        msg_strs);
+
+      if (success){
+        command_number = -1;
+      }
+    }
 } // end readUsb()
 
 
@@ -106,7 +123,6 @@ void readUsb(){
 void parseMessageIntoHashTables(char *msg){
     char *pt = strtok(msg,","); // break the string using the comma delimiter, to read each entry separately
     int iter = -1;
-    int command_number = -1;
     const FieldTypes *msg_types; // Pointer to array
     const char **msg_fields; // Pointer to array of pointers
     // TODO: lol indent with 2 spaces or 4 spaces?
@@ -204,18 +220,6 @@ void parseMessageIntoHashTables(char *msg){
         iter += 1;
         pt = strtok(NULL, ","); // gets read of read parameter, sets current parameter to the next one
     }
-
-    // Call if a valid command number was detected
-    // TODO: safeguard against command number larger than total number of commands.
-    if (command_number >= 0){
-      int success;
-      success = (*all_command_funcs[command_number])(
-        msg_ints,
-        msg_floats,
-        msg_bools,
-        msg_strs);
-    }
-
 } // end updateCommandsAndParams()
 
 
