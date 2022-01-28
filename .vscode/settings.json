@@ -16,7 +16,8 @@
         "freertos.h": "c",
         "ranging.h": "c",
         "usb_interface.h": "c",
-        "stm32f4xx_hal_conf.h": "c"
+        "stm32f4xx_hal_conf.h": "c",
+        "commands.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": true
 }

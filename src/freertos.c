@@ -32,7 +32,7 @@
 #include "spi.h"
 #include "testing.h"
 #include "usb_interface.h"
-#include "fsm.h"
+#include "commands.h"
 
 /* USER CODE END Includes */
 
@@ -178,7 +178,6 @@ void StartUsbReceive(void const *argument){
     if (!reg_state){
       dwt_rxenable(DWT_START_RX_IMMEDIATE); // turn on uwb receiver
     } 
-    fsmLoop();
     osDelay(1); // TODO: to be modified?? 
   }
 } // end StartUsbReceive()
