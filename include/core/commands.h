@@ -60,4 +60,4 @@ int c02_initiate_twr(IntParams*, FloatParams*, BoolParams*, StrParams*);
 }
 #endif
 
-#endif /* __FSM__ */
+#endif /* __COMMANDS_H__ */

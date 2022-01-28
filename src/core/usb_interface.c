@@ -14,6 +14,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include "commands.h"
+#include "dwt_iqr.h"
 /* Typedefs ------------------------------------------------------------------*/
 typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4} FieldTypes;
 
@@ -64,10 +65,13 @@ void deleteOldParams();
  * 
  */
 void readUsb(){
+  
+    decaIrqStatus_t stat;
+    stat = decamutexon();
     char *idx_end;
 
     // char print_stat[20];
-
+    
     idx_end = strstr(CdcReceiveBuffer, "\r"); // address where to stop reading the message
 
     uint8_t len = idx_end - CdcReceiveBuffer - 1; // Removing the first entry 
@@ -95,10 +99,12 @@ void readUsb(){
         // free the temporary memory 
         free(dyn);
     }
-
+    
+    decamutexoff(stat);
+    
     // Call if a valid command number was detected
-    // TODO: safeguard against command number larger than total number of commands.
-    if (command_number >= 0){
+    int num_commands = sizeof(all_command_funcs) / sizeof(all_command_funcs[0]);
+    if (command_number >= 0 && command_number <= num_commands){
       bool success;
       success = (*all_command_funcs[command_number])(
         msg_ints,
