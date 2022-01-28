@@ -1,14 +1,13 @@
 /**
   ******************************************************************************
-  * @file    fsm.h
-  * @brief   This file contains all the function prototypes for
-  *          the fsm.c file
+  * @file    commands.h
+  * @brief   Header file for all the USB command implementations.
   ******************************************************************************
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __FSM_H__
-#define __FSM_H__
+#ifndef __COMMANDS_H__
+#define __COMMANDS_H__
 
 #ifdef __cplusplus
 extern "C" {
