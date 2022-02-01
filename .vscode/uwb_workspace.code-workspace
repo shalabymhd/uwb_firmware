@@ -1,0 +1,34 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../uwb_interface"
+		}
+	],
+	"settings": {
+		"cortex-debug.armToolchainPath": "",
+		"cortex-debug.openocdPath": "/usr/bin/openocd",
+		"files.associations": {
+			"usbd_cdc_if.h": "c",
+			"mpu9250.h": "c",
+			"common.h": "c",
+			"main.h": "c",
+			"i2c.h": "c",
+			"cmsis_os.h": "c",
+			"stdint.h": "c",
+			"stm32f4xx_hal.h": "c",
+			"deca_device_api.h": "c",
+			"dwt_general.h": "c",
+			"testing.h": "c",
+			"freertos.h": "c",
+			"ranging.h": "c",
+			"usb_interface.h": "c",
+			"stm32f4xx_hal_conf.h": "c",
+			"commands.h": "c",
+			"stdlib.h": "c"
+		},
+		"cortex-debug.variableUseNaturalFormat": true
+	}
+}

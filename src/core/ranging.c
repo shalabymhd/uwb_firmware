@@ -325,7 +325,6 @@ int txTimestamps(uint64 tx_ts, uint64 rx_ts){
 
 int rxTimestamps(uint64 tx_ts, uint64 rx_ts){
     /* String used to display measured distance on UART. */
-    char dist_str[10] = {0};
     uint32 frame_len;
 
     dwt_rxenable(DWT_START_RX_IMMEDIATE);
@@ -382,8 +381,13 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts){
             distance = tof * SPEED_OF_LIGHT;
 
             /* Display computed distance. */
+            char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
-            usb_print(dist_str);
+            char response[20] = "R02,";
+            char suffix[] = "&\r";
+            strcat(response, dist_str);
+            strcat(response, suffix);
+            usb_print(response); // TODO: will this response ever be sent without a USB command?
             
             dwt_setrxtimeout(0);
             dwt_setpreambledetecttimeout(0);
