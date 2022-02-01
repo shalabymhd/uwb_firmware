@@ -384,7 +384,7 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts){
             char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
             char response[20] = "R02,";
-            char suffix[] = "&\r";
+            char suffix[] = "\r";
             strcat(response, dist_str);
             strcat(response, suffix);
             usb_print(response); // TODO: will this response ever be sent without a USB command?
