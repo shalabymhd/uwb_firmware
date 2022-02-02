@@ -25,7 +25,7 @@ void dw_test(){
   char print_buff[100];
 
   id = dwt_readdevid();
-  sprintf(print_buff,"Id read = 0x%x \n",id);
+  sprintf(print_buff,"Id read = 0x%lx \n",id);
   usb_print(print_buff);
   
   osDelay(100);
