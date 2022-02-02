@@ -1,7 +1,13 @@
 {
     "version": "0.2.0",
-    "configurations":
-    [
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
         {
             "name": "Build and Debug V2",
             "type": "cortex-debug",
@@ -11,8 +17,7 @@
             "executable": "./build/config_stm32f4.elf",
             "device": "STM32F405RGT6",
             "svdFile": "${workspaceFolder}/.vscode/STM32F405.svd",
-            "configFiles":
-            [
+            "configFiles": [
                 "/usr/share/openocd/scripts/interface/stlink-v2-1.cfg",
                 "/usr/share/openocd/scripts/target/stm32f4x.cfg"
             ],
@@ -20,18 +25,17 @@
             "overrideGDBServerStartedRegex": "Info\\s:\\s([^\\n\\.]*)\\.cpu([^\\n]*)"
         },
         {
-			"name": "Build and Debug V1",
-			"type": "cortex-debug",
-			"request": "launch",
-			"servertype": "openocd",
-			"cwd": "${workspaceFolder}",
-			"executable": "build/config_stm32f4.elf",
-			"configFiles":
-			[
-				"/usr/share/openocd/scripts/board/stm32f4discovery.cfg"
-			],
-			"preLaunchTask": "Build Firmware",
+            "name": "Build and Debug V1",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "cwd": "${workspaceFolder}",
+            "executable": "build/config_stm32f4.elf",
+            "configFiles": [
+                "/usr/share/openocd/scripts/board/stm32f4discovery.cfg"
+            ],
+            "preLaunchTask": "Build Firmware",
             "overrideGDBServerStartedRegex": "Info\\s:\\s([^\\n\\.]*)\\.cpu([^\\n]*)"
-		}
+        }
     ]
 }
