@@ -231,7 +231,9 @@ int twrReceiveCallback(void){
         rx_ts = get_rx_timestamp_u64();
 
         // If the intended target does not match the ID, passively listen on all signals and output the timestamps.
-        if (rx_buffer[ALL_RX_BOARD_IDX] != rx_poll_msg[ALL_RX_BOARD_IDX]){
+        bool bool_target = (rx_buffer[ALL_RX_BOARD_IDX] != rx_poll_msg[ALL_RX_BOARD_IDX]);
+        bool bool_msg_type = (rx_buffer[ALL_MSG_TYPE_IDX] == rx_poll_msg[ALL_MSG_TYPE_IDX]);
+        if (bool_target && bool_msg_type){
             
             ret = passivelyListen(rx_ts, target_meas_bool);
 
@@ -239,6 +241,11 @@ int twrReceiveCallback(void){
             dwt_setrxtimeout(0);
             dwt_setpreambledetecttimeout(0);
             return ret;
+        }
+        else if(bool_target){
+            dwt_setrxtimeout(0);
+            dwt_setpreambledetecttimeout(0);
+            return 0;
         }
     
         /* Set send time for response. See NOTE 9 below. */
