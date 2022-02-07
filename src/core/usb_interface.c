@@ -25,25 +25,40 @@ static const char *c00_fields[1]; // No fields. Empty array of size 1
 static const FieldTypes c00_types[1];  // No fields. Empty array of size 1
 static const char *c01_fields[1]; // No fields. Empty array of size 1
 static const FieldTypes c01_types[1]; // No fields. Empty array of size 1
-static const char *c02_fields[] = {"target", "targ_meas"}; // can't be more than 10 characters
-static const FieldTypes c02_types[] = {INT, BOOL}; // 1=int, 2=str, 3=bool, 4=float
+static const char *c02_fields[1]; // No fields. Empty array of size 1
+static const FieldTypes c02_types[1]; // No fields. Empty array of size 1
+static const char *c03_fields[1]; // No fields. Empty array of size 1
+static const FieldTypes c03_types[1]; // No fields. Empty array of size 1
+static const char *c04_fields[] = {"toggle"}; // can't be more than 10 characters
+static const FieldTypes c04_types[] = {BOOL}; 
+static const char *c05_fields[] = {"target", "targ_meas"}; // can't be more than 10 characters
+static const FieldTypes c05_types[] = {INT, BOOL};
 
 static const char **all_command_fields[] = {
   c00_fields,
   c01_fields,
-  c02_fields
+  c02_fields,
+  c03_fields,
+  c04_fields,
+  c05_fields
   };
 
 static const FieldTypes *all_command_types[] = {
   c00_types,
   c01_types,
-  c02_types
+  c02_types,
+  c03_types,
+  c04_types,
+  c05_types
   };
 
 static const int (*all_command_funcs[])(IntParams*, FloatParams*, BoolParams*, StrParams*) = {
-  c00_set_inactive,
+  c00_set_idle,
   c01_get_id,
-  c02_initiate_twr
+  c02_reset,
+  c03_do_tests,
+  c04_toggle_passive,
+  c05_initiate_twr
   };
 
 /* TODO: can below be made local variables if defined in
@@ -57,8 +72,8 @@ static BoolParams *msg_bools;
 static StrParams *msg_strs;
 
 /* Private Functions ----------------------------------------------------------*/
-void parseMessageIntoHashTables(char *msg);
-void deleteOldParams();
+static void parseMessageIntoHashTables(char *msg);
+static void deleteOldParams();
 
 /*! ----------------------------------------------------------------------------
  * Function: readUsb()
@@ -137,7 +152,7 @@ void readUsb(){
 
 
 /*! -----------------------------------------------------------------------------------------
- * Function: updateCommandsAndParams()
+ * Function: parseMessageIntoHashTables()
  *
  * The purpose of this function is to update the status of the FSM and extract the 
  * corresponding params.
@@ -243,7 +258,7 @@ void parseMessageIntoHashTables(char *msg){
         iter += 1;
         pt = strtok(NULL, ","); // gets read of read parameter, sets current parameter to the next one
     }
-} // end updateCommandsAndParams()
+} // end parseMessageIntoHashTables()
 
 
 void deleteOldParams() {

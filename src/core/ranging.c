@@ -88,6 +88,9 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data);
  * In case of RX error, assume the receiver is present but its response has not been received for any reason and retry blink transmission immediately. */
 #define RX_ERR_TX_DELAY_MS 0
 
+/* Passive listening toggle */
+static bool passive_listening = 0;
+
 /* MAIN RANGING FUNCTIONS ---------------------------------------- */ 
 int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool){
     decaIrqStatus_t stat;
@@ -231,7 +234,7 @@ int twrReceiveCallback(void){
         // If the intended target does not match the ID, passively listen on all signals and output the timestamps.
         bool bool_target = (rx_buffer[ALL_RX_BOARD_IDX] != rx_poll_msg[ALL_RX_BOARD_IDX]);
         bool bool_msg_type = (rx_buffer[ALL_MSG_TYPE_IDX] == rx_poll_msg[ALL_MSG_TYPE_IDX]);
-        if (bool_target && bool_msg_type){
+        if (bool_target && bool_msg_type && passive_listening){
             
             ret = passivelyListen(rx_ts, target_meas_bool);
 
@@ -400,7 +403,7 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts){
             char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
             char response[20];
-            sprintf(response, "R02,%s\r\n", dist_str);
+            sprintf(response, "R05,%s\r\n", dist_str);
             usb_print(response); // TODO: will this response ever be sent without a USB command?
             
             dwt_setrxtimeout(0);
@@ -510,6 +513,10 @@ bool timestampReceivedFrame(uint32_t *ts, uint8_t master_idx, uint8_t master_id,
     else{
         return 0;
     }
+}
+
+void setPassiveToggle(bool toggle){
+    passive_listening = toggle;
 }
 
 void uwbReceiveInterruptInit(){

@@ -50,12 +50,13 @@ int rxTimestamps(uint64, uint64);
  */
 int passivelyListen(uint32_t, bool);
 
+
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: timestampReceivedFrame()
  *
  * @brief This function retrieves the reception time-stamp of a signal. 
  *
- * Note: This function can be called to retrieve the reception time-stamp from the registers or from the embedded
+ * NOTE: This function can be called to retrieve the reception time-stamp from the registers or from the embedded
  *       message in a final signal.
  * 
  * @param ts (uint32_t*) Pointer to where to store the time-stamp.
@@ -68,6 +69,16 @@ int passivelyListen(uint32_t, bool);
  * @return (bool) Success boolean.
  */
 bool timestampReceivedFrame(uint32_t*, uint8_t, uint8_t, uint8_t, uint8_t, bool);
+
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * Function: setPassiveToggle()
+ * 
+ * @brief This function sets the passive toggle.
+ * 
+ * @param toggle (bool) 1 if passive toggle is to be turned on, 0 otherwise.
+ */
+void setPassiveToggle(bool);
 
 #define UUS_TO_DWT_TIME 65536
 
