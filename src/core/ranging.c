@@ -78,8 +78,6 @@ static double distance;
 
 /* Declaration of static functions. */
 static void rx_ok_cb(const dwt_cb_data_t *cb_data);
-static void rx_to_cb(const dwt_cb_data_t *cb_data);
-static void rx_err_cb(const dwt_cb_data_t *cb_data);
 
 /* Default inter-frame delay period, in milliseconds. */
 #define DFLT_TX_DELAY_MS 1000
@@ -424,145 +422,114 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts){
 
 int passivelyListen(uint32_t rx_ts1, bool four_signals){
     /* Have received first signal in a TWR transaction. 2 or 3 more signals expected. */
-    
+    bool success;
     uint8_t master_id, slave_id;
     uint32_t rx_ts2, tx_ts1, tx_ts2;
-    uint32 frame_len;
-    bool bool_base, bool_master, bool_slave;
 
     // Retrieve IDs of tags involved in the TWR transaction
     master_id = rx_buffer[ALL_TX_BOARD_IDX];
     slave_id = rx_buffer[ALL_RX_BOARD_IDX];
 
     /* --------------------- SIGNAL 2: Slave to Master --------------------- */
-    // Re-enable RX
-    dwt_rxenable(DWT_START_RX_IMMEDIATE);
-
-    /* Poll for reception of expected "final" frame or error/timeout. See NOTE 8 below. */
-    while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
-    { };
-
-    if (status_reg & SYS_STATUS_RXFCG)
-    {
-        /* Clear good RX frame event and TX frame sent in the DW1000 status register. */
-        dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
-
-        /* A frame has been received, read it into the local buffer. */
-        frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_MASK;
-        if (frame_len <= RX_BUF_LEN)
-        {
-            dwt_readrxdata(rx_buffer, frame_len, 0);
-        }
-    
-        /* Check that the frame is the expected response.
-            * As the sequence number field of the frame is not relevant, it is cleared to simplify the validation of the frame. */
-        // rx_buffer[ALL_RX_BOARD_IDX] = target_ID;
-        rx_buffer[ALL_MSG_SEQ_IDX] = 0;
-        bool_base = (memcmp(rx_buffer, rx_resp_msg, ALL_MSG_COMMON_LEN-2) == 0);
-        bool_master = rx_buffer[ALL_RX_BOARD_IDX] == master_id;
-        bool_slave = rx_buffer[ALL_TX_BOARD_IDX] == slave_id;
-        if (bool_base && bool_master && bool_slave){
-            /* Retrieve the reception timestamp */
-            rx_ts2 = get_rx_timestamp_u64();
-        }
-        else{
-            return 0;
-        }
-    }
-    else{
+    success = timestampReceivedFrame(&rx_ts2, ALL_RX_BOARD_IDX, master_id,
+                                     ALL_TX_BOARD_IDX, slave_id, 0);
+    if (success == 0){
         return 0;
     }
     
     /* --------------------- SIGNAL 3: Slave to Master --------------------- 
     The transmission time-stamp of Signal 2 is embedded in the received frame */
-
-    // Re-enable RX
-    dwt_rxenable(DWT_START_RX_IMMEDIATE);
-
-    /* Poll for reception of expected "final" frame or error/timeout. See NOTE 8 below. */
-    while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
-    { };
-
-    if (status_reg & SYS_STATUS_RXFCG)
-    {
-        /* Clear good RX frame event and TX frame sent in the DW1000 status register. */
-        dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
-
-        /* A frame has been received, read it into the local buffer. */
-        frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_MASK;
-        if (frame_len <= RX_BUF_LEN)
-        {
-            dwt_readrxdata(rx_buffer, frame_len, 0);
-        }
-    
-        /* Check that the frame is the expected response.
-            * As the sequence number field of the frame is not relevant, it is cleared to simplify the validation of the frame. */
-        // rx_buffer[ALL_RX_BOARD_IDX] = target_ID;
-        rx_buffer[ALL_MSG_SEQ_IDX] = 0;
-        bool_base = (memcmp(rx_buffer, rx_resp_msg, ALL_MSG_COMMON_LEN-2) == 0);
-        bool_master = rx_buffer[ALL_RX_BOARD_IDX] == master_id;
-        bool_slave = rx_buffer[ALL_TX_BOARD_IDX] == slave_id;
-        if (bool_base && bool_master && bool_slave){
-            /* Retrieve the reception timestamp */
-            final_msg_get_ts(&rx_buffer[FINAL_POLL_TX_TS_IDX], &tx_ts2);
-        }
-        else{
-            return 0;
-        }
-    }
-    else{
+    success = timestampReceivedFrame(&tx_ts2, ALL_RX_BOARD_IDX, master_id,
+                                     ALL_TX_BOARD_IDX, slave_id, 1);
+    if (success == 0){
         return 0;
     }
 
     /* --------------------- SIGNAL 4: Master to Slave --------------------- 
     The transmission time-stamp of Signal 1 is embedded in the received frame */
-
     // Check if fourth signal is expected.
     if (four_signals){
-        // Re-enable RX
-        dwt_rxenable(DWT_START_RX_IMMEDIATE);
-
-        /* Poll for reception of expected "final" frame or error/timeout. See NOTE 8 below. */
-        while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
-        { };
-
-        if (status_reg & SYS_STATUS_RXFCG)
-        {
-            /* Clear good RX frame event and TX frame sent in the DW1000 status register. */
-            dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
-
-            /* A frame has been received, read it into the local buffer. */
-            frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_MASK;
-            if (frame_len <= RX_BUF_LEN)
-            {
-                dwt_readrxdata(rx_buffer, frame_len, 0);
-            }
-        
-            /* Check that the frame is the expected response.
-                * As the sequence number field of the frame is not relevant, it is cleared to simplify the validation of the frame. */
-            // rx_buffer[ALL_RX_BOARD_IDX] = target_ID;
-            rx_buffer[ALL_MSG_SEQ_IDX] = 0;
-            bool_base = (memcmp(rx_buffer, rx_resp_msg, ALL_MSG_COMMON_LEN-2) == 0);
-            bool_master = rx_buffer[ALL_TX_BOARD_IDX] == master_id;
-            bool_slave = rx_buffer[ALL_RX_BOARD_IDX] == slave_id;
-            if (bool_base && bool_master && bool_slave){
-                /* Retrieve the reception timestamp */
-                final_msg_get_ts(&rx_buffer[FINAL_POLL_TX_TS_IDX], &tx_ts1);
-            }
-            else{
-                return 0;
-            }
-        }
-        else{
+        success = timestampReceivedFrame(&tx_ts1, ALL_TX_BOARD_IDX, master_id,
+                                         ALL_RX_BOARD_IDX, slave_id, 1);
+        if (success == 0){
             return 0;
         }
     }
 
     /* --------------------- Output Time-stamps --------------------- */
     char output[120];
-    sprintf(output,"RXX,Timestamp 1: %lu, Timestamp 2: %lu, Timestamp 3: %lu, Timestamp 4: %lu\r\n",tx_ts1,rx_ts1,tx_ts2,rx_ts2);
+    sprintf(output,"RXX,%lu,%lu,%lu,%lu\r\n",tx_ts1,rx_ts1,tx_ts2,rx_ts2);
     usb_print(output);
     return 1;
+}
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * Function: timestampReceivedFrame()
+ *
+ * Description: This function retrieves the reception time-stamp of a signal.
+ *
+ * Note: This function can be called to retrieve the reception time-stamp from the registers or from the embedded
+ *       message in a final signal.
+ *
+ * input parameters:	
+ * @param ts* - Pointer to where to store the time-stamp.
+ * @param master_idx - The index of the master ID in the received message.
+ * @param master_id - The ID of the master board in this TWR transaction. 
+ * @param slave_idx - The index of the slave ID in the received message.
+ * @param slave_id - The ID of the slave board in this TWR transaction.
+ * @param final_signal - Toggle between reading reception time-stamp from the register (0) vs. the embedded message (1).
+ *
+ * output parameters
+ * 
+ * returns the time-stamp of the received signal.
+ */
+bool timestampReceivedFrame(uint32_t *ts, uint8_t master_idx, uint8_t master_id,
+                            uint8_t slave_idx, uint8_t slave_id, bool final_signal){
+    uint32 frame_len;
+    bool bool_base, bool_master, bool_slave;
+    
+    // Re-enable RX
+    dwt_rxenable(DWT_START_RX_IMMEDIATE);
+
+    /* Poll for reception of expected frame or error/timeout. */
+    while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
+    { };
+
+    if (status_reg & SYS_STATUS_RXFCG)
+    {
+        /* Clear good RX frame event and TX frame sent in the DW1000 status register. */
+        dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
+
+        /* A frame has been received, read it into the local buffer. */
+        frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_MASK;
+        if (frame_len <= RX_BUF_LEN)
+        {
+            dwt_readrxdata(rx_buffer, frame_len, 0);
+        }
+    
+        /* Check that the frame is the expected response.
+            * As the sequence number field of the frame is not relevant, it is cleared to simplify the validation of the frame. */
+        rx_buffer[ALL_MSG_SEQ_IDX] = 0;
+        bool_base = (memcmp(rx_buffer, rx_resp_msg, ALL_MSG_COMMON_LEN-2) == 0);
+        bool_master = rx_buffer[master_idx] == master_id;
+        bool_slave = rx_buffer[slave_idx] == slave_id;
+        if (bool_base && bool_master && bool_slave){
+            /* Retrieve the reception timestamp */
+            if (final_signal){
+                final_msg_get_ts(&rx_buffer[FINAL_POLL_TX_TS_IDX], ts);
+            }
+            else{
+                *ts = get_rx_timestamp_u64();
+            }
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    }
+    else{
+        return 0;
+    }
 }
 
 void uwbReceiveInterruptInit(){
@@ -612,36 +579,4 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data)
     }
 
     osThreadResume(twrInterruptTaskHandle);
-}
-
-/*! ------------------------------------------------------------------------------------------------------------------
- * @fn rx_to_cb()
- *
- * @brief Callback to process RX timeout events
- *
- * @param  cb_data  callback data
- *
- * @return  none
- */
-static void rx_to_cb(const dwt_cb_data_t *cb_data)
-{
-    usb_print("RX Timeout!\r\n");
-
-    dwt_rxenable(DWT_START_RX_IMMEDIATE); 
-}
-
-/*! ------------------------------------------------------------------------------------------------------------------
- * @fn rx_err_cb()
- *
- * @brief Callback to process RX error events
- *
- * @param  cb_data  callback data
- *
- * @return  none
- */
-static void rx_err_cb(const dwt_cb_data_t *cb_data)
-{
-    usb_print("RX Error!\r\n");
-
-    dwt_rxenable(DWT_START_RX_IMMEDIATE); 
 }

@@ -38,6 +38,7 @@ void uwbReceiveInterruptInit(void);
 int txTimestamps(uint64, uint64);
 int rxTimestamps(uint64, uint64);
 int passivelyListen(uint32_t, bool);
+bool timestampReceivedFrame(uint32_t*, uint8_t, uint8_t, uint8_t, uint8_t, bool);
 
 #define UUS_TO_DWT_TIME 65536
 
