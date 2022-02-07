@@ -457,32 +457,12 @@ int passivelyListen(uint32_t rx_ts1, bool four_signals){
     }
 
     /* --------------------- Output Time-stamps --------------------- */
-    char output[120];
+    char output[60];
     sprintf(output,"RXX,%lu,%lu,%lu,%lu\r\n",tx_ts1,rx_ts1,tx_ts2,rx_ts2);
     usb_print(output);
     return 1;
 }
 
-/*! ------------------------------------------------------------------------------------------------------------------
- * Function: timestampReceivedFrame()
- *
- * Description: This function retrieves the reception time-stamp of a signal.
- *
- * Note: This function can be called to retrieve the reception time-stamp from the registers or from the embedded
- *       message in a final signal.
- *
- * input parameters:	
- * @param ts* - Pointer to where to store the time-stamp.
- * @param master_idx - The index of the master ID in the received message.
- * @param master_id - The ID of the master board in this TWR transaction. 
- * @param slave_idx - The index of the slave ID in the received message.
- * @param slave_id - The ID of the slave board in this TWR transaction.
- * @param final_signal - Toggle between reading reception time-stamp from the register (0) vs. the embedded message (1).
- *
- * output parameters
- * 
- * returns the time-stamp of the received signal.
- */
 bool timestampReceivedFrame(uint32_t *ts, uint8_t master_idx, uint8_t master_id,
                             uint8_t slave_idx, uint8_t slave_id, bool final_signal){
     uint32 frame_len;
