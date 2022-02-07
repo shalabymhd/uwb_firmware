@@ -38,6 +38,37 @@ void uwbReceiveInterruptInit(void);
 int txTimestamps(uint64, uint64);
 int rxTimestamps(uint64, uint64);
 
+/*! ------------------------------------------------------------------------------------------------------------------
+ * Function: passivelyListen()
+ *
+ * @brief Listen passively to other TWR tags and record all timestamps.
+ * 
+ * @param rx_ts1 (uint32_t) The time of reception of the already detected signal through interrupt.
+ * @param four_signals (bool) Whether or not a fourth signal is expected.
+ * 
+ * @return (bool) Success boolean.
+ */
+int passivelyListen(uint32_t, bool);
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * Function: timestampReceivedFrame()
+ *
+ * @brief This function retrieves the reception time-stamp of a signal. 
+ *
+ * Note: This function can be called to retrieve the reception time-stamp from the registers or from the embedded
+ *       message in a final signal.
+ * 
+ * @param ts (uint32_t*) Pointer to where to store the time-stamp.
+ * @param master_idx (uint8_t) The index of the master ID in the received message.
+ * @param master_id (uint8_t) The ID of the master board in this TWR transaction. 
+ * @param slave_idx (uint8_t) The index of the slave ID in the received message.
+ * @param slave_id (uint8_t) The ID of the slave board in this TWR transaction.
+ * @param final_signal (bool) Toggle between reading reception time-stamp from the register (0) vs. the embedded message (1).
+ * 
+ * @return (bool) Success boolean.
+ */
+bool timestampReceivedFrame(uint32_t*, uint8_t, uint8_t, uint8_t, uint8_t, bool);
+
 #define UUS_TO_DWT_TIME 65536
 
 #ifdef __cplusplus
