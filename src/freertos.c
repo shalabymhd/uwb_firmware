@@ -165,10 +165,10 @@ void StartUsbReceive(void const *argument){
   // To receive the data transmitted by a computer, execute in a terminal
   // >> cat /dev/ttyACMx
 
-  uint8_t reg_state;
+  uint8_t reg_state; // to store the state of the DW receiver
 
   while (1){
-    /* Disable UWB interrupts and read the USB buffer */
+    /* Read the USB buffer */
     readUsb();
 
     /* RX is supposed to be enabled from the interrupt task. If not, re-enable */
@@ -176,7 +176,8 @@ void StartUsbReceive(void const *argument){
     if (!reg_state){
       dwt_rxenable(DWT_START_RX_IMMEDIATE); // turn on uwb receiver
     } 
-    osDelay(1); // TODO: to be modified?? 
+
+    osDelay(1); 
   }
 } // end StartUsbReceive()
 

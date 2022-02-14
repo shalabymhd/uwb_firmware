@@ -49,9 +49,12 @@ typedef struct StrParams {
 }StrParams;     
 
 /* Function Prototypes -------------------------------------------------------*/
-int c00_set_inactive(IntParams*, FloatParams*, BoolParams*, StrParams*);
+int c00_set_idle(IntParams*, FloatParams*, BoolParams*, StrParams*);
 int c01_get_id(IntParams*, FloatParams*, BoolParams*, StrParams*);
-int c02_initiate_twr(IntParams*, FloatParams*, BoolParams*, StrParams*);
+int c02_reset(IntParams*, FloatParams*, BoolParams*, StrParams*);
+int c03_do_tests(IntParams*, FloatParams*, BoolParams*, StrParams*);
+int c04_toggle_passive(IntParams*, FloatParams*, BoolParams*, StrParams*);
+int c05_initiate_twr(IntParams*, FloatParams*, BoolParams*, StrParams*);
 
 /* Variables -----------------------------------------------------------*/
 
