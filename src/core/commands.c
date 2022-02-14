@@ -24,7 +24,7 @@
 #include "main.h" 
 #include <stdbool.h>
 
-int c00_set_inactive(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+int c00_set_idle(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
     usb_print("R00\r\n");
     return 1;
 }
@@ -32,10 +32,6 @@ int c00_set_inactive(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
 int c01_get_id(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
     uint8_t my_id;
     dwt_geteui(&my_id);
-    if(my_id != BOARD_ID){
-        usb_print("Decawave ID and BOARD_ID do not match.");
-        return 0;
-    }
 
     char id_str[10];
     sprintf(id_str, "R01,%u\r\n", my_id); 
@@ -43,7 +39,47 @@ int c01_get_id(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_boo
     return 1;
 }
 
-int c02_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+int c02_reset(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+    // Reset the UWB receiver. TODO: would we need to reset other things? Could even do a hard reset.
+    dwt_rxreset();
+
+    // Turn on the UWB receiver
+    dwt_rxenable(DWT_START_RX_IMMEDIATE);
+    
+    usb_print("R02\r\n");
+    return 1;
+}
+
+int c03_do_tests(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+    /* TODO: 1) Add any other tests necessary.
+             2) When we add tests, it might be worthwhile to give different errors an ID and just output the error ID.
+    */
+    uint8_t my_id;
+    dwt_geteui(&my_id);
+    if(my_id != BOARD_ID){
+        usb_print("R03,1\r\n"); // Error ID #1
+        return 1; // Do not need to redo this again.
+    }
+
+    usb_print("R03,0\r\n"); // No errors detected
+
+    return 1;
+}
+
+int c04_toggle_passive(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+    BoolParams *i;
+    
+    /* Extract the toggle */
+    HASH_FIND_STR(msg_bools, "toggle", i);
+    
+    setPassiveToggle(i->value);
+
+    usb_print("R04\r\n");
+    
+    return 1;
+}
+
+int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
     bool success;
     uint8_t target_ID;
     IntParams *i;
