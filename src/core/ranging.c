@@ -461,7 +461,7 @@ int passivelyListen(uint32_t rx_ts1, bool four_signals){
 
     /* --------------------- Output Time-stamps --------------------- */
     char output[60];
-    sprintf(output,"RXX,%lu,%lu,%lu,%lu\r\n",tx_ts1,rx_ts1,tx_ts2,rx_ts2);
+    sprintf(output,"R99,%lu,%lu,%lu,%lu\r\n",tx_ts1,rx_ts1,tx_ts2,rx_ts2);
     usb_print(output);
     return 1;
 }
