@@ -81,9 +81,9 @@ int c04_toggle_passive(IntParams *msg_ints, FloatParams *msg_floats, BoolParams 
 
 int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
     bool success;
-    uint8_t target_ID;
+    uint8_t target_ID, mult_twr;
     IntParams *i;
-    bool target_meas_bool, mult_twr_bool;
+    bool target_meas_bool;
     BoolParams *b;
 
     /* Extract the target */
@@ -95,15 +95,15 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
     target_meas_bool = b->value;
 
     /* Extract the toggle that dictates if the multiplicative TWR will be used */
-    HASH_FIND_STR(msg_bools, "mult_twr", b);
-    mult_twr_bool = b->value;
+    HASH_FIND_STR(msg_ints, "mult_twr", i);
+    mult_twr = i->value;
 
     if (target_ID == BOARD_ID){
         usb_print("TWR FAIL: The target ID is the same as the initiator's ID.\r\n");
         return 0;
     }
 
-    success = twrInitiateInstance(target_ID, target_meas_bool, mult_twr_bool);
+    success = twrInitiateInstance(target_ID, target_meas_bool, mult_twr);
 
     if (success){ 
         usb_print("TWR SUCCESS!\r\n"); // placeholder

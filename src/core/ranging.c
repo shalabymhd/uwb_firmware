@@ -95,12 +95,12 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data);
 static bool passive_listening = 0;
 
 /* MAIN RANGING FUNCTIONS ---------------------------------------- */ 
-int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool, bool mult_twr_bool){
+int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool, uint8_t mult_twr){
     decaIrqStatus_t stat;
     uint64 tx_ts;
     uint64 rx_ts;
 
-    assert(!(target_meas_bool && mult_twr_bool)); // TODO: allow this
+    assert(!(target_meas_bool && mult_twr)); // TODO: allow this
 
     stat = decamutexon();
     dwt_forcetrxoff();
@@ -122,7 +122,7 @@ int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool, bool mult_twr_
     tx_poll_msg[TX_POLL_TARG_MEAS_IDX] = target_meas_bool;    
 
     /* Indicate whether the the multiplicative TWR will be used */
-    tx_poll_msg[TX_POLL_MULT_TWR_IDX] = mult_twr_bool;    
+    tx_poll_msg[TX_POLL_MULT_TWR_IDX] = mult_twr;    
 
     /* Write frame data to DW1000 and prepare transmission. See NOTE 8 below. */
     tx_poll_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
@@ -169,7 +169,7 @@ int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool, bool mult_twr_
             rx_ts = get_rx_timestamp_u64();
 
             /* Await the third signal and compute the range measurement */
-            if (rxTimestamps(tx_ts,rx_ts,mult_twr_bool)){
+            if (rxTimestamps(tx_ts,rx_ts,mult_twr)){
                 // check if a 4th signal is expected
                 if (target_meas_bool){ 
                     // send the 4th signal
@@ -230,7 +230,7 @@ int twrReceiveCallback(void){
     bool target_meas_bool = rx_buffer[TX_POLL_TARG_MEAS_IDX];
 
     /* Retrieve the boolean defining whether the multiplicative TWR will be used */
-    bool mult_twr_bool = rx_buffer[TX_POLL_MULT_TWR_IDX];
+    uint8_t mult_twr = rx_buffer[TX_POLL_MULT_TWR_IDX];
 
     /* Check that the frame is a poll sent by "DS TWR initiator" example. */
     rx_buffer[ALL_MSG_SEQ_IDX] = 0;
@@ -293,7 +293,7 @@ int twrReceiveCallback(void){
         frame_seq_nb++;
 
         /* Transmit the third signal back to the initiator with all the time-stamps */
-        if (txTimestamps(tx_ts, rx_ts, mult_twr_bool)){
+        if (txTimestamps(tx_ts, rx_ts, mult_twr)){
             /* Check if a 4th signal is expected */
             if (target_meas_bool){
 
@@ -321,14 +321,14 @@ int twrReceiveCallback(void){
     return 0;
 }
 
-int txTimestamps(uint64 tx_ts, uint64 rx_ts, bool mult_twr_bool){
+int txTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
     int ret;
 
     /* Write all timestamps in the final message. See NOTE 11 below. */
     final_msg_set_ts(&tx_final_msg[FINAL_POLL_TX_TS_IDX], tx_ts);
     final_msg_set_ts(&tx_final_msg[FINAL_RESP_RX_TS_IDX], rx_ts);
 
-    if (mult_twr_bool){
+    if (mult_twr == 1){
         /* Set-up delayed transmission to encode the transmission time-stamp in the final message */
         uint32 final_tx_time;
         uint64 final_tx_ts;
@@ -377,7 +377,7 @@ int txTimestamps(uint64 tx_ts, uint64 rx_ts, bool mult_twr_bool){
     return 0;
 }
 
-int rxTimestamps(uint64 tx_ts, uint64 rx_ts, bool mult_twr_bool){
+int rxTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
     /* String used to display measured distance on UART. */
     uint32 frame_len;
 
@@ -420,7 +420,7 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts, bool mult_twr_bool){
             tx_ts_32 = (uint32)tx_ts;
             rx_ts_32 = (uint32)rx_ts;
 
-            if (mult_twr_bool){
+            if (mult_twr == 1){
                 uint64 final_rx_ts;
                 uint32 final_tx_ts;
                 uint32 final_rx_ts_32;

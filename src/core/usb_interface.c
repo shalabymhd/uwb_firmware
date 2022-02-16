@@ -32,7 +32,7 @@ static const FieldTypes c03_types[1]; // No fields. Empty array of size 1
 static const char *c04_fields[] = {"toggle"}; // can't be more than 10 characters
 static const FieldTypes c04_types[] = {BOOL}; 
 static const char *c05_fields[] = {"target", "targ_meas", "mult_twr"}; // can't be more than 10 characters
-static const FieldTypes c05_types[] = {INT, BOOL, BOOL};
+static const FieldTypes c05_types[] = {INT, BOOL, INT};
 
 static const char **all_command_fields[] = {
   c00_fields,

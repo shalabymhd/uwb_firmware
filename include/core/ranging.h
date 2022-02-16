@@ -32,11 +32,11 @@ typedef signed long long int64;
 typedef unsigned long long uint64;
 
 /* Function Prototypes -------------------------------------------------------*/
-int twrInitiateInstance(uint8_t, bool, bool);
+int twrInitiateInstance(uint8_t, bool, uint8_t);
 int twrReceiveCallback(void);
 void uwbReceiveInterruptInit(void);
-int txTimestamps(uint64, uint64, bool);
-int rxTimestamps(uint64, uint64, bool);
+int txTimestamps(uint64, uint64, uint8_t);
+int rxTimestamps(uint64, uint64, uint8_t);
 
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: passivelyListen()

@@ -8,7 +8,7 @@ This script publishes a message to the USB port continuously until terminated.
 """
 
 uwb1 = UwbModule("/dev/ttyACM1", verbose=False)
-uwb2 = UwbModule("/dev/ttyACM2", verbose=False)
+# uwb2 = UwbModule("/dev/ttyACM2", verbose=False)
 
 uwb1.toggle_passive(toggle=True)
 
@@ -20,7 +20,7 @@ def cb_timestamps(ts1,ts2,ts3,ts4):
 uwb1.register_callback("R99",cb_timestamps)
 
 while True:
-    data1 = uwb1.do_twr(2,mult_twr=True)
+    data1 = uwb1.do_twr(2,mult_twr=1)
     print(data1) 
     time.sleep(0.003)
 
