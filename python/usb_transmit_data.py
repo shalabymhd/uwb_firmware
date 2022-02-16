@@ -20,7 +20,7 @@ def cb_timestamps(ts1,ts2,ts3,ts4):
 uwb1.register_callback("R99",cb_timestamps)
 
 while True:
-    data1 = uwb1.do_twr(2,mult_twr=1)
+    data1 = uwb1.do_twr(3,mult_twr=2,output_ts=True)
     print(data1) 
     time.sleep(0.003)
 

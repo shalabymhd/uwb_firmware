@@ -419,7 +419,10 @@ int txTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
 int rxTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
     /* String used to display measured distance on UART. */
     uint32 frame_len;
-
+    double Ra, Db;
+    double Ra1, Ra2, Db1, Db2;
+    uint32 final_tx_ts;
+    uint32 final_rx_ts_32;
     dwt_rxenable(DWT_START_RX_IMMEDIATE);
 
     /* Poll for reception of expected "final" frame or error/timeout. See NOTE 8 below. */
@@ -460,9 +463,6 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
 
             if (mult_twr){
                 uint64 final_rx_ts;
-                uint32 final_tx_ts;
-                uint32 final_rx_ts_32;
-                double Ra1, Ra2, Db1, Db2;
 
                 /* Get the reception time-stamp of the final signal */
                 final_rx_ts = get_rx_timestamp_u64();
@@ -516,8 +516,6 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
                 // tof_dtu = (int64)(0.5*(Ra1 - Ra2/Db2*Db1)); // Reversed alternative double-sided TWR
             }
             else{
-                double Ra, Db;
-
                 /* Compute time of flight. 32-bit subtractions give correct answers even if clock has wrapped. See NOTE 12 below. */            
                 Ra = (double)(rx_ts_32 - tx_ts_32);
                 Db = (double)(tx_ts_neighbour - rx_ts_neighbour);
@@ -530,8 +528,16 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
             /* Display computed distance. */
             char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
-            char response[20];
-            sprintf(response, "R05,%s\r\n", dist_str);
+            char response[50];
+            if (mult_twr){
+                sprintf(response, "R05,%s,%lu,%lu,%lu,%lu,%lu,%lu\r\n",
+                        dist_str,tx_ts_32,rx_ts_neighbour,tx_ts_neighbour,rx_ts_32,
+                        final_tx_ts,final_rx_ts_32);
+            }
+            else{
+                sprintf(response, "R05,%s,%lu,%lu,%lu,%lu\r\n",
+                        dist_str,tx_ts_32,rx_ts_neighbour,tx_ts_neighbour,rx_ts_32);
+            }
             usb_print(response); // TODO: will this response ever be sent without a USB command?
             
             dwt_setrxtimeout(0);
