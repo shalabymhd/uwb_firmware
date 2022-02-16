@@ -31,7 +31,7 @@ static uint32 status_reg = 0;
 #define POLL_TX_TO_RESP_RX_DLY_UUS 150 //300
 /* This is the delay from Frame RX timestamp to TX reply timestamp used for calculating/setting the DW1000's delayed TX function. This includes the
  * frame length of approximately 2.66 ms with above configuration. */
-#define RESP_RX_TO_FINAL_TX_DLY_UUS 500 //3100
+#define RESP_RX_TO_FINAL_TX_DLY_UUS 500 //3100 TODO: Tune this
 /* Receive response timeout. See NOTE 5 below. */
 #define RESP_RX_TIMEOUT_UUS 2000 //2700
 /* Preamble timeout, in multiple of PAC size. See NOTE 6 below. */
@@ -57,7 +57,7 @@ static uint8 tx_resp_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xB, 0, 0};
 static uint8 rx_final_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Length of the common part of the message (up to and including the function code, see NOTE 2 below). */
-#define ALL_MSG_COMMON_LEN (5)
+#define ALL_MSG_COMMON_LEN (6)
 /* Indexes to access some of the fields in the frames defined above. */
 #define ALL_MSG_SEQ_IDX 2
 #define ALL_TX_BOARD_IDX (3)
@@ -262,7 +262,7 @@ int twrReceiveCallback(void){
     
         /* Set send time for response. See NOTE 9 below. */
         // resp_tx_time = (poll_rx_ts + (POLL_RX_TO_RESP_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
-        resp_tx_time = (rx_ts + (450 * UUS_TO_DWT_TIME)) >> 8;
+        resp_tx_time = (rx_ts + (RESP_RX_TO_FINAL_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
         dwt_setdelayedtrxtime(resp_tx_time);
 
         /* Write and send the response message. See NOTE 10 below.*/
@@ -328,69 +328,67 @@ int txTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
     final_msg_set_ts(&tx_final_msg[FINAL_POLL_TX_TS_IDX], tx_ts);
     final_msg_set_ts(&tx_final_msg[FINAL_RESP_RX_TS_IDX], rx_ts);
 
-    if (mult_twr){
+    if (mult_twr == 1){
         /* Set-up delayed transmission to encode the transmission time-stamp in the final message */
         uint32 final_tx_time;
         uint64 final_tx_ts;
+
+        /* Compute final message transmission time. See NOTE 10 below. */
+        final_tx_time = (tx_ts + (RESP_RX_TO_FINAL_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
+        dwt_setdelayedtrxtime(final_tx_time);
+
+        /* Final TX timestamp is the transmission time we programmed plus the TX antenna delay. */
+        final_tx_ts = (((uint64)(final_tx_time & 0xFFFFFFFEUL)) << 8) + TX_ANT_DLY;
+
+        /* Write timestamp in the final message. See NOTE 11 below. */
+        final_msg_set_ts(&tx_final_msg[FINAL_FINAL_TX_TS_IDX], final_tx_ts);
+
+        /* Write and send final message. See NOTE 8 below. */
+        tx_final_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
+        dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
+        dwt_writetxfctrl(sizeof(tx_final_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
+        ret = dwt_starttx(DWT_START_TX_DELAYED);
+    }
+    else if (mult_twr == 2){
+        uint64 final_tx_ts;
         
-        if (mult_twr == 1){
-            /* Compute final message transmission time. See NOTE 10 below. */
-            final_tx_time = (tx_ts + (RESP_RX_TO_FINAL_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
-            dwt_setdelayedtrxtime(final_tx_time);
+        tx_final_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
+        dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
+        dwt_writetxfctrl(sizeof(tx_final_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
+        ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
 
-            /* Final TX timestamp is the transmission time we programmed plus the TX antenna delay. */
-            final_tx_ts = (((uint64)(final_tx_time & 0xFFFFFFFEUL)) << 8) + TX_ANT_DLY;
-
-            /* Write all timestamps in the final message. See NOTE 11 below. */
-            final_msg_set_ts(&tx_final_msg[FINAL_FINAL_TX_TS_IDX], final_tx_ts);
-
-            /* Write and send final message. See NOTE 8 below. */
-            tx_final_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
-            dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
-            dwt_writetxfctrl(sizeof(tx_final_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
-            ret = dwt_starttx(DWT_START_TX_DELAYED);
+        /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 11 below. */
+        if (ret == DWT_ERROR)
+        {
+            dwt_setrxtimeout(0);
+            dwt_setpreambledetecttimeout(0);
+            return 0;
         }
-        else if (mult_twr == 2){
-            /* Immediate transmission */
-            /* Write and send final message. See NOTE 8 below. */
-            tx_final_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
-            dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
-            dwt_writetxfctrl(sizeof(tx_final_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
-            ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
 
-            /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 11 below. */
-            if (ret == DWT_ERROR)
-            {
-                dwt_setrxtimeout(0);
-                dwt_setpreambledetecttimeout(0);
-                return 0;
-            }
+        /* Poll DW1000 until TX frame sent event set. See NOTE 9 below. */
+        while (!(dwt_read32bitreg(SYS_STATUS_ID) & SYS_STATUS_TXFRS))
+        { };
 
-            /* Poll DW1000 until TX frame sent event set. See NOTE 9 below. */
-            while (!(dwt_read32bitreg(SYS_STATUS_ID) & SYS_STATUS_TXFRS))
-            { };
+        /* Retrieve the transmission timestamp */
+        final_tx_ts = get_tx_timestamp_u64();
 
-            /* Retrieve the transmission timestamp */
-            final_tx_ts = get_tx_timestamp_u64();
+        /* Clear TXFRS event. */
+        dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_TXFRS);
 
-            /* Clear TXFRS event. */
-            dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_TXFRS);
+        /* Increment frame sequence number after transmission of the final message (modulo 256). */
+        frame_seq_nb++;
 
-            /* Increment frame sequence number after transmission of the final message (modulo 256). */
-            frame_seq_nb++;
+        /* Write all timestamps in the final message. See NOTE 11 below. */
+        final_msg_set_ts(&tx_final_msg[FINAL_FINAL_TX_TS_IDX], final_tx_ts);
 
-            /* Write all timestamps in the final message. See NOTE 11 below. */
-            final_msg_set_ts(&tx_final_msg[FINAL_FINAL_TX_TS_IDX], final_tx_ts);
-
-            /* Write and send final message. See NOTE 8 below. */
-            tx_final_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
-            dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
-            dwt_writetxfctrl(sizeof(tx_final_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
-            ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
-        }
+        /* Write and send final message. See NOTE 8 below. */
+        tx_final_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
+        dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
+        dwt_writetxfctrl(sizeof(tx_final_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
+        ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
         
     }
-    else{
+    else if (mult_twr == 0){
         /* Immediate transmission */
         /* Write and send final message. See NOTE 8 below. */
         tx_final_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
@@ -451,7 +449,6 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
         {
             uint32 tx_ts_neighbour, rx_ts_neighbour;
             uint32 tx_ts_32, rx_ts_32;
-            // double Rb, Da;
             int64 tof_dtu;
 
             /* Get timestamps embedded in the final message. */
@@ -505,10 +502,10 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
                     else{
                         return 0;
                     }
-                }
+                }            
 
                 /* Get the transmission time-stamp of the final signal from the neighbour */
-                final_msg_get_ts(&rx_buffer[FINAL_FINAL_TX_TS_IDX], &final_tx_ts);                
+                final_msg_get_ts(&rx_buffer[FINAL_FINAL_TX_TS_IDX], &final_tx_ts);
 
                 /* Compute time of flight. 32-bit subtractions give correct answers even if clock has wrapped. See NOTE 12 below. */            
                 Ra1 = (double)(rx_ts_32 - tx_ts_32);
@@ -516,6 +513,7 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
                 Db1 = (double)(tx_ts_neighbour - rx_ts_neighbour);
                 Db2 = (double)(final_tx_ts - tx_ts_neighbour);
                 tof_dtu = (int64)((Ra1*Db2 - Ra2*Db1) / (Ra2 + Db2)); // Reversed alternative double-sided TWR
+                // tof_dtu = (int64)(0.5*(Ra1 - Ra2/Db2*Db1)); // Reversed alternative double-sided TWR
             }
             else{
                 double Ra, Db;

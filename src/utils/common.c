@@ -19,7 +19,7 @@ void convert_float_to_string(char* str,float data){
   int tmpInt2 = trunc(tmpFrac * 10000);  // Turn into integer (123).
 
   // Print as parts, note that you need 0-padding for fractional bit.
-  sprintf(str, "%s%d.%04d\r\n", tmpSign, tmpInt1, tmpInt2);
+  sprintf(str, "%s%d.%04d", tmpSign, tmpInt1, tmpInt2);
 }
 
 void convert_elementR3_to_string(char* str, element_R3 data){
