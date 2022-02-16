@@ -8,6 +8,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "ranging.h"
+#include <assert.h>
 
 extern osThreadId twrInterruptTaskHandle;
 
@@ -46,14 +47,14 @@ static uint32 status_reg = 0;
 #define FINAL_RX_TIMEOUT_UUS 600 //3300
 
 /* Frames used in the ranging process. See NOTE 2 below. */
-static uint8 tx_poll_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xA, 0, 0, 0};
+static uint8 tx_poll_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xA, 0, 0, 0, 0};
 static uint8 rx_resp_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xB, 0, 0};
-static uint8 tx_final_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static uint8 tx_final_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Frames used in the ranging process. See NOTE 2 below. */
 static uint8 rx_poll_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xA, 0, 0};
 static uint8 tx_resp_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xB, 0, 0};
-static uint8 rx_final_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static uint8 rx_final_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Length of the common part of the message (up to and including the function code, see NOTE 2 below). */
 #define ALL_MSG_COMMON_LEN (5)
@@ -63,8 +64,10 @@ static uint8 rx_final_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xC, 0, 0, 0, 0, 0, 0
 #define ALL_RX_BOARD_IDX (4)
 #define ALL_MSG_TYPE_IDX (5)
 #define TX_POLL_TARG_MEAS_IDX (6) // the index associated with the target meas boolean
+#define TX_POLL_MULT_TWR_IDX (7) // the index associated with the multiplicative TWR boolean
 #define FINAL_POLL_TX_TS_IDX (6)
 #define FINAL_RESP_RX_TS_IDX (10)
+#define FINAL_FINAL_TX_TS_IDX (14)
 
 /* Frame sequence number, incremented after each transmission. */
 static uint8 frame_seq_nb = 0;
@@ -92,10 +95,12 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data);
 static bool passive_listening = 0;
 
 /* MAIN RANGING FUNCTIONS ---------------------------------------- */ 
-int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool){
+int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool, bool mult_twr_bool){
     decaIrqStatus_t stat;
     uint64 tx_ts;
     uint64 rx_ts;
+
+    assert(!(target_meas_bool && mult_twr_bool)); // TODO: allow this
 
     stat = decamutexon();
     dwt_forcetrxoff();
@@ -115,6 +120,9 @@ int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool){
 
     /* Indicate whether the Target board will also compute the range measurement */
     tx_poll_msg[TX_POLL_TARG_MEAS_IDX] = target_meas_bool;    
+
+    /* Indicate whether the the multiplicative TWR will be used */
+    tx_poll_msg[TX_POLL_MULT_TWR_IDX] = mult_twr_bool;    
 
     /* Write frame data to DW1000 and prepare transmission. See NOTE 8 below. */
     tx_poll_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
@@ -161,11 +169,11 @@ int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool){
             rx_ts = get_rx_timestamp_u64();
 
             /* Await the third signal and compute the range measurement */
-            if (rxTimestamps(tx_ts,rx_ts)){
+            if (rxTimestamps(tx_ts,rx_ts,mult_twr_bool)){
                 // check if a 4th signal is expected
                 if (target_meas_bool){ 
                     // send the 4th signal
-                    if (txTimestamps(tx_ts,rx_ts)){   
+                    if (txTimestamps(tx_ts,rx_ts,0)){ // TODO: allow 4th signal with alternative double-sided TWR
                         dwt_setpreambledetecttimeout(0);
                         dwt_setrxtimeout(0);
                         dwt_rxenable(DWT_START_RX_IMMEDIATE);
@@ -220,6 +228,9 @@ int twrReceiveCallback(void){
 
     /* Retrieve the boolean defining whether a 4th signal is expected */
     bool target_meas_bool = rx_buffer[TX_POLL_TARG_MEAS_IDX];
+
+    /* Retrieve the boolean defining whether the multiplicative TWR will be used */
+    bool mult_twr_bool = rx_buffer[TX_POLL_MULT_TWR_IDX];
 
     /* Check that the frame is a poll sent by "DS TWR initiator" example. */
     rx_buffer[ALL_MSG_SEQ_IDX] = 0;
@@ -282,7 +293,7 @@ int twrReceiveCallback(void){
         frame_seq_nb++;
 
         /* Transmit the third signal back to the initiator with all the time-stamps */
-        if (txTimestamps(tx_ts, rx_ts)){
+        if (txTimestamps(tx_ts, rx_ts, mult_twr_bool)){
             /* Check if a 4th signal is expected */
             if (target_meas_bool){
 
@@ -291,7 +302,7 @@ int twrReceiveCallback(void){
                 dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS);
 
                 /* Receive the 4th signal and calculate the range measurement */
-                if (rxTimestamps(tx_ts, rx_ts)){   
+                if (rxTimestamps(tx_ts, rx_ts, 0)){ // TODO: allow 4th signal with double-sided TWR   
                     dwt_setpreambledetecttimeout(0);
                     dwt_setrxtimeout(0);
                     return 1;
@@ -310,18 +321,42 @@ int twrReceiveCallback(void){
     return 0;
 }
 
-int txTimestamps(uint64 tx_ts, uint64 rx_ts){
+int txTimestamps(uint64 tx_ts, uint64 rx_ts, bool mult_twr_bool){
     int ret;
 
     /* Write all timestamps in the final message. See NOTE 11 below. */
     final_msg_set_ts(&tx_final_msg[FINAL_POLL_TX_TS_IDX], tx_ts);
     final_msg_set_ts(&tx_final_msg[FINAL_RESP_RX_TS_IDX], rx_ts);
 
-    /* Write and send final message. See NOTE 8 below. */
-    tx_final_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
-    dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
-    dwt_writetxfctrl(sizeof(tx_final_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
-    ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
+    if (mult_twr_bool){
+        /* Set-up delayed transmission to encode the transmission time-stamp in the final message */
+        uint32 final_tx_time;
+        uint64 final_tx_ts;
+        
+        /* Compute final message transmission time. See NOTE 10 below. */
+        final_tx_time = (tx_ts + (RESP_RX_TO_FINAL_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
+        dwt_setdelayedtrxtime(final_tx_time);
+
+        /* Final TX timestamp is the transmission time we programmed plus the TX antenna delay. */
+        final_tx_ts = (((uint64)(final_tx_time & 0xFFFFFFFEUL)) << 8) + TX_ANT_DLY;
+
+        /* Write all timestamps in the final message. See NOTE 11 below. */
+        final_msg_set_ts(&tx_final_msg[FINAL_FINAL_TX_TS_IDX], final_tx_ts);
+
+        /* Write and send final message. See NOTE 8 below. */
+        tx_final_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
+        dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
+        dwt_writetxfctrl(sizeof(tx_final_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
+        ret = dwt_starttx(DWT_START_TX_DELAYED);
+    }
+    else{
+        /* Immediate transmission */
+        /* Write and send final message. See NOTE 8 below. */
+        tx_final_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
+        dwt_writetxdata(sizeof(tx_final_msg), tx_final_msg, 0); /* Zero offset in TX buffer. */
+        dwt_writetxfctrl(sizeof(tx_final_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
+        ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
+    }
 
     /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 12 below. */
     if (ret == DWT_SUCCESS)
@@ -342,7 +377,7 @@ int txTimestamps(uint64 tx_ts, uint64 rx_ts){
     return 0;
 }
 
-int rxTimestamps(uint64 tx_ts, uint64 rx_ts){
+int rxTimestamps(uint64 tx_ts, uint64 rx_ts, bool mult_twr_bool){
     /* String used to display measured distance on UART. */
     uint32 frame_len;
 
@@ -375,26 +410,42 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts){
         {
             uint32 tx_ts_neighbour, rx_ts_neighbour;
             uint32 tx_ts_32, rx_ts_32;
-            // uint32 final_rx_ts_32;
-            double Ra, Db;
             // double Rb, Da;
             int64 tof_dtu;
 
             /* Get timestamps embedded in the final message. */
             final_msg_get_ts(&rx_buffer[FINAL_POLL_TX_TS_IDX], &tx_ts_neighbour);
             final_msg_get_ts(&rx_buffer[FINAL_RESP_RX_TS_IDX], &rx_ts_neighbour);
-            // final_msg_get_ts(&rx_buffer[FINAL_FINAL_TX_TS_IDX], &final_tx_ts);
 
-            /* Compute time of flight. 32-bit subtractions give correct answers even if clock has wrapped. See NOTE 12 below. */
             tx_ts_32 = (uint32)tx_ts;
             rx_ts_32 = (uint32)rx_ts;
-            // final_rx_ts_32 = (uint32)final_rx_ts;
-            Ra = (double)(tx_ts_neighbour - rx_ts_neighbour);
-            // Rb = (double)(final_rx_ts_32 - resp_tx_ts_32);
-            // Da = (double)(final_tx_ts - resp_rx_ts);
-            Db = (double)(rx_ts_32 - tx_ts_32);
-            // tof_dtu = (int64)((Ra * Rb - Da * Db) / (Ra + Rb + Da + Db));
-            tof_dtu = (int64)((Db - Ra) / (2));
+
+            if (mult_twr_bool){
+                uint64 final_rx_ts;
+                uint32 final_tx_ts;
+                uint32 final_rx_ts_32;
+                double Ra1, Ra2, Db1, Db2;
+
+                final_msg_get_ts(&rx_buffer[FINAL_FINAL_TX_TS_IDX], &final_tx_ts);
+                
+                final_rx_ts = get_rx_timestamp_u64();
+                final_rx_ts_32 = (uint32)final_rx_ts;
+
+                /* Compute time of flight. 32-bit subtractions give correct answers even if clock has wrapped. See NOTE 12 below. */            
+                Ra1 = (double)(rx_ts_32 - tx_ts_32);
+                Ra2 = (double)(final_rx_ts_32 - rx_ts_32);
+                Db1 = (double)(tx_ts_neighbour - rx_ts_neighbour);
+                Db2 = (double)(final_tx_ts - tx_ts_neighbour);
+                tof_dtu = (int64)((Ra1*Db2 - Ra2*Db1) / (Ra2 + Db2)); // Reversed alternative double-sided TWR
+            }
+            else{
+                double Ra, Db;
+
+                /* Compute time of flight. 32-bit subtractions give correct answers even if clock has wrapped. See NOTE 12 below. */            
+                Ra = (double)(rx_ts_32 - tx_ts_32);
+                Db = (double)(tx_ts_neighbour - rx_ts_neighbour);
+                tof_dtu = (int64)((Ra - Db) / (2)); // Standard single-sided TWR
+            }
 
             tof = tof_dtu * DWT_TIME_UNITS;
             distance = tof * SPEED_OF_LIGHT;

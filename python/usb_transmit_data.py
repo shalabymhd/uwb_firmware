@@ -20,12 +20,12 @@ def cb_timestamps(ts1,ts2,ts3,ts4):
 uwb1.register_callback("R99",cb_timestamps)
 
 while True:
-    data1 = uwb1.do_twr(2,meas_at_target=True)
+    data1 = uwb1.do_twr(2,mult_twr=True)
     print(data1) 
-    time.sleep(0.005)
+    time.sleep(0.003)
 
-    data2 = uwb2.do_twr(3,meas_at_target=True)
+    # data2 = uwb2.do_twr(3,meas_at_target=True)
     # print(data1) 
-    time.sleep(0.005)
+    # time.sleep(0.005)
 
 ser1.close()
