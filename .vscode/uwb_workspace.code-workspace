@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../../uwb_interface"
+		},
+		{
+			"path": "../../uwb_calibration"
 		}
 	],
 	"settings": {
