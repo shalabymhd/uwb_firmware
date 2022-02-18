@@ -8,7 +8,10 @@ This script publishes a message to the USB port continuously until terminated.
 """
 
 uwb1 = UwbModule("/dev/ttyACM1", verbose=False)
-# uwb2 = UwbModule("/dev/ttyACM2", verbose=False)
+# uwb2 = UwbModule("/dev/ttyACM2", verbose=True)
+
+id = uwb1.get_id()
+print(id)
 
 uwb1.toggle_passive(toggle=True)
 
@@ -27,5 +30,3 @@ while True:
     # data2 = uwb2.do_twr(3,meas_at_target=True)
     # print(data1) 
     # time.sleep(0.005)
-
-ser1.close()

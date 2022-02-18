@@ -95,7 +95,7 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data);
 static bool passive_listening = 0;
 
 /* MAIN RANGING FUNCTIONS ---------------------------------------- */ 
-int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool, uint8_t mult_twr){
+int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_twr){
     decaIrqStatus_t stat;
     uint64 tx_ts;
     uint64 rx_ts;
@@ -113,10 +113,10 @@ int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool, uint8_t mult_t
     dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
 
     /* Include Target board in all communication messages. */
-    tx_poll_msg[ALL_RX_BOARD_IDX] = target_ID;
-    rx_resp_msg[ALL_TX_BOARD_IDX] = target_ID;
-    tx_final_msg[ALL_RX_BOARD_IDX] = target_ID;
-    rx_final_msg[ALL_TX_BOARD_IDX] = target_ID;
+    tx_poll_msg[ALL_RX_BOARD_IDX] = target_id;
+    rx_resp_msg[ALL_TX_BOARD_IDX] = target_id;
+    tx_final_msg[ALL_RX_BOARD_IDX] = target_id;
+    rx_final_msg[ALL_TX_BOARD_IDX] = target_id;
 
     /* Indicate whether the Target board will also compute the range measurement */
     tx_poll_msg[TX_POLL_TARG_MEAS_IDX] = target_meas_bool;    
@@ -158,7 +158,7 @@ int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool, uint8_t mult_t
     
         /* Check that the frame is the expected response from the companion "DS TWR responder" example.
             * As the sequence number field of the frame is not relevant, it is cleared to simplify the validation of the frame. */
-        // rx_buffer[ALL_RX_BOARD_IDX] = target_ID;
+        // rx_buffer[ALL_RX_BOARD_IDX] = target_id;
         rx_buffer[ALL_MSG_SEQ_IDX] = 0;
         if (memcmp(rx_buffer, rx_resp_msg, ALL_MSG_COMMON_LEN) == 0)
         {
@@ -169,7 +169,7 @@ int twrInitiateInstance(uint8_t target_ID, bool target_meas_bool, uint8_t mult_t
             rx_ts = get_rx_timestamp_u64();
 
             /* Await the third signal and compute the range measurement */
-            if (rxTimestamps(tx_ts,rx_ts,mult_twr)){
+            if (rxTimestamps(tx_ts,rx_ts,target_id,mult_twr)){
                 // check if a 4th signal is expected
                 if (target_meas_bool){ 
                     // send the 4th signal
@@ -218,13 +218,13 @@ int twrReceiveCallback(void){
     dwt_setrxtimeout(2000*UUS_TO_DWT_TIME); //dwt_setrxtimeout(0);
 
     /* Retrieve the initiator's ID */
-    uint8_t initiator_ID = rx_buffer[ALL_TX_BOARD_IDX];
+    uint8_t initiator_id = rx_buffer[ALL_TX_BOARD_IDX];
     
     /* Update all the messages to incorporate the initiator's ID */
-    rx_poll_msg[ALL_TX_BOARD_IDX] = initiator_ID;
-    tx_resp_msg[ALL_RX_BOARD_IDX] = initiator_ID;
-    rx_final_msg[ALL_TX_BOARD_IDX] = initiator_ID;
-    tx_final_msg[ALL_RX_BOARD_IDX] = initiator_ID;
+    rx_poll_msg[ALL_TX_BOARD_IDX] = initiator_id;
+    tx_resp_msg[ALL_RX_BOARD_IDX] = initiator_id;
+    rx_final_msg[ALL_TX_BOARD_IDX] = initiator_id;
+    tx_final_msg[ALL_RX_BOARD_IDX] = initiator_id;
 
     /* Retrieve the boolean defining whether a 4th signal is expected */
     bool target_meas_bool = rx_buffer[TX_POLL_TARG_MEAS_IDX];
@@ -302,7 +302,7 @@ int twrReceiveCallback(void){
                 dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS);
 
                 /* Receive the 4th signal and calculate the range measurement */
-                if (rxTimestamps(tx_ts, rx_ts, 0)){ // TODO: allow 4th signal with double-sided TWR   
+                if (rxTimestamps(tx_ts, rx_ts, initiator_id, 0)){ // TODO: allow 4th signal with double-sided TWR   
                     dwt_setpreambledetecttimeout(0);
                     dwt_setrxtimeout(0);
                     return 1;
@@ -400,10 +400,6 @@ int txTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
     /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 12 below. */
     if (ret == DWT_SUCCESS)
     {
-        /* Poll DW1000 until TX frame sent event set. See NOTE 9 below. */
-        while (!(dwt_read32bitreg(SYS_STATUS_ID) & SYS_STATUS_TXFRS))
-        { };
-
         /* Clear TXFRS event. */
         dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_TXFRS);
 
@@ -416,7 +412,7 @@ int txTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
     return 0;
 }
 
-int rxTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
+int rxTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t neighbour_id, uint8_t mult_twr){
     /* String used to display measured distance on UART. */
     uint32 frame_len;
     double Ra, Db;
@@ -528,15 +524,19 @@ int rxTimestamps(uint64 tx_ts, uint64 rx_ts, uint8_t mult_twr){
             /* Display computed distance. */
             char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
-            char response[50];
+            char response[60];
             if (mult_twr){
-                sprintf(response, "R05,%s,%lu,%lu,%lu,%lu,%lu,%lu\r\n",
-                        dist_str,tx_ts_32,rx_ts_neighbour,tx_ts_neighbour,rx_ts_32,
-                        final_tx_ts,final_rx_ts_32);
+                sprintf(response, "R05,%d,%s,%lu,%lu,%lu,%lu,%lu,%lu\r\n",
+                        neighbour_id, dist_str,
+                        tx_ts_32, rx_ts_neighbour,
+                        tx_ts_neighbour, rx_ts_32,
+                        final_tx_ts, final_rx_ts_32);
             }
             else{
-                sprintf(response, "R05,%s,%lu,%lu,%lu,%lu\r\n",
-                        dist_str,tx_ts_32,rx_ts_neighbour,tx_ts_neighbour,rx_ts_32);
+                sprintf(response, "R05,%d,%s,%lu,%lu,%lu,%lu\r\n",
+                        neighbour_id, dist_str,
+                        tx_ts_32, rx_ts_neighbour,
+                        tx_ts_neighbour, rx_ts_32);
             }
             usb_print(response); // TODO: will this response ever be sent without a USB command?
             
