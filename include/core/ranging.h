@@ -35,8 +35,10 @@ typedef unsigned long long uint64;
 int twrInitiateInstance(uint8_t, bool, uint8_t);
 int twrReceiveCallback(void);
 void uwbReceiveInterruptInit(void);
-int txTimestamps(uint64, uint64, uint8_t);
-int rxTimestamps(uint64, uint64, uint8_t, uint8_t);
+int txTimestampsSS(uint64_t, uint64_t, bool);
+int txTimestampsDS(uint64_t, uint64_t, uint64_t, bool);
+int rxTimestampsSS(uint64_t, uint8_t, bool);
+int rxTimestampsDS(uint64_t, uint64_t, uint8_t, bool);
 
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: passivelyListen()
