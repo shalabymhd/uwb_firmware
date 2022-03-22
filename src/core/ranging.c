@@ -101,8 +101,6 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
     uint64 tx1_ts;
     uint64 rx2_ts, rx3_ts;
 
-    assert(!(target_meas_bool && mult_twr)); // TODO: allow this
-
     stat = decamutexon();
     dwt_forcetrxoff();
 
