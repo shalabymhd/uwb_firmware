@@ -69,7 +69,7 @@ osThreadId twrInterruptTaskHandle;
 void StartDefaultTask(void const * argument);
 void StartBlinking(void const * argument);
 void StartUsbReceive(void const * argument);
-void twrInterruptTask(void const * argument);
+void uwbInterruptTask(void const * argument);
 /* USER CODE END FunctionPrototypes */
 
 extern void MX_USB_DEVICE_Init(void);
@@ -129,7 +129,7 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 512);
   usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
 
-  osThreadDef(twrInterrupt, twrInterruptTask, osPriorityRealtime, 0, 256);
+  osThreadDef(twrInterrupt, uwbInterruptTask, osPriorityRealtime, 0, 256);
   twrInterruptTaskHandle = osThreadCreate(osThread(twrInterrupt), NULL);
   /* USER CODE END RTOS_THREADS */
 }
@@ -183,7 +183,7 @@ void StartUsbReceive(void const *argument){
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void twrInterruptTask(void const *argument){
+void uwbInterruptTask(void const *argument){
   decaIrqStatus_t stat;
 
   dwt_setrxaftertxdelay(40);
@@ -193,7 +193,7 @@ void twrInterruptTask(void const *argument){
     
     /* Executes right after a dw1000 receive interrupt */
     stat = decamutexon(); // disable dw1000 interrupts
-    twrReceiveCallback(); // complete TWR 
+    uwbFrameHandler(); // complete TWR 
     decamutexoff(stat); // re-enable dw1000 interrupts
     dwt_rxenable(DWT_START_RX_IMMEDIATE); // turn on uwb receiver
   }

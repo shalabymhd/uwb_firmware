@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    usb_interface.c
-  * @brief   This file provides code used to interface with ROS through USB.
+  * @brief   This file provides code used to interface with python through USB.
   ******************************************************************************
   */
 

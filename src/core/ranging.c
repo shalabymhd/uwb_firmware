@@ -8,6 +8,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "ranging.h"
+#include "messaging.h"
 #include <assert.h>
 
 extern osThreadId twrInterruptTaskHandle;
@@ -93,6 +94,28 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data);
 
 /* Passive listening toggle */
 static bool passive_listening = 0;
+
+/* */
+void uwbFrameHandler(void){
+    uint8 msg_type = rx_buffer[ALL_MSG_TYPE_IDX];
+
+    switch (msg_type)
+    {
+        case 0xA:{
+            twrReceiveCallback();
+        }
+        case 0xB:{
+            twrReceiveCallback();
+        }
+        case 0xC:{
+            twrReceiveCallback();
+        }
+        case 0xD:{
+            dataReceiveCallback();
+        }
+    }
+}
+
 
 /* MAIN RANGING FUNCTIONS ---------------------------------------- */ 
 int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_twr){
@@ -788,8 +811,9 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data)
 {
     int i;
 
-    /* Clear local RX buffer to avoid having leftovers from previous receptions. This is not necessary but is included here to aid reading the RX
-     * buffer. */
+    /* Clear local RX buffer to avoid having leftovers from previous receptions. 
+    This is not necessary but is included here to aid reading the RX
+    buffer. */
     for (i = 0 ; i < RX_BUF_LEN; i++ )
     {
         rx_buffer[i] = 0;
