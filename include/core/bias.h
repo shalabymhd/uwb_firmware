@@ -17,6 +17,7 @@ extern "C" {
 #include <stdio.h>
 #include "common.h"
 #include "deca_regs.h"
+#include "deca_device_api.h"
 
 /* Typedef -------------------------------------------------------------------*/
 

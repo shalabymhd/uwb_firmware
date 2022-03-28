@@ -366,6 +366,7 @@ extern "C" {
  * @brief Bit definitions for register RX_FQUAL
 **/
 #define RX_FQUAL_ID             0x12            /* Rx Frame Quality information (in double buffer set) */
+#define RX_FQUAL_OFFSET         0x00
 #define RX_FQUAL_LEN            (8)             /* note 64 bit register*/
 /*mask and shift */
 
