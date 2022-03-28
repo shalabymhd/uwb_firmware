@@ -8,7 +8,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "ranging.h"
-#include <assert.h>
+#include "bias.h"
 
 extern osThreadId twrInterruptTaskHandle;
 
@@ -525,6 +525,12 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, bool is_initiator){
             
             tof = tof_dtu * DWT_TIME_UNITS;
             distance = tof * SPEED_OF_LIGHT;
+
+            /* Compute received signal power */
+            double Pr = retrieveFPP();
+            char power[10];
+            convert_float_to_string(power,Pr);
+            usb_print(strcat(power,"\r\n"));
 
             /* Display computed distance. */
             char dist_str[10] = {0};
