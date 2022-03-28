@@ -28,6 +28,9 @@ extern "C" {
  *
  * @brief This function retrieves the estimated first path signal power (FPP) as per
  *        Decawave's documentation. The addressed signal is the most recently received. 
+ *  
+ * NOTE: This function and the corresponding notation is primarily based on Section 4.7.1
+ *       in the DW1000 User Manual.
  * 
  * @return (double) FPP.
  */
