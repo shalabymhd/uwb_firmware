@@ -47,22 +47,22 @@ static uint32 status_reg = 0;
 #define FINAL_RX_TIMEOUT_UUS 600 //3300
 
 /* Frames used in the ranging process. See NOTE 2 below. */
-static uint8 tx_poll_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xA, 0, 0, 0, 0};
-static uint8 rx_resp_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xB, 0, 0};
-static uint8 tx_final_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static uint8 tx_poll_msg[]  = {0x41, 0x88, 0xA, 0, BOARD_ID, 0, 0, 0, 0, 0};
+static uint8 rx_resp_msg[]  = {0x41, 0x88, 0xB, 0, 0, BOARD_ID, 0, 0};
+static uint8 tx_final_msg[] = {0x41, 0x88, 0xC, 0, BOARD_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Frames used in the ranging process. See NOTE 2 below. */
-static uint8 rx_poll_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xA, 0, 0};
-static uint8 tx_resp_msg[] = {0x41, 0x88, 0, BOARD_ID, 0, 0xB, 0, 0};
-static uint8 rx_final_msg[] = {0x41, 0x88, 0, 0, BOARD_ID, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static uint8 rx_poll_msg[]  = {0x41, 0x88, 0xA, 0, 0, BOARD_ID, 0, 0};
+static uint8 tx_resp_msg[]  = {0x41, 0x88, 0xB, 0, BOARD_ID, 0, 0, 0};
+static uint8 rx_final_msg[] = {0x41, 0x88, 0xC, 0, 0, BOARD_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Length of the common part of the message (up to and including the function code, see NOTE 2 below). */
 #define ALL_MSG_COMMON_LEN (6)
 /* Indexes to access some of the fields in the frames defined above. */
-#define ALL_MSG_SEQ_IDX 2
-#define ALL_TX_BOARD_IDX (3)
-#define ALL_RX_BOARD_IDX (4)
-#define ALL_MSG_TYPE_IDX (5)
+#define ALL_MSG_TYPE_IDX (2)
+#define ALL_MSG_SEQ_IDX (3)
+#define ALL_TX_BOARD_IDX (4)
+#define ALL_RX_BOARD_IDX (5)
 #define TX_POLL_TARG_MEAS_IDX (6) // the index associated with the target meas boolean
 #define TX_POLL_MULT_TWR_IDX (7) // the index associated with the multiplicative TWR boolean
 #define FINAL_SIGNAL1_TS_IDX (6)
