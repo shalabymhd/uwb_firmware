@@ -55,6 +55,8 @@ int c02_reset(IntParams*, FloatParams*, BoolParams*, StrParams*);
 int c03_do_tests(IntParams*, FloatParams*, BoolParams*, StrParams*);
 int c04_toggle_passive(IntParams*, FloatParams*, BoolParams*, StrParams*);
 int c05_initiate_twr(IntParams*, FloatParams*, BoolParams*, StrParams*);
+int c06_broadcast(IntParams*, FloatParams*, BoolParams*, StrParams*);
+
 
 /* Variables -----------------------------------------------------------*/
 

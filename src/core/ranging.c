@@ -21,8 +21,7 @@ extern osThreadId twrInterruptTaskHandle;
 
 /* Buffer to store received response message.
  * Its size is adjusted to longest frame that this example code is supposed to handle. */
-#define RX_BUF_LEN 40
-static uint8 rx_buffer[RX_BUF_LEN];
+static uint8 rx_buffer[MAX_FRAME_LEN];
 
 /* Hold copy of status register state here for reference so that it can be examined at a debug breakpoint. */
 static uint32 status_reg = 0;
@@ -105,13 +104,13 @@ void uwbFrameHandler(void){
             twrReceiveCallback();
         }
         case 0xB:{
-            twrReceiveCallback();
+            usb_print("WARNING 1: TWR message is firing an interrupt when it shouldnt be.");
         }
         case 0xC:{
-            twrReceiveCallback();
+            usb_print("WARNING 2: TWR message is firing an interrupt when it shouldnt be.");
         }
         case 0xD:{
-            dataReceiveCallback();
+            dataReceiveCallback(rx_buffer);
         }
     }
 }
@@ -174,7 +173,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
 
             /* A frame has been received, read it into the local buffer. */
             frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_MASK;
-            if (frame_len <= RX_BUF_LEN)
+            if (frame_len <= MAX_FRAME_LEN)
             {
                 dwt_readrxdata(rx_buffer, frame_len, 0);
             }
@@ -512,7 +511,7 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, bool is_initiator){
 
         /* A frame has been received, read it into the local buffer. */
         frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_MASK;
-        // if (frame_len <= RX_BUF_LEN)
+        // if (frame_len <= MAX_FRAME_LEN)
         if (frame_len <= 1024)
         {
             dwt_readrxdata(rx_buffer, frame_len, 0);
@@ -603,7 +602,7 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, bool is_initiat
 
         /* A frame has been received, read it into the local buffer. */
         frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_MASK;
-        // if (frame_len <= RX_BUF_LEN)
+        // if (frame_len <= MAX_FRAME_LEN)
         if (frame_len <= 1024)
         {
             dwt_readrxdata(rx_buffer, frame_len, 0);
@@ -744,7 +743,7 @@ bool timestampReceivedFrame(uint32_t *ts, uint8_t master_idx, uint8_t master_id,
 
         /* A frame has been received, read it into the local buffer. */
         frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_MASK;
-        if (frame_len <= RX_BUF_LEN)
+        if (frame_len <= MAX_FRAME_LEN)
         {
             dwt_readrxdata(rx_buffer, frame_len, 0);
         }
@@ -814,13 +813,13 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data)
     /* Clear local RX buffer to avoid having leftovers from previous receptions. 
     This is not necessary but is included here to aid reading the RX
     buffer. */
-    for (i = 0 ; i < RX_BUF_LEN; i++ )
+    for (i = 0 ; i < MAX_FRAME_LEN; i++ )
     {
         rx_buffer[i] = 0;
     }
 
     /* A frame has been received, copy it to our local buffer. */
-    if (cb_data->datalength <= RX_BUF_LEN)
+    if (cb_data->datalength <= MAX_FRAME_LEN)
     {
         dwt_readrxdata(rx_buffer, cb_data->datalength, 0);
     }

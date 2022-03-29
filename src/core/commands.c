@@ -23,6 +23,7 @@
 #include "uthash.h"
 #include "main.h" 
 #include <stdbool.h>
+#include "messaging.h"
 
 int c00_set_idle(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
     usb_print("R00\r\n");
@@ -113,4 +114,17 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
         usb_print("TWR FAIL: No successful response.\r\n");
         return 0;
     }
+}
+
+
+int c06_broadcast(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+    
+
+    uint8 msg[] = {'O','U','R',' ','M','O','D','U','L','E','\r','\n','\0'};
+    size_t len = sizeof(msg)/ sizeof(msg[0]);
+    broadcast(msg, len);
+    osDelay(1);
+    usb_print("R06\r\n");
+    osDelay(1);
+    return 1;
 }

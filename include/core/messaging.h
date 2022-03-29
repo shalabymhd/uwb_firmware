@@ -27,13 +27,12 @@ extern "C" {
 #include "dwt_general.h"
 #include "dwt_iqr.h"
 
-
 #ifdef __cplusplus
 }
 #endif
 
-int broadcast(void);
-int dataReceiveCallback(void);
+int broadcast(uint8*, size_t);
+int dataReceiveCallback(uint8*);
 
 
 #endif /* __MESSAGING_H__ */

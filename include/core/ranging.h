@@ -84,6 +84,7 @@ bool timestampReceivedFrame(uint32_t*, uint8_t, uint8_t, uint8_t, uint8_t, bool)
 void setPassiveToggle(bool);
 
 #define UUS_TO_DWT_TIME 65536
+#define MAX_FRAME_LEN 40
 
 #ifdef __cplusplus
 }
