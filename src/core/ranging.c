@@ -214,6 +214,9 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
         /* Await the return signal and compute the range measurement */
         ret = rxTimestampsSS(0,target_id,1);
 
+        /* Retrieve the transmission timestamp */
+        tx1_ts = get_tx_timestamp_u64();
+
         /* Retrieve the reception timestamp */
         rx2_ts = get_rx_timestamp_u64();
     }
@@ -226,7 +229,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
                 ret = txTimestampsDS(tx1_ts, rx2_ts, rx3_ts, 1);
             }
             else{
-                ret = txTimestampsSS(0, rx2_ts, 0);
+                ret = txTimestampsSS(tx1_ts, rx2_ts, 1);
             }
 
             if (ret){ // TODO: allow additional signal with alternative double-sided TWR
@@ -492,7 +495,7 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, bool is_initiator){
     uint32 tx1_ts, rx2_ts;
     int64 tof_dtu;
 
-    // dwt_setrxtimeout(0);
+    dwt_setrxtimeout(0);
     // dwt_setpreambledetecttimeout(0);
     dwt_rxenable(DWT_START_RX_IMMEDIATE);
 
@@ -551,7 +554,7 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, bool is_initiator){
             /* Display computed distance. */
             char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
-            char response[60];
+            char response[100];
             
             sprintf(response, "R05|%d|%s|%lu|%lu|%lu|%lu\r\n",
                     neighbour_id, dist_str,
@@ -656,7 +659,7 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, bool is_initiat
             /* Display computed distance. */
             char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
-            char response[60];
+            char response[100];
             sprintf(response, "R05|%d|%s|%lu|%lu|%lu|%lu|%lu|%lu\r\n",
                     neighbour_id, dist_str,
                     tx1_ts, rx1_ts,
