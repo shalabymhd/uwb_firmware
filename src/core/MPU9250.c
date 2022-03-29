@@ -85,7 +85,7 @@ uint8_t get_imu_id(){
 
 void initializeImu(){
 	char imu_id = get_imu_id();
-	usb_print(imu_id);
+	usb_print(&imu_id);
 
 	if(imu_id==0x71){
 		// The MPU is online. Initialize.

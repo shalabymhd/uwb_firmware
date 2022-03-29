@@ -261,7 +261,7 @@ int twrReceiveCallback(void){
     dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
 
     /* Clear reception timeout to start next ranging process. */
-    dwt_setrxtimeout(2000*UUS_TO_DWT_TIME); //dwt_setrxtimeout(0);
+    dwt_setrxtimeout(0); //dwt_setrxtimeout(2000*UUS_TO_DWT_TIME); /
 
     /* Retrieve the initiator's ID */
     uint8_t initiator_id = rx_buffer[ALL_TX_BOARD_IDX];
@@ -553,7 +553,7 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, bool is_initiator){
             convert_float_to_string(dist_str,distance);
             char response[60];
             
-            sprintf(response, "R05,%d,%s,%lu,%lu,%lu,%lu\r\n",
+            sprintf(response, "R05|%d|%s|%lu|%lu|%lu|%lu\r\n",
                     neighbour_id, dist_str,
                     tx1_ts, rx1_ts,
                     tx2_ts, rx2_ts);
@@ -657,7 +657,7 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, bool is_initiat
             char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
             char response[60];
-            sprintf(response, "R05,%d,%s,%lu,%lu,%lu,%lu,%lu,%lu\r\n",
+            sprintf(response, "R05|%d|%s|%lu|%lu|%lu|%lu|%lu|%lu\r\n",
                     neighbour_id, dist_str,
                     tx1_ts, rx1_ts,
                     tx2_ts, rx2_ts,
@@ -719,7 +719,7 @@ int passivelyListen(uint32_t rx_ts1, bool four_signals){
 
     /* --------------------- Output Time-stamps --------------------- */
     char output[60];
-    sprintf(output,"R99,%lu,%lu,%lu,%lu\r\n",tx_ts1,rx_ts1,tx_ts2,rx_ts2);
+    sprintf(output,"R99|%lu|%lu|%lu|%lu\r\n",tx_ts1,rx_ts1,tx_ts2,rx_ts2);
     usb_print(output);
     return 1;
 }

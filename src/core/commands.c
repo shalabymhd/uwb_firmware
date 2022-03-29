@@ -35,7 +35,7 @@ int c01_get_id(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_boo
     dwt_geteui(&my_id);
 
     char id_str[10];
-    sprintf(id_str, "R01,%u\r\n", my_id); 
+    sprintf(id_str, "R01|%u\r\n", my_id); 
     usb_print(id_str);
     return 1;
 }
@@ -58,11 +58,11 @@ int c03_do_tests(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_b
     uint8_t my_id;
     dwt_geteui(&my_id);
     if(my_id != BOARD_ID){
-        usb_print("R03,1\r\n"); // Error ID #1
+        usb_print("R03|1\r\n"); // Error ID #1
         return 1; // Do not need to redo this again.
     }
 
-    usb_print("R03,0\r\n"); // No errors detected
+    usb_print("R03|0\r\n"); // No errors detected
 
     return 1;
 }
