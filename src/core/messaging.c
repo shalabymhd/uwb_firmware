@@ -31,6 +31,7 @@ int broadcast(uint8* msg, size_t msg_len){
 
     uint16 full_msg_sz = full_len * sizeof(*full_msg);
 
+    CDC_Transmit_FS(full_msg, full_len);
     decaIrqStatus_t stat;
     stat = decamutexon();
     dwt_forcetrxoff();

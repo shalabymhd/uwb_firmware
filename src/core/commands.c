@@ -119,10 +119,14 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
 
 int c06_broadcast(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
     
+    StrParams *s;
+    
+    HASH_FIND_STR(msg_strs, "data", s);
+    char* msg = s->value;
+    size_t len = strlen(msg);
 
-    uint8 msg[] = {'O','U','R',' ','M','O','D','U','L','E','\r','\n','\0'};
-    size_t len = sizeof(msg)/ sizeof(msg[0]);
-    broadcast(msg, len);
+
+    broadcast((uint8*) msg, len);
     osDelay(1);
     usb_print("R06\r\n");
     osDelay(1);

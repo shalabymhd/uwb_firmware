@@ -168,7 +168,6 @@ void parseMessageIntoHashTables(char *msg){
     int iter = -1;
     const FieldTypes *msg_types; // Pointer to array
     const char **msg_fields; // Pointer to array of pointers
-    // TODO: lol indent with 2 spaces or 4 spaces?
 
     deleteOldParams(); // delete all old params
 
