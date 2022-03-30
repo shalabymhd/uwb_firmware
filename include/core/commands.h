@@ -44,7 +44,7 @@ typedef struct BoolParams {
 // hash table implementation to store string parameters
 typedef struct StrParams {
     char key[10];      /* field used as the key */
-    char value[20];      /* field used to store string messages */
+    char value[100];      /* field used to store string messages */
     UT_hash_handle hh; /* makes this structure hashable */
 }StrParams;     
 
@@ -55,6 +55,8 @@ int c02_reset(IntParams*, FloatParams*, BoolParams*, StrParams*);
 int c03_do_tests(IntParams*, FloatParams*, BoolParams*, StrParams*);
 int c04_toggle_passive(IntParams*, FloatParams*, BoolParams*, StrParams*);
 int c05_initiate_twr(IntParams*, FloatParams*, BoolParams*, StrParams*);
+int c06_broadcast(IntParams*, FloatParams*, BoolParams*, StrParams*);
+
 
 /* Variables -----------------------------------------------------------*/
 

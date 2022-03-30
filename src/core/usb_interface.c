@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    usb_interface.c
-  * @brief   This file provides code used to interface with ROS through USB.
+  * @brief   This file provides code used to interface with python through USB.
   ******************************************************************************
   */
 
@@ -33,6 +33,8 @@ static const char *c04_fields[] = {"toggle"}; // can't be more than 10 character
 static const FieldTypes c04_types[] = {BOOL}; 
 static const char *c05_fields[] = {"target", "targ_meas", "mult_twr"}; // can't be more than 10 characters
 static const FieldTypes c05_types[] = {INT, BOOL, INT};
+static const char *c06_fields[] = {"data"}; // can't be more than 10 characters
+static const FieldTypes c06_types[] = {STR};
 
 static const char **all_command_fields[] = {
   c00_fields,
@@ -40,7 +42,8 @@ static const char **all_command_fields[] = {
   c02_fields,
   c03_fields,
   c04_fields,
-  c05_fields
+  c05_fields,
+  c06_fields
   };
 
 static const FieldTypes *all_command_types[] = {
@@ -49,7 +52,8 @@ static const FieldTypes *all_command_types[] = {
   c02_types,
   c03_types,
   c04_types,
-  c05_types
+  c05_types,
+  c06_types,
   };
 
 static const int (*all_command_funcs[])(IntParams*, FloatParams*, BoolParams*, StrParams*) = {
@@ -58,7 +62,8 @@ static const int (*all_command_funcs[])(IntParams*, FloatParams*, BoolParams*, S
   c02_reset,
   c03_do_tests,
   c04_toggle_passive,
-  c05_initiate_twr
+  c05_initiate_twr,
+  c06_broadcast
   };
 
 /* TODO: can below be made local variables if defined in
@@ -159,11 +164,10 @@ void readUsb(){
  * 
  */
 void parseMessageIntoHashTables(char *msg){
-    char *pt = strtok(msg,","); // break the string using the comma delimiter, to read each entry separately
+    char *pt = strtok(msg,"|"); // break the string using the | delimiter, to read each entry separately
     int iter = -1;
     const FieldTypes *msg_types; // Pointer to array
     const char **msg_fields; // Pointer to array of pointers
-    // TODO: lol indent with 2 spaces or 4 spaces?
 
     deleteOldParams(); // delete all old params
 
@@ -256,7 +260,7 @@ void parseMessageIntoHashTables(char *msg){
         }
 
         iter += 1;
-        pt = strtok(NULL, ","); // gets read of read parameter, sets current parameter to the next one
+        pt = strtok(NULL, "|"); // gets read of read parameter, sets current parameter to the next one
     }
 } // end parseMessageIntoHashTables()
 
