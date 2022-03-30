@@ -33,8 +33,8 @@ static const char *c04_fields[] = {"toggle"}; // can't be more than 10 character
 static const FieldTypes c04_types[] = {BOOL}; 
 static const char *c05_fields[] = {"target", "targ_meas", "mult_twr"}; // can't be more than 10 characters
 static const FieldTypes c05_types[] = {INT, BOOL, INT};
-static const char *c06_fields[] = {"data"}; // No fields. Empty array of size 1
-static const FieldTypes c06_types[] = {STR}; // No fields. Empty array of size 1
+static const char *c06_fields[] = {"data"}; // can't be more than 10 characters
+static const FieldTypes c06_types[] = {STR};
 
 static const char **all_command_fields[] = {
   c00_fields,
@@ -164,7 +164,7 @@ void readUsb(){
  * 
  */
 void parseMessageIntoHashTables(char *msg){
-    char *pt = strtok(msg,"|"); // break the string using the comma delimiter, to read each entry separately
+    char *pt = strtok(msg,"|"); // break the string using the | delimiter, to read each entry separately
     int iter = -1;
     const FieldTypes *msg_types; // Pointer to array
     const char **msg_fields; // Pointer to array of pointers

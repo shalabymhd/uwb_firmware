@@ -72,21 +72,22 @@ int broadcast(uint8* msg, size_t msg_len){
 int dataReceiveCallback(uint8 *rx_data){    
 
     // Pointer to RX_DATA with prefix removed.
-    uint8* rx_data_no_prefix = rx_data + PREFIX_LEN;
+    char* rx_data_no_prefix = (char*)rx_data + PREFIX_LEN;
 
     // Read data until the first '\0' appears (end of string)
     // Since the suffix is just {0, 0}, this will remove the suffix too.
     uint16 data_len = strlen((char*) rx_data_no_prefix);
 
-    // Concatenate arrays into one large array (memory duplication here)
+    // Get the length of the full string to be transmitted over USB.
     uint16 full_len = (RESP_PREFIX_LEN + data_len + RESP_SUFFIX_LEN);
-    uint8* full_msg = malloc(full_len * sizeof(uint8));
-    memcpy(full_msg, resp_prefix, RESP_PREFIX_LEN * sizeof(uint8));
-    memcpy(full_msg + RESP_PREFIX_LEN, rx_data_no_prefix, data_len * sizeof(uint8));
-    memcpy(full_msg + RESP_PREFIX_LEN + data_len, resp_suffix, RESP_SUFFIX_LEN * sizeof(uint8));
 
-    CDC_Transmit_FS(full_msg, full_len);
+    // Concatenate arrays into one large array
+    char full_msg[full_len];
+    sprintf(full_msg, "%s,%s,%s", resp_prefix, rx_data_no_prefix, resp_suffix);
+
+    // Transmit the final concatenated array over USB
+    usb_print(full_msg);
+
     osDelay(1);
-    free(full_msg);
     return 1;
 }

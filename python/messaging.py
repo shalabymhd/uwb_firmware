@@ -9,6 +9,12 @@ ports = find_uwb_serial_ports()
 uwb1 = UwbModule("/dev/ttyACM0", verbose=False)
 uwb2 = UwbModule("/dev/ttyACM1", verbose=False)
 
+id = uwb1.get_id()
+uwb1.output(id)
+
+id = uwb2.get_id()
+uwb2.output(id)
+
 def rx_callback(msg):
     x = json.loads(msg)
     print(x)
