@@ -83,7 +83,7 @@ int dataReceiveCallback(uint8 *rx_data){
 
     // Concatenate arrays into one large array
     char full_msg[full_len];
-    sprintf(full_msg, "%s,%s,%s", resp_prefix, rx_data_no_prefix, resp_suffix);
+    sprintf(full_msg, "%s%s%s", resp_prefix, rx_data_no_prefix, resp_suffix);
 
     // Transmit the final concatenated array over USB
     usb_print(full_msg);
