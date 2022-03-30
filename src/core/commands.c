@@ -52,8 +52,11 @@ int c02_reset(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bool
 }
 
 int c03_do_tests(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
-    /* TODO: 1) Add any other tests necessary.
-             2) When we add tests, it might be worthwhile to give different errors an ID and just output the error ID.
+    /* TODO: 
+    1) Add any other tests necessary.
+    2) When we add tests, it might be worthwhile to give different 
+       errors an ID and just output the error ID.
+
     */
     uint8_t my_id;
     dwt_geteui(&my_id);
@@ -102,15 +105,18 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
     if (target_ID == BOARD_ID){
         usb_print("TWR FAIL: The target ID is the same as the initiator's ID.\r\n");
         return 0;
+        // TODO: we should not retry!! we will get stuck.
     }
 
     success = twrInitiateInstance(target_ID, target_meas_bool, mult_twr);
 
     if (success){ 
-        usb_print("TWR SUCCESS!\r\n"); // placeholder
+        // Response is done inside `twrInitiateInstance`
+        usb_print("TWR SUCCESS!\r\n");
         return 1;
     }
     else {
+        // TODO: this is worth retrying. need to implement a limit.
         usb_print("TWR FAIL: No successful response.\r\n");
         return 0;
     }
@@ -125,10 +131,23 @@ int c06_broadcast(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_
     char* msg = s->value;
     size_t len = strlen(msg);
 
+    // TODO: we need to standardize the response when success/fail.
+    bool success;
+    success = broadcast((uint8*) msg, len);
+    osDelay(1);
+    if (success){
+        usb_print("R06|\r\n");
+        return 1;
+    }
+    else {
+        return 0;
+    }
+    osDelay(1);
+}
 
-    broadcast((uint8*) msg, len);
-    osDelay(1);
-    usb_print("R06|\r\n");
-    osDelay(1);
+int c07_get_max_frame_len(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+    char response[10];
+    sprintf(response, "R07|%u\r\n", MAX_FRAME_LEN); 
+    usb_print(response);
     return 1;
 }

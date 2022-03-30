@@ -16,7 +16,7 @@
 #include "commands.h"
 #include "dwt_iqr.h"
 /* Typedefs ------------------------------------------------------------------*/
-typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4} FieldTypes;
+typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4, BYTES=5} FieldTypes;
 
 /* Variables -----------------------------------------------------------------*/
 static int command_number = -1;
@@ -35,6 +35,8 @@ static const char *c05_fields[] = {"target", "targ_meas", "mult_twr"}; // can't 
 static const FieldTypes c05_types[] = {INT, BOOL, INT};
 static const char *c06_fields[] = {"data"}; // can't be more than 10 characters
 static const FieldTypes c06_types[] = {STR};
+static const char *c07_fields[1]; // No fields. Empty array of size 1
+static const FieldTypes c07_types[1]; // No fields. Empty array of size 1
 
 static const char **all_command_fields[] = {
   c00_fields,
@@ -43,7 +45,8 @@ static const char **all_command_fields[] = {
   c03_fields,
   c04_fields,
   c05_fields,
-  c06_fields
+  c06_fields,
+  c07_fields,
   };
 
 static const FieldTypes *all_command_types[] = {
@@ -54,6 +57,7 @@ static const FieldTypes *all_command_types[] = {
   c04_types,
   c05_types,
   c06_types,
+  c07_types,
   };
 
 static const int (*all_command_funcs[])(IntParams*, FloatParams*, BoolParams*, StrParams*) = {
@@ -63,7 +67,8 @@ static const int (*all_command_funcs[])(IntParams*, FloatParams*, BoolParams*, S
   c03_do_tests,
   c04_toggle_passive,
   c05_initiate_twr,
-  c06_broadcast
+  c06_broadcast,
+  c07_get_max_frame_len,
   };
 
 /* TODO: can below be made local variables if defined in
@@ -150,7 +155,7 @@ void readUsb(){
         msg_strs);
 
       if (success){
-        command_number = -1;
+        command_number = -1; // stops entering the above if statement
       }
     }
 } // end readUsb()
