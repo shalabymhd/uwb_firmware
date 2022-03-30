@@ -128,7 +128,7 @@ int c06_broadcast(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_
 
     broadcast((uint8*) msg, len);
     osDelay(1);
-    usb_print("R06\r\n");
+    usb_print("R06|\r\n");
     osDelay(1);
     return 1;
 }

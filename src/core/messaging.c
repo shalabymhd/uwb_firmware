@@ -13,11 +13,17 @@
 /* Preamble timeout, in multiple of PAC size. See NOTE 6 below. */
 #define PRE_TIMEOUT 8
 
-/* Message prefix and suffix */
+/* Prefix and Suffix of Message SENT over UWB */
 #define PREFIX_LEN 4
 #define SUFFIX_LEN 2
 uint8 msg_prefix[] = {0x41, 0x88, 0xD, 0};
 uint8 msg_suffix[] = {0, 0};
+
+/* Prefix and Suffix of Message SENT over USB */
+#define RESP_PREFIX_LEN 4
+#define RESP_SUFFIX_LEN 2
+uint8 resp_prefix[] = {'R','0','6','|'};
+uint8 resp_suffix[] = {'\r', '\n'};
 
 int broadcast(uint8* msg, size_t msg_len){
     // TODO: add check on total message length here.
@@ -31,7 +37,7 @@ int broadcast(uint8* msg, size_t msg_len){
 
     uint16 full_msg_sz = full_len * sizeof(*full_msg);
 
-    CDC_Transmit_FS(full_msg, full_len);
+    //CDC_Transmit_FS(full_msg, full_len);
     decaIrqStatus_t stat;
     stat = decamutexon();
     dwt_forcetrxoff();
@@ -60,8 +66,25 @@ int broadcast(uint8* msg, size_t msg_len){
     return 1;
 }
 
+
+
 int dataReceiveCallback(uint8 *rx_data){    
-    CDC_Transmit_FS(rx_data, MAX_FRAME_LEN);
+
+    // Pointer to RX_DATA with prefix removed.
+    uint8* rx_data_no_prefix = rx_data + PREFIX_LEN;
+
+    // Read data until the first '\0' appears (end of string)
+    // Since the suffix is just {0, 0}, this will remove the suffix too.
+    uint16 data_len = strlen((char*) rx_data_no_prefix);
+
+    // Concatenate arrays into one large array (memory duplication here)
+    uint16 full_len = (RESP_PREFIX_LEN + data_len + RESP_SUFFIX_LEN);
+    uint8* full_msg = malloc(full_len * sizeof(uint8));
+    memcpy(full_msg, resp_prefix, RESP_PREFIX_LEN * sizeof(uint8));
+    memcpy(full_msg + RESP_PREFIX_LEN, rx_data_no_prefix, data_len * sizeof(uint8));
+    memcpy(full_msg + RESP_PREFIX_LEN + data_len, resp_suffix, RESP_SUFFIX_LEN * sizeof(uint8));
+
+    CDC_Transmit_FS(full_msg, full_len);
     osDelay(1);
     return 1;
 }

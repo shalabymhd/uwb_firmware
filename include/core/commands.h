@@ -44,7 +44,7 @@ typedef struct BoolParams {
 // hash table implementation to store string parameters
 typedef struct StrParams {
     char key[10];      /* field used as the key */
-    char value[20];      /* field used to store string messages */
+    char value[100];      /* field used to store string messages */
     UT_hash_handle hh; /* makes this structure hashable */
 }StrParams;     
 
