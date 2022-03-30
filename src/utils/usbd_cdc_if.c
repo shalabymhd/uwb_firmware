@@ -265,7 +265,8 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
 
-  if (*Len>1){ // prevents the subsequent code from getting triggered by usb_print
+  if (*Len>1 && strcmp((char*)&Buf[0],"~")){ /* prevents the subsequent code from getting triggered by usb_print
+                                                or the serial Python package. */
     // Copy data to global buffer without overwriting data that hasn't been read yet.
     uint8_t len = (uint8_t)*Len;
     uint8_t idx = CdcReceiveBuffer[0]; // The first entry of CdcReceiveBuffer stores the
