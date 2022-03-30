@@ -63,6 +63,7 @@ int broadcast(uint8* msg, size_t msg_len){
     dwt_setrxtimeout(0);
     dwt_rxenable(DWT_START_RX_IMMEDIATE);
     decamutexoff(stat);
+    free(full_msg);
     return 1;
 }
 
@@ -86,5 +87,6 @@ int dataReceiveCallback(uint8 *rx_data){
 
     CDC_Transmit_FS(full_msg, full_len);
     osDelay(1);
+    free(full_msg);
     return 1;
 }

@@ -6,12 +6,12 @@ import json
 This script publishes a message to the USB port continuously until terminated.
 """
 ports = find_uwb_serial_ports()
-uwb1 = UwbModule("/dev/ttyACM0", verbose=True)
-uwb2 = UwbModule("/dev/ttyACM1", verbose=True)
+uwb1 = UwbModule("/dev/ttyACM0", verbose=False)
+uwb2 = UwbModule("/dev/ttyACM1", verbose=False)
 
 def rx_callback(msg):
     x = json.loads(msg)
-    pass
+    print(x)
 
 uwb2.register_callback("R06",rx_callback)
 
@@ -21,7 +21,9 @@ data = {
     "x":[1,2,3],
     "P":[[1,0,0],[0,1,0],[0,0,1]],
 }
-uwb1.broadcast(data)
-
-
-time.sleep(100)
+counter = 0
+while True:
+    uwb1.broadcast(data)
+    time.sleep(0.001)
+    counter += 1
+    print(counter)
