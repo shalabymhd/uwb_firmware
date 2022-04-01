@@ -25,12 +25,12 @@
 #include <stdbool.h>
 #include "messaging.h"
 
-int c00_set_idle(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+int c00_set_idle(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     usb_print("R00\r\n");
     return 1;
 }
 
-int c01_get_id(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+int c01_get_id(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     uint8_t my_id;
     dwt_geteui(&my_id);
 
@@ -40,7 +40,7 @@ int c01_get_id(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_boo
     return 1;
 }
 
-int c02_reset(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+int c02_reset(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     // Reset the UWB receiver. TODO: would we need to reset other things? Could even do a hard reset.
     dwt_rxreset();
 
@@ -51,7 +51,7 @@ int c02_reset(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bool
     return 1;
 }
 
-int c03_do_tests(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+int c03_do_tests(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     /* TODO: 
     1) Add any other tests necessary.
     2) When we add tests, it might be worthwhile to give different 
@@ -70,7 +70,7 @@ int c03_do_tests(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_b
     return 1;
 }
 
-int c04_toggle_passive(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+int c04_toggle_passive(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     BoolParams *i;
     
     /* Extract the toggle */
@@ -83,7 +83,7 @@ int c04_toggle_passive(IntParams *msg_ints, FloatParams *msg_floats, BoolParams 
     return 1;
 }
 
-int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     bool success;
     uint8_t target_ID, mult_twr;
     IntParams *i;
@@ -123,7 +123,7 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
 }
 
 
-int c06_broadcast(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+int c06_broadcast(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     
     StrParams *s;
     
@@ -145,7 +145,7 @@ int c06_broadcast(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_
     osDelay(1);
 }
 
-int c07_get_max_frame_len(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs){
+int c07_get_max_frame_len(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     char response[10];
     sprintf(response, "R07|%u\r\n", MAX_FRAME_LEN); 
     usb_print(response);

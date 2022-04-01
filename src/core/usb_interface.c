@@ -76,7 +76,7 @@ static const FieldTypes *all_command_types[] = {
     c07_types,
 };
 
-static const int (*all_command_funcs[])(IntParams *, FloatParams *, BoolParams *, StrParams *) = {
+static const int (*all_command_funcs[])(IntParams *, FloatParams *, BoolParams *, StrParams *, ByteParams *) = {
     c00_set_idle,
     c01_get_id,
     c02_reset,
@@ -108,6 +108,7 @@ static IntParams *msg_ints;
 static FloatParams *msg_floats;
 static BoolParams *msg_bools;
 static StrParams *msg_strs;
+static ByteParams *msg_bytes;
 
 /* Private Functions ----------------------------------------------------------*/
 static char* parseMessageIntoHashTables(char *msg);
@@ -138,7 +139,10 @@ void readUsb(){
         // Copy into receive buffer into temp buffer.
         memcpy(temp_receive_buffer, CdcReceiveBuffer + 1, USB_BUFFER_SIZE - 1);
 
-        idx_end = parseMessageIntoHashTables(temp_receive_buffer); 
+        idx_end = parseMessageIntoHashTables(temp_receive_buffer);   
+        if (*idx_end != '\r'){
+            usb_print("ERROR parsing message from USB.");
+        }
         idx_start = strstr(temp_receive_buffer, "C"); // address where to stop reading the message
         uint16_t len = idx_end - idx_start; // Removing the first entry 
 
@@ -172,7 +176,8 @@ void readUsb(){
         msg_ints,
         msg_floats,
         msg_bools,
-        msg_strs);
+        msg_strs,
+        msg_bytes);
 
       if (success){
         command_number = -1; // stops entering the above if statement
@@ -294,7 +299,7 @@ char * parseMessageIntoHashTables(char *msg)
 
             /* Everything up to the next delimiter (located at next_pt), is
             assumed to be a big int represented as a character array */
-            unsigned int len = next_pt - current_pt;
+            uint8_t len = next_pt - current_pt;
             char *int_as_string = calloc(len + 1, sizeof(char));
             memcpy(int_as_string, current_pt, len * sizeof(char));
             param_temp->value = atoi(int_as_string);
@@ -306,6 +311,8 @@ char * parseMessageIntoHashTables(char *msg)
         }
         case STR:
         {
+            // TODO: strings cannot contain '|' or '\r'. This will crash the 
+            // board.
             StrParams *param_temp;
 
             param_temp = malloc(sizeof(StrParams));
@@ -316,7 +323,7 @@ char * parseMessageIntoHashTables(char *msg)
 
             strcpy(param_temp->key, msg_fields[i]);
 
-            unsigned int len = next_pt - current_pt;
+            uint16_t len = next_pt - current_pt;
             strncpy(param_temp->value, current_pt, len * sizeof(char));
 
             HASH_ADD_STR(msg_strs, key, param_temp);
@@ -335,7 +342,7 @@ char * parseMessageIntoHashTables(char *msg)
 
             strcpy(param_temp->key, msg_fields[i]);
 
-            unsigned int len = next_pt - current_pt;
+            uint8_t len = next_pt - current_pt;
             if (len != 1){
                 usb_print("Error in USB message parsing. Was a BOOL specified as 1 or 0?");
             }
@@ -349,51 +356,65 @@ char * parseMessageIntoHashTables(char *msg)
             break;
         }
         case FLOAT:
-        {
+        {   /* STM32 processors are all LITTLE-ENDIAN. This means, to pack a 
+            single-precision float variable into a compatible array of bytes, 
+            one must use the following on the python side:
+
+             float_bytes = struct.pack("<f", x)
+
+            where x is the python float.
+
+            A single-precision float requires 4 bytes. Do not send doubles
+            (8 bytes) or you will probably have a hard fault.
+            */
+
+            // TODO: safeguard against accidentally sending double
             FloatParams *param_temp;
+            uint8_t len = 4;
 
-            char char_temp[2];
-            int int_temp;
-            char float_bytes[4];
+            param_temp = malloc(sizeof(FloatParams));
+            if (param_temp == NULL)
+            {
+                MemManage_Handler();
+            } // if the memory has not been allocated, interrupt operations
 
-            usb_print("Currently do not support sending floats over USB.");
-
-            // /* Hex string to float conversion */
-            // /* TODO: this is an unnecessary implementation of a little-endian
-            // float byte ordering. All we need to do to reduce this almost
-            // completely is to covert floats to bytes on the python side with
-
-            // float_bytes = struct.pack("<f", x)
-            // */
-
-            // memcpy(char_temp, current_pt, 2);
-            // int_temp = (int)strtol(char_temp, NULL, 16);
-            // float_bytes[3] = int_temp;
-
-            // memcpy(char_temp, current_pt + 2, 2);
-            // int_temp = (int)strtol(char_temp, NULL, 16);
-            // float_bytes[2] = int_temp;
-
-            // memcpy(char_temp, current_pt + 4, 2);
-            // int_temp = (int)strtol(char_temp, NULL, 16);
-            // float_bytes[1] = int_temp;
-
-            // memcpy(char_temp, current_pt + 6, 2);
-            // int_temp = (int)strtol(char_temp, NULL, 16);
-            // float_bytes[0] = int_temp;
-
-            // param_temp = malloc(sizeof(FloatParams));
-            // if (param_temp == NULL)
-            // {
-            //     MemManage_Handler();
-            // } // if the memory has not been allocated, interrupt operations
-
-            // strcpy(param_temp->key, msg_fields[i]);
-            // memcpy(&(param_temp->value), &float_bytes, 4);
+            strcpy(param_temp->key, msg_fields[i]);
+            memcpy(&(param_temp->value), current_pt, len);
 
             HASH_ADD_STR(msg_floats, key, param_temp);
+            current_pt += len + 1;
 
             break;
+        }
+        case BYTES:
+        {
+            /* Processing arbitary bytes is a little special. It is slightly
+            complicated because the byte array could contain the reserved
+            characters '|', which is our field seperator, and '\0' which is
+            the C string terminator. Therefore, we have no choice to
+            also specify the length of the byte array, so that it can be parsed
+            properly. We store this length as a 16-bit unsigned integer and it
+            is found as the first two bytes of the byte array */
+            ByteParams *param_temp;
+
+            param_temp = malloc(sizeof(ByteParams));
+            if (param_temp == NULL)
+            {
+                MemManage_Handler();
+            } // if the memory has not been allocated, interrupt operations
+
+            // Extract the length of remaining data (in number of bytes) 
+            // as the first two bytes.
+            uint16_t len;
+            memcpy(&len, current_pt, sizeof len);
+            param_temp->len = len;
+
+            current_pt = current_pt + 2;
+            memcpy(&(param_temp->value), current_pt, len * sizeof(uint8_t));
+
+            HASH_ADD_STR(msg_bytes, key, param_temp);
+            current_pt += len + 1;
+
         }
         default:
             break;
@@ -439,4 +460,13 @@ void deleteOldParams() {
     HASH_DEL(msg_floats, current_float);  /* delete; advances to next param */
     free(current_float);    
   }
+
+   /* Delete byte params */
+    ByteParams *current_bytes, *tmp_bytes;
+
+    HASH_ITER(hh, msg_bytes, current_bytes, tmp_bytes)
+    {
+        HASH_DEL(msg_bytes, current_bytes); /* delete; advances to next param */
+        free(current_bytes);
+    }
 }
