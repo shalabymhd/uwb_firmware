@@ -20,6 +20,7 @@ typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4, BYTES=5} FieldTypes;
 
 /* Variables -----------------------------------------------------------------*/
 static int command_number = -1;
+static char temp_receive_buffer[USB_BUFFER_SIZE];
 
 static const char *c00_fields[1]; // No fields. Empty array of size 1
 static const FieldTypes c00_types[1];  // No fields. Empty array of size 1
@@ -99,8 +100,6 @@ void readUsb(){
     decaIrqStatus_t stat;
     stat = decamutexon();
     char *idx_end;
-
-    // char print_stat[20];
     
     idx_end = strstr(CdcReceiveBuffer, "\r"); // address where to stop reading the message
 
@@ -108,26 +107,17 @@ void readUsb(){
     if (idx_end > 0)
     {
         /* ----------------------- PROCESS COMMUNICATED INFORMATION ----------------------- */
-        char *dyn = (char*)malloc(sizeof(char)*(len+1)); // allocated dynamic memory
-        if (dyn == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
-
         // Extract the oldest unread message.
-        strncpy(dyn, CdcReceiveBuffer + 1, len);
-        dyn[len] = '\0';
+        memcpy(temp_receive_buffer, CdcReceiveBuffer + 1, len);
+        temp_receive_buffer[len] = '\0';
 
-        parseMessageIntoHashTables(dyn); 
+        parseMessageIntoHashTables(temp_receive_buffer); 
 
         /* ------------------------------ UPDATE THE BUFFER ------------------------------ */
-        dyn = realloc(dyn, sizeof(char)*(USB_BUFFER_SIZE - 1)); // reallocate dynamic memory
-        if (dyn == NULL) {MemManage_Handler();} // if the memory has not been allocated, interrupt operations
-
-        memcpy(dyn, CdcReceiveBuffer + len + 2, USB_BUFFER_SIZE - len - 2); // copy unread buffer into temp memory
+        memcpy(temp_receive_buffer, CdcReceiveBuffer + len + 2, USB_BUFFER_SIZE - len - 2); // copy unread buffer into temp memory
         memset(CdcReceiveBuffer + 1, '\0', USB_BUFFER_SIZE - 1); // clear the buffer
-        memcpy(CdcReceiveBuffer + 1, dyn, USB_BUFFER_SIZE - len - 1); // move data back to buffer
+        memcpy(CdcReceiveBuffer + 1, temp_receive_buffer, USB_BUFFER_SIZE - len - 1); // move data back to buffer
         CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len - 1; // adjust where to continue writing
-
-        // free the temporary memory 
-        free(dyn);
     }
     
     decamutexoff(stat);
