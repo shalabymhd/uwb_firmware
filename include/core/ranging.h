@@ -32,9 +32,10 @@ typedef signed long long int64;
 typedef unsigned long long uint64;
 
 /* Function Prototypes -------------------------------------------------------*/
+void uwbFrameHandler(void);
+void uwbReceiveInterruptInit(void);
 int twrInitiateInstance(uint8_t, bool, uint8_t);
 int twrReceiveCallback(void);
-void uwbReceiveInterruptInit(void);
 int txTimestampsSS(uint64_t, uint64_t, bool);
 int txTimestampsDS(uint64_t, uint64_t, uint64_t, bool);
 int rxTimestampsSS(uint64_t, uint8_t, bool);
@@ -83,6 +84,7 @@ bool timestampReceivedFrame(uint32_t*, uint8_t, uint8_t, uint8_t, uint8_t, bool)
 void setPassiveToggle(bool);
 
 #define UUS_TO_DWT_TIME 65536
+#define MAX_FRAME_LEN 100
 
 #ifdef __cplusplus
 }
