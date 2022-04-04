@@ -32,9 +32,9 @@ extern "C" {
  * NOTE: This function and the corresponding notation is primarily based on Section 4.7.1
  *       in the DW1000 User Manual.
  * 
- * @return (double) FPP.
+ * @return (float) FPP.
  */
-double retrieveFPP(void);
+float retrieveFPP(void);
 
 
 #ifdef __cplusplus

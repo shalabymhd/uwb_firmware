@@ -36,10 +36,10 @@ void uwbFrameHandler(void);
 void uwbReceiveInterruptInit(void);
 int twrInitiateInstance(uint8_t, bool, uint8_t);
 int twrReceiveCallback(void);
-int txTimestampsSS(uint64_t, uint64_t, bool);
-int txTimestampsDS(uint64_t, uint64_t, uint64_t, bool);
-int rxTimestampsSS(uint64_t, uint8_t, bool);
-int rxTimestampsDS(uint64_t, uint64_t, uint8_t, bool);
+int txTimestampsSS(uint64_t, uint64_t, float*, bool);
+int txTimestampsDS(uint64_t, uint64_t, uint64_t, float*, bool);
+int rxTimestampsSS(uint64_t, uint8_t, float*, bool);
+int rxTimestampsDS(uint64_t, uint64_t, uint8_t, float*, bool);
 
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: passivelyListen()

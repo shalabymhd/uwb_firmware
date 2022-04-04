@@ -17,7 +17,7 @@
 
 /* MAIN BIAS FUNCTIONS ---------------------------------------- */ 
 
-double retrieveFPP(void){
+float retrieveFPP(void){
     uint8_t F_reg_data[RX_FQUAL_LEN] = {0};
     uint16_t F1, F2, F3;
 
