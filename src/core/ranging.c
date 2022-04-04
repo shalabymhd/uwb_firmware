@@ -322,7 +322,7 @@ int twrReceiveCallback(void){
             dwt_writetxfctrl(sizeof(tx_resp_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
             ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
 
-            /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. See NOTE 11 below. */
+            /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one.*/
             if (ret == DWT_ERROR)
             {
                 dwt_setrxtimeout(0);
@@ -346,21 +346,21 @@ int twrReceiveCallback(void){
             /* Transmit the delayed signal with the time-stamps */
             ret = txTimestampsDS(rx1_ts, tx2_ts, 0, 0);
 
-            /* Compute received signal power */
-            double Pr = retrieveFPP();
-            char power[10] = {0};
-            convert_float_to_string(power,Pr);
-            usb_print(strcat(power,"\r\n"));
+            // /* Compute received signal power */
+            // double Pr = retrieveFPP();
+            // char power[10] = {0};
+            // convert_float_to_string(power,Pr);
+            // usb_print(strcat(power,"\r\n"));
         }
         else{
             /* Transmit the delayed signal with the time-stamps */
             ret = txTimestampsSS(rx1_ts, 0, 0);
 
-            /* Compute received signal power */
-            double Pr = retrieveFPP();
-            char power[10] = {0};
-            convert_float_to_string(power,Pr);
-            usb_print(strcat(power,"\r\n"));
+            // /* Compute received signal power */
+            // double Pr = retrieveFPP();
+            // char power[10] = {0};
+            // convert_float_to_string(power,Pr);
+            // usb_print(strcat(power,"\r\n"));
         }
 
         if (ret){
@@ -402,7 +402,7 @@ int txTimestampsSS(uint64 ts1, uint64 ts2, bool is_immediate){
     uint8_t tx_type;
 
     if (is_immediate){
-         /* Write all timestamps in the final message. See NOTE 11 below. */
+         /* Write all timestamps in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL1_TS_IDX], ts1); // tx1
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL2_TS_IDX], ts2); // rx2
         
@@ -412,7 +412,7 @@ int txTimestampsSS(uint64 ts1, uint64 ts2, bool is_immediate){
         uint32 final_tx_time;
         uint64 final_tx_ts;
 
-         /* Write all timestamps in the final message. See NOTE 11 below. */
+         /* Write all timestamps in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL1_TS_IDX], ts1); // rx1
 
         /* Compute final message transmission time. See NOTE 10 below. */
@@ -423,7 +423,7 @@ int txTimestampsSS(uint64 ts1, uint64 ts2, bool is_immediate){
         /* Final TX timestamp is the transmission time we programmed plus the TX antenna delay. */
         final_tx_ts = (((uint64)(final_tx_time & 0xFFFFFFFEUL)) << 8) + TX_ANT_DLY;
 
-        /* Write timestamp in the final message. See NOTE 11 below. */
+        /* Write timestamp in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL2_TS_IDX], final_tx_ts);
 
         tx_type = DWT_START_TX_DELAYED;
@@ -456,7 +456,7 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3, bool is_immediate){
     uint8_t tx_type;
 
     if (is_immediate){
-         /* Write all timestamps in the final message. See NOTE 11 below. */
+         /* Write all timestamps in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL1_TS_IDX], ts1); // tx1 
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL2_TS_IDX], ts2); // rx2 
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL3_TS_IDX], ts3); // rx3
@@ -467,7 +467,7 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3, bool is_immediate){
         uint32 final_tx_time;
         uint64 final_tx_ts;
 
-         /* Write all timestamps in the final message. See NOTE 11 below. */
+         /* Write all timestamps in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL1_TS_IDX], ts1); // rx1
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL2_TS_IDX], ts2); // tx2
 
@@ -479,7 +479,7 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3, bool is_immediate){
         /* Final TX timestamp is the transmission time we programmed plus the TX antenna delay. */
         final_tx_ts = (((uint64)(final_tx_time & 0xFFFFFFFEUL)) << 8) + TX_ANT_DLY;
 
-        /* Write timestamp in the final message. See NOTE 11 below. */
+        /* Write timestamp in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL3_TS_IDX], final_tx_ts);
 
         tx_type = DWT_START_TX_DELAYED;
@@ -513,6 +513,14 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, bool is_initiator){
     uint32 rx1_ts, tx2_ts;
     uint32 tx1_ts, rx2_ts;
     int64 tof_dtu;
+    char power[10] = {0};
+    double Pr;
+
+    // if not the initiator, read the received power before the last signal is received.
+    if (!is_initiator){
+        /* Compute received signal power */
+        Pr = retrieveFPP();
+    }
 
     dwt_setrxtimeout(0);
     // dwt_setpreambledetecttimeout(0);
@@ -570,21 +578,32 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, bool is_initiator){
             tof = tof_dtu * DWT_TIME_UNITS;
             distance = tof * SPEED_OF_LIGHT;
 
-            /* Compute received signal power */
-            double Pr = retrieveFPP();
-            char power[10] = {0};
+            // if initiator, read the received power of last signal received.
+            if (is_initiator){
+                /* Compute received signal power */
+                Pr = retrieveFPP();
+            }
             convert_float_to_string(power,Pr);
-            usb_print(strcat(power,"\r\n"));
 
             /* Display computed distance. */
             char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
             char response[100];
             
-            sprintf(response, "R05|%d|%s|%lu|%lu|%lu|%lu\r\n",
+            char* prefix[4];
+            if (is_initiator){
+                *prefix = "R05";
+            }
+            else{
+                *prefix = "S05";
+            }
+
+            sprintf(response, "%s|%d|%s|%lu|%lu|%lu|%lu|0|0|%s\r\n",
+                    *prefix,
                     neighbour_id, dist_str,
                     tx1_ts, rx1_ts,
-                    tx2_ts, rx2_ts);
+                    tx2_ts, rx2_ts,
+                    power);
             usb_print(response); // TODO: will this response ever be sent without a USB command?
             
             dwt_setrxtimeout(0);
@@ -611,14 +630,11 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, bool is_initiat
     uint32 rx1_ts, tx2_ts, tx3_ts;
     uint32 tx1_ts, rx2_ts, rx3_ts;
     int64 tof_dtu;
+    char power[10] = {0};
 
-    if (is_initiator){
-        /* Compute received signal power */
-        double Pr = retrieveFPP();
-        char power[10] = {0};
-        convert_float_to_string(power,Pr);
-        usb_print(strcat(power,"\r\n"));
-    }
+    /* Compute received signal power */
+    double Pr = retrieveFPP();
+    convert_float_to_string(power,Pr);
 
     // dwt_setrxtimeout(0);
     // dwt_setpreambledetecttimeout(0);
@@ -693,11 +709,22 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, bool is_initiat
             char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
             char response[100];
-            sprintf(response, "R05|%d|%s|%lu|%lu|%lu|%lu|%lu|%lu\r\n",
+
+            char* prefix[4];
+            if (is_initiator){
+                *prefix = "R05";
+            }
+            else{
+                *prefix = "S05";
+            }
+
+            sprintf(response, "%s|%d|%s|%lu|%lu|%lu|%lu|%lu|%lu|%s\r\n",
+                    *prefix,
                     neighbour_id, dist_str,
                     tx1_ts, rx1_ts,
                     tx2_ts, rx2_ts,
-                    tx3_ts, rx3_ts);
+                    tx3_ts, rx3_ts,
+                    power);
             usb_print(response); // TODO: will this response ever be sent without a USB command?
             
             dwt_setrxtimeout(0);
