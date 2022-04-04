@@ -105,10 +105,10 @@ void uwbFrameHandler(void){
             twrReceiveCallback();
         }
         case 0xB:{
-            usb_print("WARNING 1: TWR message is firing an interrupt when it shouldnt be.");
+            usb_print("WARNING 0xB: TWR message is firing an interrupt when it shouldnt be.\r\n");
         }
         case 0xC:{
-            usb_print("WARNING 2: TWR message is firing an interrupt when it shouldnt be.");
+            usb_print("WARNING 0xC: TWR message is firing an interrupt when it shouldnt be.\r\n");
         }
         case 0xD:{
             dataReceiveCallback(rx_buffer);
@@ -191,7 +191,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
                 /* Retrieve the reception timestamp */
                 rx2_ts = get_rx_timestamp_u64();
 
-                ret = rxTimestampsDS(tx1_ts,rx2_ts,target_id,1); // TODO: NOTE THAT WE DO NOT SEND THE RECEPTION TIME OF THIS IN THE FOURTH SIGNAL, MUST ADD
+                ret = rxTimestampsDS(tx1_ts,rx2_ts,target_id,1);
 
                 /* Retrieve the reception timestamp */
                 rx3_ts = get_rx_timestamp_u64();
@@ -298,6 +298,12 @@ int twrReceiveCallback(void){
             
             ret = passivelyListen(rx1_ts, target_meas_bool);
 
+            /* Compute received signal power */
+            double Pr = retrieveFPP();
+            char power[10] = {0};
+            convert_float_to_string(power,Pr);
+            usb_print(strcat(power,"\r\n"));
+
             // Infinite timeout for interrupt receiver running in the background 
             dwt_setrxtimeout(0);
             dwt_setpreambledetecttimeout(0);
@@ -339,10 +345,22 @@ int twrReceiveCallback(void){
 
             /* Transmit the delayed signal with the time-stamps */
             ret = txTimestampsDS(rx1_ts, tx2_ts, 0, 0);
+
+            /* Compute received signal power */
+            double Pr = retrieveFPP();
+            char power[10] = {0};
+            convert_float_to_string(power,Pr);
+            usb_print(strcat(power,"\r\n"));
         }
         else{
             /* Transmit the delayed signal with the time-stamps */
             ret = txTimestampsSS(rx1_ts, 0, 0);
+
+            /* Compute received signal power */
+            double Pr = retrieveFPP();
+            char power[10] = {0};
+            convert_float_to_string(power,Pr);
+            usb_print(strcat(power,"\r\n"));
         }
 
         if (ret){
@@ -554,7 +572,7 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, bool is_initiator){
 
             /* Compute received signal power */
             double Pr = retrieveFPP();
-            char power[10];
+            char power[10] = {0};
             convert_float_to_string(power,Pr);
             usb_print(strcat(power,"\r\n"));
 
@@ -593,6 +611,14 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, bool is_initiat
     uint32 rx1_ts, tx2_ts, tx3_ts;
     uint32 tx1_ts, rx2_ts, rx3_ts;
     int64 tof_dtu;
+
+    if (is_initiator){
+        /* Compute received signal power */
+        double Pr = retrieveFPP();
+        char power[10] = {0};
+        convert_float_to_string(power,Pr);
+        usb_print(strcat(power,"\r\n"));
+    }
 
     // dwt_setrxtimeout(0);
     // dwt_setpreambledetecttimeout(0);
