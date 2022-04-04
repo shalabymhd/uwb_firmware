@@ -18,21 +18,21 @@
 /* MAIN BIAS FUNCTIONS ---------------------------------------- */ 
 
 double retrieveFPP(void){
-    uint8_t F_reg_data[RX_FQUAL_LEN];
+    uint8_t F_reg_data[RX_FQUAL_LEN] = {0};
     uint16_t F1, F2, F3;
 
     /* Get the first path amplitudes */
     F1 = dwt_read16bitoffsetreg(RX_TIME_ID, RX_TIME_FP_AMPL1_OFFSET); // Point 1
     dwt_readfromdevice(RX_FQUAL_ID, RX_FQUAL_OFFSET, RX_FQUAL_LEN, F_reg_data); // Read the entire register
-    F2 = (*F_reg_data & FP_AMPL2_MASK) >> FP_AMPL2_SHIFT; // retrieve the subregister for Point 2
-    F3 = (*F_reg_data & FP_AMPL3_MASK) >> FP_AMPL3_SHIFT; // retrieve the subregister for Point 3
+    F2 = (*(uint64_t*)F_reg_data & FP_AMPL2_MASK) >> FP_AMPL2_SHIFT; // retrieve the subregister for Point 2
+    F3 = (*(uint64_t*)F_reg_data & FP_AMPL3_MASK) >> FP_AMPL3_SHIFT; // retrieve the subregister for Point 3
 
     /* Get the Preamble Accumulation Count */
     uint8_t N_reg_data[RX_FINFO_LEN];
     uint16_t N;
 
     dwt_readfromdevice(RX_FINFO_ID, RX_FINFO_OFFSET, RX_FINFO_LEN, N_reg_data); // Read the entire register
-    N = (*N_reg_data & RX_FINFO_RXPACC_MASK) >> RX_FINFO_RXPACC_SHIFT; // Retrieve the subregister for N
+    N = (*(uint32_t*)N_reg_data & RX_FINFO_RXPACC_MASK) >> RX_FINFO_RXPACC_SHIFT; // Retrieve the subregister for N
     N = N + N_ADJUSTMENT; // This is the adjustment for the SFD accumulation as per the manual.
                           // TODO: compare to RXPACC_NOSAT before implementing?
 
