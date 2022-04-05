@@ -124,7 +124,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
     decaIrqStatus_t stat;
     uint64 tx1_ts;
     uint64 rx2_ts, rx3_ts;
-    float* Pr2 = 0; // Received signal power of Signal 1 and Signal 2
+    float Pr2 = 0; // Received signal power of Signal 1 and Signal 2
 
     stat = decamutexon();
     dwt_forcetrxoff();
@@ -193,7 +193,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
                 /* Retrieve the reception timestamp */
                 rx2_ts = get_rx_timestamp_u64();
 
-                ret = rxTimestampsDS(tx1_ts, rx2_ts, target_id, Pr2, 1);
+                ret = rxTimestampsDS(tx1_ts, rx2_ts, target_id, &Pr2, 1);
 
                 /* Retrieve the reception timestamp */
                 rx3_ts = get_rx_timestamp_u64();
@@ -215,7 +215,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
     }
     else{
         /* Await the return signal and compute the range measurement */
-        ret = rxTimestampsSS(0, target_id, Pr2, 1);
+        ret = rxTimestampsSS(0, target_id, &Pr2, 1);
 
         /* Retrieve the transmission timestamp */
         tx1_ts = get_tx_timestamp_u64();
@@ -229,10 +229,10 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
         if (target_meas_bool){ 
             // send the additional signal
             if (mult_twr){
-                ret = txTimestampsDS(tx1_ts, rx2_ts, rx3_ts, Pr2, 1);
+                ret = txTimestampsDS(tx1_ts, rx2_ts, rx3_ts, &Pr2, 1);
             }
             else{
-                ret = txTimestampsSS(tx1_ts, rx2_ts, Pr2, 1);
+                ret = txTimestampsSS(tx1_ts, rx2_ts, &Pr2, 1);
             }
 
             if (ret){ // TODO: allow additional signal with alternative double-sided TWR
@@ -262,7 +262,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
 int twrReceiveCallback(void){
     uint64 tx2_ts;
     uint64 rx1_ts;
-    float* Pr1 = 0;
+    float Pr1 = 0;
 
     /* Set preamble timeout for expected frames. See NOTE 6 below. */
     dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
@@ -347,11 +347,11 @@ int twrReceiveCallback(void){
             frame_seq_nb++;
 
             /* Transmit the delayed signal with the time-stamps */
-            ret = txTimestampsDS(rx1_ts, tx2_ts, 0, Pr1, 0);
+            ret = txTimestampsDS(rx1_ts, tx2_ts, 0, &Pr1, 0);
         }
         else{
             /* Transmit the delayed signal with the time-stamps */
-            ret = txTimestampsSS(rx1_ts, 0, Pr1, 0);
+            ret = txTimestampsSS(rx1_ts, 0, &Pr1, 0);
         }
 
         if (ret){
@@ -363,10 +363,10 @@ int twrReceiveCallback(void){
 
                 /* Receive the additional signal and calculate the range measurement */
                 if (mult_twr){
-                    ret = rxTimestampsDS(rx1_ts, tx2_ts, initiator_id, Pr1, 0);
+                    ret = rxTimestampsDS(rx1_ts, tx2_ts, initiator_id, &Pr1, 0);
                 }
                 else{
-                    ret = rxTimestampsSS(rx1_ts, initiator_id, Pr1, 0);
+                    ret = rxTimestampsSS(rx1_ts, initiator_id, &Pr1, 0);
                 }
                 if (ret){ // TODO: allow 4th signal with double-sided TWR   
                     dwt_setpreambledetecttimeout(0);
@@ -396,7 +396,8 @@ int txTimestampsSS(uint64 ts1, uint64 ts2, float* Pr, bool is_immediate){
          /* Write all timestamps in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL1_TS_IDX], ts1); // tx1
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL2_TS_IDX], ts2); // rx2
-        final_msg_set_ts(&tx_final_msg[FINAL_POWER_IDX], *Pr); // Pr2
+        
+        memcpy(&tx_final_msg[FINAL_POWER_IDX], Pr, sizeof(float)); // Pr2
         
         tx_type = DWT_START_TX_IMMEDIATE;
     }
@@ -409,7 +410,8 @@ int txTimestampsSS(uint64 ts1, uint64 ts2, float* Pr, bool is_immediate){
 
          /* Write all timestamps in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL1_TS_IDX], ts1); // rx1
-        final_msg_set_ts(&tx_final_msg[FINAL_POWER_IDX], *Pr); // Pr1
+        
+        memcpy(&tx_final_msg[FINAL_POWER_IDX], Pr, sizeof(float)); // Pr1
 
         /* Compute final message transmission time. See NOTE 10 below. */
         final_tx_time = (ts1 + (500 * UUS_TO_DWT_TIME)) >> 8;
@@ -456,7 +458,8 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3, float* Pr, bool is_immedi
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL1_TS_IDX], ts1); // tx1 
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL2_TS_IDX], ts2); // rx2 
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL3_TS_IDX], ts3); // rx3
-        final_msg_set_ts(&tx_final_msg[FINAL_POWER_IDX], *Pr); // Pr2
+        
+        memcpy(&tx_final_msg[FINAL_POWER_IDX], Pr, sizeof(float)); // Pr2
         
         tx_type = DWT_START_TX_IMMEDIATE;
     }
@@ -470,7 +473,8 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3, float* Pr, bool is_immedi
          /* Write all timestamps in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL1_TS_IDX], ts1); // rx1
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL2_TS_IDX], ts2); // tx2
-        final_msg_set_ts(&tx_final_msg[FINAL_POWER_IDX], *Pr); // Pr1
+
+        memcpy(&tx_final_msg[FINAL_POWER_IDX], Pr, sizeof(float)); // Pr1
 
         /* Compute final message transmission time. See NOTE 10 below. */
         final_tx_time = (ts1 + (1500 * UUS_TO_DWT_TIME)) >> 8;
@@ -552,7 +556,7 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* Pr, bool is_initiato
                 /* Get timestamps embedded in the final message. */
                 final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &rx1_ts);
                 final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &tx2_ts);
-                final_msg_get_ts(&rx_buffer[FINAL_POWER_IDX], &Pr1);
+                memcpy(&Pr1, &rx_buffer[FINAL_POWER_IDX], sizeof(float));
                 
                 tx1_ts = (uint32)get_tx_timestamp_u64();
                 rx2_ts = (uint32)get_rx_timestamp_u64();
@@ -564,7 +568,7 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* Pr, bool is_initiato
                 /* Get timestamps embedded in the final message. */
                 final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &tx1_ts);
                 final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &rx2_ts);
-                final_msg_get_ts(&rx_buffer[FINAL_POWER_IDX], &Pr2);
+                memcpy(&Pr2, &rx_buffer[FINAL_POWER_IDX], sizeof(float));
             
                 rx1_ts = (uint32)ts1;
                 tx2_ts = (uint32)get_tx_timestamp_u64();  
@@ -672,7 +676,7 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, float* Pr, bool
                 /* Get the transmission time-stamp of the final signal from the neighbour */
                 final_msg_get_ts(&rx_buffer[FINAL_SIGNAL3_TS_IDX], &tx3_ts);
 
-                final_msg_get_ts(&rx_buffer[FINAL_POWER_IDX], &Pr1);
+                memcpy(&Pr1, &rx_buffer[FINAL_POWER_IDX], sizeof(float));
                 Pr2 = *Pr;
 
                 tx1_ts = (uint32)ts1;
@@ -689,7 +693,7 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, float* Pr, bool
                 /* Get the transmission time-stamp of the final signal from the neighbour */
                 final_msg_get_ts(&rx_buffer[FINAL_SIGNAL3_TS_IDX], &rx3_ts);
 
-                final_msg_get_ts(&rx_buffer[FINAL_POWER_IDX], &Pr2);
+                memcpy(&Pr2, &rx_buffer[FINAL_POWER_IDX], sizeof(float));
                 Pr1 = *Pr;
 
                 rx1_ts = (uint32)ts1;

@@ -4,8 +4,8 @@ from pyuwb import UwbModule
 This script publishes a message to the USB port continuously until terminated.
 """
 
-uwb1 = UwbModule("/dev/ttyACM2", log=False, verbose=False)
-uwb2 = UwbModule("/dev/ttyACM1", log=False, verbose=True)
+uwb1 = UwbModule("/dev/ttyACM1", log=False, verbose=False)
+uwb2 = UwbModule("/dev/ttyACM2", log=False, verbose=False)
 
 id = uwb1.get_id()
 uwb1.output(id)
@@ -37,11 +37,15 @@ def cb_target(neighbour_id,meas,tx1,rx1,tx2,rx2,tx3,rx3,Pr1,Pr2):
 uwb2.register_callback("S01",cb_passive)
 uwb2.register_callback("S05",cb_target)
 
+counter = 0
 while True:
-    data1 = uwb1.do_twr(1,mult_twr=1,meas_at_target=True)
+    data1 = uwb1.do_twr(2,mult_twr=1,meas_at_target=False)
     uwb1.output(data1)
-    time.sleep(0.01)
+    # time.sleep(0.001)
 
     # data2 = uwb2.do_twr(1,mult_twr=2,meas_at_target=False)
     # uwb2.output(data2) 
     # time.sleep(0.01)
+
+    counter += 1
+    print(counter)
