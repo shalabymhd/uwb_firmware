@@ -42,36 +42,43 @@ int rxTimestampsSS(uint64_t, uint8_t, float*, bool);
 int rxTimestampsDS(uint64_t, uint64_t, uint8_t, float*, bool);
 
 /*! ------------------------------------------------------------------------------------------------------------------
- * Function: passivelyListen()
+ * Function: passivelyListenSS()
  *
- * @brief Listen passively to other TWR tags and record all timestamps.
+ * @brief Listen passively to other TWR tags and record all timestamps. Single-sided version.
  * 
  * @param rx_ts1 (uint32_t) The time of reception of the already detected signal through interrupt.
- * @param four_signals (bool) Whether or not a fourth signal is expected.
+ * @param target_meas_bool (bool) Whether or not a third signal is expected.
  * 
  * @return (bool) Success boolean.
  */
-int passivelyListen(uint32_t, bool);
-
+int passivelyListenSS(uint32_t, bool);
 
 /*! ------------------------------------------------------------------------------------------------------------------
- * Function: timestampReceivedFrame()
+ * Function: passivelyListenDS()
  *
- * @brief This function retrieves the reception time-stamp of a signal. 
- *
- * NOTE: This function can be called to retrieve the reception time-stamp from the registers or from the embedded
- *       message in a final signal.
+ * @brief Listen passively to other TWR tags and record all timestamps. Double-sided version.
  * 
- * @param ts (uint32_t*) Pointer to where to store the time-stamp.
- * @param master_idx (uint8_t) The index of the master ID in the received message.
- * @param master_id (uint8_t) The ID of the master board in this TWR transaction. 
- * @param slave_idx (uint8_t) The index of the slave ID in the received message.
- * @param slave_id (uint8_t) The ID of the slave board in this TWR transaction.
- * @param final_signal (bool) Toggle between reading reception time-stamp from the register (0) vs. the embedded message (1).
+ * @param rx_ts1 (uint32_t) The time of reception of the already detected signal through interrupt.
+ * @param target_meas_bool (bool) Whether or not a fourth signal is expected.
  * 
  * @return (bool) Success boolean.
  */
-bool timestampReceivedFrame(uint32_t*, uint8_t, uint8_t, uint8_t, uint8_t, bool);
+int passivelyListenDS(uint32_t, bool);
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * Function: checkReceivedFrame()
+ *
+ * @brief This function checks if the received frame is the expected one. 
+ * 
+ * @param initator_idx (uint8_t) The index of the initator ID in the received message.
+ * @param initator_id (uint8_t) The ID of the initator board in this TWR transaction. 
+ * @param target_idx (uint8_t) The index of the target ID in the received message.
+ * @param target_id (uint8_t) The ID of the target board in this TWR transaction.
+ * @param msg_type (uint8_t) The type of message expected.
+ * 
+ * @return (bool) Success boolean.
+ */
+bool checkReceivedFrame(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
 
 
 /*! ------------------------------------------------------------------------------------------------------------------

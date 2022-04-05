@@ -104,15 +104,19 @@ void uwbFrameHandler(void){
     {
         case 0xA:{
             twrReceiveCallback();
+            break;
         }
         case 0xB:{
             usb_print("WARNING 0xB: TWR message is firing an interrupt when it shouldnt be.\r\n");
+            break;
         }
         case 0xC:{
             usb_print("WARNING 0xC: TWR message is firing an interrupt when it shouldnt be.\r\n");
+            break;
         }
         case 0xD:{
             dataReceiveCallback(rx_buffer);
+            break;
         }
     }
 }
@@ -294,18 +298,17 @@ int twrReceiveCallback(void){
         /* Retrieve the reception timestamp */
         rx1_ts = get_rx_timestamp_u64();
 
-        // If the intended target does not match the ID, passively listen on all signals and output the timestamps.
+        // If the intended target does not match the ID, passively listen on all signals.
         bool bool_target = (rx_buffer[ALL_RX_BOARD_IDX] != rx_poll_msg[ALL_RX_BOARD_IDX]);
         bool bool_msg_type = (rx_buffer[ALL_MSG_TYPE_IDX] == rx_poll_msg[ALL_MSG_TYPE_IDX]);
         if (bool_target && bool_msg_type && passive_listening){
             
-            ret = passivelyListen(rx1_ts, target_meas_bool);
-
-            /* Compute received signal power */
-            float Pr = retrieveFPP();
-            char power[10] = {0};
-            convert_float_to_string(power,Pr);
-            usb_print(strcat(power,"\r\n"));
+            if (mult_twr){
+                ret = passivelyListenDS(rx1_ts, target_meas_bool);
+            }
+            else{
+                ret = passivelyListenSS(rx1_ts, target_meas_bool);
+            }
 
             // Infinite timeout for interrupt receiver running in the background 
             dwt_setrxtimeout(0);
@@ -414,7 +417,7 @@ int txTimestampsSS(uint64 ts1, uint64 ts2, float* Pr, bool is_immediate){
         memcpy(&tx_final_msg[FINAL_POWER_IDX], Pr, sizeof(float)); // Pr1
 
         /* Compute final message transmission time. See NOTE 10 below. */
-        final_tx_time = (ts1 + (500 * UUS_TO_DWT_TIME)) >> 8;
+        final_tx_time = (ts1 + (1500 * UUS_TO_DWT_TIME)) >> 8;
 
         dwt_setdelayedtrxtime(final_tx_time);
 
@@ -756,53 +759,176 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, float* Pr, bool
     return 0;
 }
 
-int passivelyListen(uint32_t rx_ts1, bool four_signals){
-    /* Have received first signal in a TWR transaction. 2 or 3 more signals expected. */
+int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
+    /* Have received first signal in a TWR transaction. 1 or 2 more signals expected. */
     bool success;
-    uint8_t master_id, slave_id;
-    uint32_t rx_ts2, tx_ts1, tx_ts2;
+    uint8_t initiator_id, target_id;
+    uint32_t rx_ts2 = 0; // reception timestamps at current tag
+    uint32_t tx_ts1_n = 0, tx_ts2_n = 0; // transmission timestamps at neighbouring tags
+    uint32_t rx_ts1_n = 0, rx_ts2_n = 0; // reception timestamps at neighbouring tags
+    float Pr1 = 0, Pr2 = 0; // received signal power at current tag 
+    float Pr1_n = 0, Pr2_n = 0; // received signal power at neighbouring tags 
+    char power1[10] = {0};
+    char power2[10] = {0};
+    char power1_n[10] = {0};
+    char power2_n[10] = {0};
 
     // Retrieve IDs of tags involved in the TWR transaction
-    master_id = rx_buffer[ALL_TX_BOARD_IDX];
-    slave_id = rx_buffer[ALL_RX_BOARD_IDX];
+    initiator_id = rx_buffer[ALL_TX_BOARD_IDX];
+    target_id = rx_buffer[ALL_RX_BOARD_IDX];
 
-    /* --------------------- SIGNAL 2: Slave to Master --------------------- */
-    success = timestampReceivedFrame(&rx_ts2, ALL_RX_BOARD_IDX, master_id,
-                                     ALL_TX_BOARD_IDX, slave_id, 0);
-    if (success == 0){
+    /* Retrieve received signal power */
+    Pr1 = retrieveFPP();
+
+    /* --------------------- SIGNAL 2: Target to Initiator --------------------- */
+    success = checkReceivedFrame(ALL_RX_BOARD_IDX, initiator_id, ALL_TX_BOARD_IDX, target_id, 0xC);
+    if (success){
+        /* Extract all the embedded information in the received signal */
+        final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &rx_ts1_n);
+        final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &tx_ts2_n);
+        memcpy(&Pr1_n, &rx_buffer[FINAL_POWER_IDX], sizeof(float)); 
+
+        /* Retrieve reception timestamp */
+        rx_ts2 = get_rx_timestamp_u64();
+
+        /* Retrieve received signal power */
+        Pr2 = retrieveFPP();
+    }
+    else{
         return 0;
     }
-    
-    /* --------------------- SIGNAL 3: Slave to Master --------------------- 
-    The transmission time-stamp of Signal 2 is embedded in the received frame */
-    success = timestampReceivedFrame(&tx_ts2, ALL_RX_BOARD_IDX, master_id,
-                                     ALL_TX_BOARD_IDX, slave_id, 1);
-    if (success == 0){
-        return 0;
-    }
 
-    /* --------------------- SIGNAL 4: Master to Slave --------------------- 
+    /* --------------------- SIGNAL 3: Initiator to Target --------------------- 
     The transmission time-stamp of Signal 1 is embedded in the received frame */
     // Check if fourth signal is expected.
-    if (four_signals){
-        success = timestampReceivedFrame(&tx_ts1, ALL_TX_BOARD_IDX, master_id,
-                                         ALL_RX_BOARD_IDX, slave_id, 1);
-        if (success == 0){
+    if (target_meas_bool){
+        success = checkReceivedFrame(ALL_TX_BOARD_IDX, initiator_id, ALL_RX_BOARD_IDX, target_id, 0xC);
+        if (success){
+            /* Extract all the embedded information in the received signal */
+            final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &tx_ts1_n);
+            final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &rx_ts2_n);
+            memcpy(&Pr2_n, &rx_buffer[FINAL_POWER_IDX], sizeof(float)); 
+        }
+        else{
             return 0;
         }
     }
 
     /* --------------------- Output Time-stamps --------------------- */
-    char output[60];
-    sprintf(output,"R99|%lu|%lu|%lu|%lu\r\n",tx_ts1,rx_ts1,tx_ts2,rx_ts2);
+    convert_float_to_string(power1,Pr1);
+    convert_float_to_string(power2,Pr2);
+    convert_float_to_string(power1_n,Pr1_n);
+    convert_float_to_string(power2_n,Pr2_n);
+
+    char output[155];
+    sprintf(output,"S01|%d|%d|%lu|%lu|%d|%lu|%lu|%lu|%lu|%d|%d|%s|%s|%s|%s|%s\r\n",
+            initiator_id, target_id,
+            rx_ts1,rx_ts2,0,
+            tx_ts1_n,rx_ts1_n,
+            tx_ts2_n,rx_ts2_n,
+            0,0,
+            power1,power2,"0",
+            power1_n,power2_n);
     usb_print(output);
     return 1;
 }
 
-bool timestampReceivedFrame(uint32_t *ts, uint8_t master_idx, uint8_t master_id,
-                            uint8_t slave_idx, uint8_t slave_id, bool final_signal){
+int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
+    /* Have received first signal in a TWR transaction. 1 or 2 more signals expected. */
+    bool success;
+    uint8_t initiator_id, target_id;
+    uint32_t rx_ts2 = 0, rx_ts3 = 0; // reception timestamps at current tag
+    uint32_t tx_ts1_n = 0, tx_ts2_n = 0, tx_ts3_n = 0; // transmission timestamps at neighbouring tags
+    uint32_t rx_ts1_n = 0, rx_ts2_n = 0, rx_ts3_n = 0; // reception timestamps at neighbouring tags
+    float Pr1 = 0, Pr2 = 0, Pr3 = 0; // received signal power at current tag 
+    float Pr1_n = 0, Pr2_n = 0; // received signal power at neighbouring tags 
+    char power1[10] = {0};
+    char power2[10] = {0};
+    char power3[10] = {0};
+    char power1_n[10] = {0};
+    char power2_n[10] = {0};
+
+    // Retrieve IDs of tags involved in the TWR transaction
+    initiator_id = rx_buffer[ALL_TX_BOARD_IDX];
+    target_id = rx_buffer[ALL_RX_BOARD_IDX];
+
+    /* Retrieve received signal power */
+    Pr1 = retrieveFPP();
+
+    /* --------------------- SIGNAL 2: Target to Initiator --------------------- */
+    success = checkReceivedFrame(ALL_RX_BOARD_IDX, initiator_id, ALL_TX_BOARD_IDX, target_id, 0xB);
+    if (success){
+        /* Retrieve reception timestamp */
+        rx_ts2 = get_rx_timestamp_u64();
+
+        /* Retrieve received signal power */
+        Pr2 = retrieveFPP();
+    }
+    else{
+        return 0;
+    }
+
+    /* --------------------- SIGNAL 3: Target to Initiator --------------------- */
+    success = checkReceivedFrame(ALL_RX_BOARD_IDX, initiator_id, ALL_TX_BOARD_IDX, target_id, 0xC);
+    if (success){
+        /* Extract all the embedded information in the received signal */
+        final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &rx_ts1_n);
+        final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &tx_ts2_n);
+        final_msg_get_ts(&rx_buffer[FINAL_SIGNAL3_TS_IDX], &tx_ts3_n);
+        memcpy(&Pr1_n, &rx_buffer[FINAL_POWER_IDX], sizeof(float)); 
+
+        /* Retrieve reception timestamp */
+        rx_ts3 = get_rx_timestamp_u64();
+
+        /* Retrieve received signal power */
+        Pr3 = retrieveFPP();
+    }
+    else{
+        return 0;
+    }
+
+    /* --------------------- SIGNAL 4: Initiator to Target --------------------- 
+    The transmission time-stamp of Signal 1 is embedded in the received frame */
+    // Check if fourth signal is expected.
+    if (target_meas_bool){
+        success = checkReceivedFrame(ALL_TX_BOARD_IDX, initiator_id, ALL_RX_BOARD_IDX, target_id, 0xC);
+        if (success){
+            /* Extract all the embedded information in the received signal */
+            final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &tx_ts1_n);
+            final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &rx_ts2_n);
+            final_msg_get_ts(&rx_buffer[FINAL_SIGNAL3_TS_IDX], &rx_ts3_n);
+            memcpy(&Pr2_n, &rx_buffer[FINAL_POWER_IDX], sizeof(float)); 
+        }
+        else{
+            return 0;
+        }
+    }
+
+    /* --------------------- Output Time-stamps --------------------- */
+    convert_float_to_string(power1,Pr1);
+    convert_float_to_string(power2,Pr2);
+    convert_float_to_string(power3,Pr3);
+    convert_float_to_string(power1_n,Pr1_n);
+    convert_float_to_string(power2_n,Pr2_n);
+
+    char output[155];
+    sprintf(output,"S01|%d|%d|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%s|%s|%s|%s|%s\r\n",
+            initiator_id, target_id,
+            rx_ts1,rx_ts2,rx_ts3,
+            tx_ts1_n,rx_ts1_n,
+            tx_ts2_n,rx_ts2_n,
+            tx_ts3_n,rx_ts3_n,
+            power1,power2,power3,
+            power1_n,power2_n);
+    usb_print(output);
+    return 1;
+}
+
+bool checkReceivedFrame(uint8_t initiator_idx, uint8_t initiator_id,
+                        uint8_t target_idx, uint8_t target_id,
+                        uint8_t msg_type){
     uint32 frame_len;
-    bool bool_base, bool_master, bool_slave;
+    bool bool_type, bool_initiator, bool_target;
     
     // Re-enable RX
     dwt_rxenable(DWT_START_RX_IMMEDIATE);
@@ -823,20 +949,11 @@ bool timestampReceivedFrame(uint32_t *ts, uint8_t master_idx, uint8_t master_id,
             dwt_readrxdata(rx_buffer, frame_len, 0);
         }
     
-        /* Check that the frame is the expected response.
-            * As the sequence number field of the frame is not relevant, it is cleared to simplify the validation of the frame. */
-        rx_buffer[ALL_MSG_SEQ_IDX] = 0;
-        bool_base = (memcmp(rx_buffer, rx_resp_msg, ALL_MSG_COMMON_LEN-2) == 0);
-        bool_master = rx_buffer[master_idx] == master_id;
-        bool_slave = rx_buffer[slave_idx] == slave_id;
-        if (bool_base && bool_master && bool_slave){
-            /* Retrieve the reception timestamp */
-            if (final_signal){
-                final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], ts);
-            }
-            else{
-                *ts = get_rx_timestamp_u64();
-            }
+        /* Check that the frame is the expected response. */
+        bool_type = rx_buffer[ALL_MSG_TYPE_IDX] == msg_type;
+        bool_initiator = rx_buffer[initiator_idx] == initiator_id;
+        bool_target = rx_buffer[target_idx] == target_id;
+        if (bool_type && bool_initiator && bool_target){
             return 1;
         }
         else{
