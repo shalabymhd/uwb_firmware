@@ -23,7 +23,7 @@ extern "C" {
 // hash table implementation to store integer parameters
 typedef struct IntParams {
     char key[10];      /* field used as the key */
-    uint8_t value;     /* field used to store integers */
+    int value;     /* field used to store integers */
     UT_hash_handle hh; /* makes this structure hashable */
 } IntParams;
 

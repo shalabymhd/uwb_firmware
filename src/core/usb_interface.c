@@ -15,11 +15,14 @@
 #include <stdio.h>
 #include "commands.h"
 #include "dwt_iqr.h"
+#include "cmsis_os.h"
 /* Typedefs ------------------------------------------------------------------*/
 typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4, BYTES=5} FieldTypes;
 
 /* Variables -----------------------------------------------------------------*/
+// VARIABLE FIELD NAMES MUST BE LESS THAN 10 CHARACTERS
 static int command_number = -1;
+static uint8_t retry_count = 0;
 static char temp_receive_buffer[USB_BUFFER_SIZE];
 
 static const char *c00_fields[1];             // No fields. Empty array of size 1
@@ -34,20 +37,20 @@ static const char *c02_fields[1];             // No fields. Empty array of size 
 static const FieldTypes c02_types[1];         // No fields. Empty array of size 1
 static const int c02_num_fields = 0;
 
-static const char *c03_fields[1];             // No fields. Empty array of size 1
-static const FieldTypes c03_types[1];         // No fields. Empty array of size 1
-static const int c03_num_fields = 0;
+static const char *c03_fields[] = {"test_int", "test_str", "test_bool","test_flt", "test_byte"};          
+static const FieldTypes c03_types[] = {INT, STR, BOOL, FLOAT, BYTES};       
+static const int c03_num_fields = 5;
 
-static const char *c04_fields[] = {"toggle"}; // can't be more than 10 characters
+static const char *c04_fields[] = {"toggle"}; 
 static const FieldTypes c04_types[] = {BOOL};
 static const int c04_num_fields = 1;
 
-static const char *c05_fields[] = {"target", "targ_meas", "mult_twr"}; // can't be more than 10 characters
+static const char *c05_fields[] = {"target", "targ_meas", "mult_twr"}; 
 static const FieldTypes c05_types[] = {INT, BOOL, INT};
 static const int c05_num_fields = 3;
 
-static const char *c06_fields[] = {"data"}; // can't be more than 10 characters
-static const FieldTypes c06_types[] = {BYTES};
+static const char *c06_fields[] = {"data"}; 
+static const FieldTypes c06_types[] = {STR};
 static const int c06_num_fields = 1;
 
 static const char *c07_fields[1];     // No fields. Empty array of size 1
@@ -136,12 +139,13 @@ void readUsb(){
         /* ----------------------- PROCESS COMMUNICATED INFORMATION ----------------------- */
         memset(temp_receive_buffer, '\0', USB_BUFFER_SIZE); // clear temp buffer
 
-        // Copy into receive buffer into temp buffer.
+        // Copy receive buffer into temp buffer.
         memcpy(temp_receive_buffer, CdcReceiveBuffer + 1, USB_BUFFER_SIZE - 1);
 
         idx_end = parseMessageIntoHashTables(temp_receive_buffer);   
         if (*idx_end != '\r'){
             usb_print("ERROR parsing message from USB.");
+            osDelay(1);
         }
         idx_start = strstr(temp_receive_buffer, "C"); // address where to stop reading the message
         uint16_t len = idx_end - idx_start; // Removing the first entry 
@@ -170,18 +174,25 @@ void readUsb(){
 
     // Call if a valid command number was detected
     int num_commands = sizeof(all_command_funcs) / sizeof(all_command_funcs[0]);
-    if (command_number >= 0 && command_number <= num_commands){
-      bool success;
-      success = (*all_command_funcs[command_number])(
-        msg_ints,
-        msg_floats,
-        msg_bools,
-        msg_strs,
-        msg_bytes);
+    if (retry_count > 10){
+        command_number = -1;
+        retry_count = 0;
+    }
+    else if (command_number >= 0 && command_number <= num_commands){
+        bool success;
+        success = (*all_command_funcs[command_number])(
+            msg_ints,
+            msg_floats,
+            msg_bools,
+            msg_strs,
+            msg_bytes);
 
-      if (success){
-        command_number = -1; // stops entering the above if statement
-      }
+        if (success){
+            command_number = -1; // stops entering the above if statement
+        }
+        else{
+            retry_count += 1; 
+        }
     }
 } // end readUsb()
 
@@ -209,7 +220,7 @@ char * parseMessageIntoHashTables(char *msg)
     Warning: following line
     if the USB buffer is full, there might not be a NULL terminator.
     */ 
-    char *next_delim_pt = strchr(current_pt, '|'); // 
+    char *next_sep_pt = strchr(current_pt, '|'); // 
 
     /* Find the next '\r' message terminator. Again, these could randomly appear
     in float or byte fields, but for those we know the length of these fields
@@ -222,17 +233,20 @@ char * parseMessageIntoHashTables(char *msg)
    
     // Find which of '|' or '\r' occurs first.
     char *next_pt;
-    if (next_delim_pt == NULL && next_end_pt == NULL){
+    if (next_sep_pt == NULL && next_end_pt == NULL){
         usb_print("Did you just send a USB message without any | or \\r?");
         return NULL;
     }
-    else if (next_delim_pt == NULL){
+    else if (next_sep_pt == NULL){
         next_pt = next_end_pt;
     }
-    else if (next_delim_pt < next_end_pt){
-        next_pt = next_delim_pt;
+    else if (next_end_pt == NULL){
+        next_pt = next_sep_pt;
     }
-    else if (next_end_pt < next_delim_pt)
+    else if (next_sep_pt < next_end_pt){
+        next_pt = next_sep_pt;
+    }
+    else if (next_end_pt < next_sep_pt)
     {
         next_pt = next_end_pt;
     }
@@ -257,32 +271,50 @@ char * parseMessageIntoHashTables(char *msg)
     msg_fields = all_command_fields[command_number];
     num_fields = all_command_num_fields[command_number];
     current_pt = next_pt + 1;
-    //free(command_number_str);
-
-    
-   
 
     int i;
     FieldTypes type;
     for (i=0; i<num_fields; ++i)
-    {         
-        next_delim_pt = strchr(current_pt, '|'); 
-        next_end_pt = strchr(current_pt, '\r'); 
-        if (next_delim_pt == NULL && next_end_pt == NULL){
-            usb_print("Charles wrote some shitty code.");
-        }
-        else if (next_delim_pt == NULL){
-            next_pt = next_end_pt;
-        }
-        else if (next_delim_pt < next_end_pt){
-            next_pt = next_delim_pt;
-        }
-        else if (next_end_pt < next_delim_pt)
-        {
-            next_pt = next_end_pt;
-        }
+    {     
+        type = msg_types[i];    
+        if (type != FLOAT && type != BYTES){
+            // next_pt only required for for non-float/byte fields.
 
-        type = msg_types[i];
+            next_sep_pt = strchr(current_pt, '|'); 
+            next_end_pt = strchr(current_pt, '\r'); 
+            if (next_sep_pt == NULL && next_end_pt == NULL){
+                /* We sometimes enter this condition when the next field is
+                either a float or byte. Since those fields could contain the
+                string terminator '\0', then this will prematurely exit the 
+                strchr() functions.
+
+                But since i just wrapped this in another if statement, we 
+                should never actually enter this.
+                */
+                usb_print("No next key character found.");
+                osDelay(1);
+            }
+            else if (next_sep_pt == NULL){
+                next_pt = next_end_pt;
+            }
+            else if (next_end_pt == NULL){
+                next_pt = next_sep_pt;
+            }
+            else if (next_sep_pt < next_end_pt){
+                next_pt = next_sep_pt;
+            }
+            else if (next_end_pt < next_sep_pt)
+            {
+                next_pt = next_end_pt;
+            }
+            else
+            {
+                usb_print("Impossible situation with next_pt");
+                osDelay(1);
+                return NULL;
+            }
+        }
+        
         switch (type)
         {
         case INT:
@@ -311,8 +343,10 @@ char * parseMessageIntoHashTables(char *msg)
         }
         case STR:
         {
-            // TODO: strings cannot contain '|' or '\r'. This will crash the 
-            // board.
+            /* TODO: strings cannot contain '|' or '\r', and this will cause a
+            serious error. Is there a way to safeguard against this on the C
+            side? Probably not, as we wont know whether its actually the end
+            of the string. This can easily be done on the python side though. */
             StrParams *param_temp;
 
             param_temp = malloc(sizeof(StrParams));
@@ -323,6 +357,8 @@ char * parseMessageIntoHashTables(char *msg)
 
             strcpy(param_temp->key, msg_fields[i]);
 
+            /* Everything up to the next delimiter (located at next_pt), is
+            assumed to be part of the string. */
             uint16_t len = next_pt - current_pt;
             strncpy(param_temp->value, current_pt, len * sizeof(char));
 
@@ -344,7 +380,8 @@ char * parseMessageIntoHashTables(char *msg)
 
             uint8_t len = next_pt - current_pt;
             if (len != 1){
-                usb_print("Error in USB message parsing. Was a BOOL specified as 1 or 0?");
+                usb_print("Error in USB message parsing. Was a BOOL specified as '1' or '0'?");
+                osDelay(1);
             }
             char *bool_as_string = calloc(len + 1,  sizeof(char));
             memcpy(bool_as_string, current_pt, len * sizeof(char));
@@ -357,7 +394,7 @@ char * parseMessageIntoHashTables(char *msg)
         }
         case FLOAT:
         {   /* STM32 processors are all LITTLE-ENDIAN. This means, to pack a 
-            single-precision float variable into a compatible array of bytes, 
+            single-precision float variable into a compatible array of 4 bytes, 
             one must use the following on the python side:
 
              float_bytes = struct.pack("<f", x)
@@ -366,9 +403,10 @@ char * parseMessageIntoHashTables(char *msg)
 
             A single-precision float requires 4 bytes. Do not send doubles
             (8 bytes) or you will probably have a hard fault.
+
+            To send doubles, a dedicated data type is probably best.
             */
 
-            // TODO: safeguard against accidentally sending double
             FloatParams *param_temp;
             uint8_t len = 4;
 
@@ -382,7 +420,15 @@ char * parseMessageIntoHashTables(char *msg)
             memcpy(&(param_temp->value), current_pt, len);
 
             HASH_ADD_STR(msg_floats, key, param_temp);
-            current_pt += len + 1;
+
+            /* For the float and byte fields, the search for the seperator 
+            or terminator characters was possibly wrong as they could have 
+            been part of the field itself. Hence, now that we are through the
+            field, find the location of the next terminator just in case this
+            was the last field. */
+            current_pt += len;
+            next_end_pt = strchr(current_pt, '\r'); 
+            current_pt += 1;
 
             break;
         }
@@ -402,7 +448,8 @@ char * parseMessageIntoHashTables(char *msg)
             {
                 MemManage_Handler();
             } // if the memory has not been allocated, interrupt operations
-
+            strcpy(param_temp->key, msg_fields[i]);
+            
             // Extract the length of remaining data (in number of bytes) 
             // as the first two bytes.
             uint16_t len;
@@ -410,18 +457,31 @@ char * parseMessageIntoHashTables(char *msg)
             param_temp->len = len;
 
             current_pt = current_pt + 2;
-            memcpy(&(param_temp->value), current_pt, len * sizeof(uint8_t));
+            memset(&(param_temp->value[0]), 0, USB_BUFFER_SIZE);
+            memcpy(&(param_temp->value[0]), current_pt, len);
 
             HASH_ADD_STR(msg_bytes, key, param_temp);
-            current_pt += len + 1;
 
+            /* For the float and byte fields, the search for the seperator 
+            or terminator characters was possibly wrong as they could have 
+            been part of the field itself. Hence, now that we are through the
+            field, find the location of the next terminator just in case this
+            was the last field. */
+            current_pt += len;
+            next_end_pt = strchr(current_pt, '\r'); 
+            current_pt += 1;
+            break;
         }
         default:
             break;
         }
 
     }
-    // TODO: add checks on end of string.
+    if (next_end_pt == 0){
+        // Should never get here, but you never know.
+        usb_print("Failed to detect end of message. Trying my best.");
+        next_end_pt = current_pt;
+    }
     return next_end_pt;
 } // end parseMessageIntoHashTables()
 
@@ -429,39 +489,39 @@ char * parseMessageIntoHashTables(char *msg)
 
 void deleteOldParams() {
 
-  /* Delete int params */
-  IntParams *current_int, *tmp_int;
+    /* Delete int params */
+    IntParams *current_int, *tmp_int;
 
-  HASH_ITER(hh, msg_ints, current_int, tmp_int) {
-    HASH_DEL(msg_ints, current_int);  /* delete; advances to next param */
-    free(current_int);    
-  }
+    HASH_ITER(hh, msg_ints, current_int, tmp_int) {
+        HASH_DEL(msg_ints, current_int);  /* delete; advances to next param */
+        free(current_int);    
+    }
 
-  /* Delete str params */
-  StrParams *current_str, *tmp_str;
+    /* Delete str params */
+    StrParams *current_str, *tmp_str;
 
-  HASH_ITER(hh, msg_strs, current_str, tmp_str) {
-    HASH_DEL(msg_strs, current_str);  /* delete; advances to next param */
-    free(current_str);    
-  }
+    HASH_ITER(hh, msg_strs, current_str, tmp_str) {
+        HASH_DEL(msg_strs, current_str);  /* delete; advances to next param */
+        free(current_str);    
+    }
 
-  /* Delete bool params */
-  BoolParams *current_bool, *tmp_bool;
+    /* Delete bool params */
+    BoolParams *current_bool, *tmp_bool;
 
-  HASH_ITER(hh, msg_bools, current_bool, tmp_bool) {
-    HASH_DEL(msg_bools, current_bool);  /* delete; advances to next param */
-    free(current_bool);    
-  }
+    HASH_ITER(hh, msg_bools, current_bool, tmp_bool) {
+        HASH_DEL(msg_bools, current_bool);  /* delete; advances to next param */
+        free(current_bool);    
+    }
 
-  /* Delete float params */
-  FloatParams *current_float, *tmp_float;
+    /* Delete float params */
+    FloatParams *current_float, *tmp_float;
 
-  HASH_ITER(hh, msg_floats, current_float, tmp_float) {
-    HASH_DEL(msg_floats, current_float);  /* delete; advances to next param */
-    free(current_float);    
-  }
+    HASH_ITER(hh, msg_floats, current_float, tmp_float) {
+        HASH_DEL(msg_floats, current_float);  /* delete; advances to next param */
+        free(current_float);    
+    }
 
-   /* Delete byte params */
+    /* Delete byte params */
     ByteParams *current_bytes, *tmp_bytes;
 
     HASH_ITER(hh, msg_bytes, current_bytes, tmp_bytes)

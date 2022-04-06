@@ -24,6 +24,9 @@
 #include "main.h" 
 #include <stdbool.h>
 #include "messaging.h"
+#include "common.h"
+#include "usbd_cdc_if.h"
+#include <stdlib.h>
 
 int c00_set_idle(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     usb_print("R00\r\n");
@@ -58,15 +61,39 @@ int c03_do_tests(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_b
        errors an ID and just output the error ID.
 
     */
+    IntParams *i;
+    BoolParams *b; 
+    StrParams *s;
+    FloatParams *f;
+    ByteParams *y;
+    char float_as_string[10] = {0};
+    char response[300] = {0};
+
+    HASH_FIND_STR(msg_ints, "test_int", i);
+    HASH_FIND_STR(msg_strs, "test_str", s);
+    HASH_FIND_STR(msg_bools, "test_bool", b);
+    HASH_FIND_STR(msg_floats, "test_flt", f);
+    HASH_FIND_STR(msg_bytes, "test_byte", y);
+
     uint8_t my_id;
+    uint8_t error_id = 0;
     dwt_geteui(&my_id);
     if(my_id != BOARD_ID){
-        usb_print("R03|1\r\n"); // Error ID #1
-        return 1; // Do not need to redo this again.
+        error_id = 1;
     }
+    convert_float_to_string(float_as_string, f->value);
 
-    usb_print("R03|0\r\n"); // No errors detected
+    sprintf(response,"R03|%u|%d|%s|%d|%s|", error_id, i->value, s->value, b->value, float_as_string);
+    uint16_t len = strlen(response);
 
+    memcpy(&response[len], &(y->len), 2);
+    len += 2;
+    memcpy(&response[len], y->value, y->len);
+    len += y->len;
+    memcpy(&response[len],"\r\n", 2);
+    len += 2;
+    CDC_Transmit_FS((u_int8_t *) &response[0], len);
+   
     return 1;
 }
 
@@ -134,6 +161,7 @@ int c06_broadcast(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_
     // TODO: we need to standardize the response when success/fail.
     bool success;
     success = broadcast((uint8*) msg, len);
+    usb_print(msg);
     osDelay(1);
     if (success){
         usb_print("R06|\r\n");
