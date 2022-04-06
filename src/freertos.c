@@ -126,7 +126,7 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
   blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
-  osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 512);
+  osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 1024);
   usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
 
   osThreadDef(twrInterrupt, uwbInterruptTask, osPriorityRealtime, 0, 256);

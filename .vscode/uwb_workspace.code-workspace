@@ -31,7 +31,9 @@
 			"stm32f4xx_hal_conf.h": "c",
 			"commands.h": "c",
 			"stdlib.h": "c",
-			"messaging.h": "c"
+			"limits": "c",
+			"messaging.h": "c",
+			"bias.h": "c"
 		},
 		"cortex-debug.variableUseNaturalFormat": true
 	}
