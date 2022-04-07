@@ -37,7 +37,7 @@ char resp_suffix[] = "\r\n";
 
 int broadcast(uint8* msg, uint16_t msg_len){
 
-    if (msg_len > (MAX_MSG_LEN - PREFIX_LEN - SUFFIX_LEN - 2)){
+    if (msg_len > (MAX_FRAME_LEN - PREFIX_LEN - SUFFIX_LEN - 2)){
         usb_print("ERROR: Requested to send message over UWB that is too long.");
         return 0;
     }
