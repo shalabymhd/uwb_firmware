@@ -152,19 +152,17 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
 
 int c06_broadcast(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     
-    StrParams *s;
+    ByteParams *b;
     
-    HASH_FIND_STR(msg_strs, "data", s);
-    char* msg = s->value;
-    size_t len = strlen(msg);
+    HASH_FIND_STR(msg_bytes, "data", b);
+    uint8_t *msg = &(b->value[0]);
 
     // TODO: we need to standardize the response when success/fail.
     bool success;
-    success = broadcast((uint8*) msg, len);
-    usb_print(msg);
+    success = broadcast(msg, b->len);
     osDelay(1);
     if (success){
-        usb_print("R06|\r\n");
+        usb_print("R06\r\n");
         return 1;
     }
     else {
@@ -174,7 +172,7 @@ int c06_broadcast(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_
 }
 
 int c07_get_max_frame_len(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
-    char response[10];
+    char response[20];
     sprintf(response, "R07|%u\r\n", MAX_FRAME_LEN); 
     usb_print(response);
     return 1;

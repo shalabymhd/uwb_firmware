@@ -31,7 +31,7 @@ extern "C" {
 }
 #endif
 
-int broadcast(uint8*, size_t);
+int broadcast(uint8*, uint16_t);
 int dataReceiveCallback(uint8*);
 
 

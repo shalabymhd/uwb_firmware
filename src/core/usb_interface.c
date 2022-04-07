@@ -50,7 +50,7 @@ static const FieldTypes c05_types[] = {INT, BOOL, INT};
 static const int c05_num_fields = 3;
 
 static const char *c06_fields[] = {"data"}; 
-static const FieldTypes c06_types[] = {STR};
+static const FieldTypes c06_types[] = {BYTES};
 static const int c06_num_fields = 1;
 
 static const char *c07_fields[1];     // No fields. Empty array of size 1
