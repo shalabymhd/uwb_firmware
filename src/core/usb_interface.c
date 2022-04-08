@@ -116,7 +116,7 @@ static ByteParams *msg_bytes;
 /* Private Functions ----------------------------------------------------------*/
 static char* parseMessageIntoHashTables(char *msg);
 static void deleteOldParams();
-
+static char* getNextKeyChar(char*);
 /*! ----------------------------------------------------------------------------
  * Function: readUsb()
  *
@@ -133,10 +133,10 @@ void readUsb(){
     char *idx_start;
     char *idx_end;
     
-    idx_start = strstr(CdcReceiveBuffer, "C"); // address where to stop reading the message
-    if (idx_start > 0)
+    idx_start = strchr(CdcReceiveBuffer, 'C'); // address where to stop reading the message
+    if (idx_start != NULL)
     {
-        /* ----------------------- PROCESS COMMUNICATED INFORMATION ----------------------- */
+        /* -------------- PROCESS COMMUNICATED INFORMATION ------------------ */
         memset(temp_receive_buffer, '\0', USB_BUFFER_SIZE); // clear temp buffer
 
         // Copy receive buffer into temp buffer.
@@ -145,17 +145,23 @@ void readUsb(){
         idx_end = parseMessageIntoHashTables(temp_receive_buffer);   
         if (*idx_end != '\r'){
             usb_print("ERROR parsing message from USB.");
-            osDelay(1);
+            command_number = -1; // Dont attempt executing a command.
         }
-        idx_start = strstr(temp_receive_buffer, "C"); // address where to stop reading the message
+
+        idx_start = strchr(temp_receive_buffer, 'C'); // address where to stop reading the message
         uint16_t len = idx_end - idx_start; // Removing the first entry 
 
-        /* ------------------------------ UPDATE THE BUFFER ------------------------------ */
-        memset(temp_receive_buffer, '\0', USB_BUFFER_SIZE); // clear temp buffer
-        memcpy(temp_receive_buffer, CdcReceiveBuffer + len + 2, USB_BUFFER_SIZE - len - 2); // copy unread buffer into temp memory
-        memset(CdcReceiveBuffer + 1, '\0', USB_BUFFER_SIZE - 1); // clear the buffer
-        memcpy(CdcReceiveBuffer + 1, temp_receive_buffer, USB_BUFFER_SIZE - len - 1); // move data back to buffer
-        CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len - 1; // adjust where to continue writing
+        /* --------------------- UPDATE THE BUFFER -------------------------- */
+        // clear temp buffer
+        memset(temp_receive_buffer, '\0', USB_BUFFER_SIZE); 
+        // copy unread buffer into temp memory
+        memcpy(temp_receive_buffer, CdcReceiveBuffer + len + 2, USB_BUFFER_SIZE - len - 2); 
+        // clear the buffer
+        memset(CdcReceiveBuffer + 1, '\0', USB_BUFFER_SIZE - 1); 
+        // move data back to buffer
+        memcpy(CdcReceiveBuffer + 1, temp_receive_buffer, USB_BUFFER_SIZE - len - 1); 
+        // adjust where to continue writing
+        CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len - 1; 
     }
     
     decamutexoff(stat);
@@ -202,7 +208,10 @@ void readUsb(){
  *
  * This is the main message parsing function where the message is split into 
  * its corresponding datatypes.
- *
+ * 
+ * @param: msg 
+ *     a pointer to the very beginning of the message, so it should point to a 
+ *     'C' 
  */
 char * parseMessageIntoHashTables(char *msg)
 {
@@ -211,110 +220,36 @@ char * parseMessageIntoHashTables(char *msg)
     const char **msg_fields;     // Pointer to array of pointers
     int num_fields;
     
+    // Current pointer. will be used as working variable throughout parsing.
     char *current_pt = msg ;
-
-    /* Find the next '|' delimiter. Usually, this will denote where the next
-    field is, but will not be true in general when the field type is float 
-    or bytes. 
-    
-    Warning: following line
-    if the USB buffer is full, there might not be a NULL terminator.
-    */ 
-    char *next_sep_pt = strchr(current_pt, '|'); // 
-
-    /* Find the next '\r' message terminator. Again, these could randomly appear
-    in float or byte fields, but for those we know the length of these fields
-    and hence we know whether '\r' or '|' is actually significant or not. 
-    
-    Warning: following line
-    if the USB buffer is full, there might not be a NULL terminator.
-    */
-    char *next_end_pt = strchr(current_pt, '\r'); 
-   
-    // Find which of '|' or '\r' occurs first.
-    char *next_pt;
-    if (next_sep_pt == NULL && next_end_pt == NULL){
-        usb_print("Did you just send a USB message without any | or \\r?");
-        return NULL;
-    }
-    else if (next_sep_pt == NULL){
-        next_pt = next_end_pt;
-    }
-    else if (next_end_pt == NULL){
-        next_pt = next_sep_pt;
-    }
-    else if (next_sep_pt < next_end_pt){
-        next_pt = next_sep_pt;
-    }
-    else if (next_end_pt < next_sep_pt)
-    {
-        next_pt = next_end_pt;
-    }
-    else
-    {
-        usb_print("Charles wrote some shitty code.");
-        return NULL;
-    }
 
     // delete (free memory) of all old params in the hash tables
     deleteOldParams();
 
-    // TODO: add some checks here on validity of prefix.
     // the first 3 bytes of "msg" should always be of the form "Cxx"
-    char command_number_str[3];
-    strncpy(command_number_str, current_pt+1, 2 * sizeof(char));
-    //char command_number_str[] = {*current_pt+1, *current_pt+2, '\0'};
-    command_number = atoi(command_number_str + 1);
+    // Hence read them directly and convert to actual integer.
+    char command_number_str[] = {*(current_pt+1), *(current_pt+2), '\0'};
+    command_number = atoi(command_number_str);
 
     // Get the relevant info about the command.
     msg_types = all_command_types[command_number];
     msg_fields = all_command_fields[command_number];
     num_fields = all_command_num_fields[command_number];
-    current_pt = next_pt + 1;
+    current_pt += 3; // Move to the first field.
 
     int i;
     FieldTypes type;
+    char *next_pt;
     for (i=0; i<num_fields; ++i)
     {     
         type = msg_types[i];    
-        if (type != FLOAT && type != BYTES){
-            // next_pt only required for for non-float/byte fields.
-
-            next_sep_pt = strchr(current_pt, '|'); 
-            next_end_pt = strchr(current_pt, '\r'); 
-            if (next_sep_pt == NULL && next_end_pt == NULL){
-                /* We sometimes enter this condition when the next field is
-                either a float or byte. Since those fields could contain the
-                string terminator '\0', then this will prematurely exit the 
-                strchr() functions.
-
-                But since i just wrapped this in another if statement, we 
-                should never actually enter this.
-                */
-                usb_print("No next key character found.");
-                osDelay(1);
-            }
-            else if (next_sep_pt == NULL){
-                next_pt = next_end_pt;
-            }
-            else if (next_end_pt == NULL){
-                next_pt = next_sep_pt;
-            }
-            else if (next_sep_pt < next_end_pt){
-                next_pt = next_sep_pt;
-            }
-            else if (next_end_pt < next_sep_pt)
-            {
-                next_pt = next_end_pt;
-            }
-            else
-            {
-                usb_print("Impossible situation with next_pt");
-                osDelay(1);
-                return NULL;
-            }
-        }
         
+        /* At this point, current pointer will be at a '|', so move forward by
+        1 to be at the first char of the field.*/
+        current_pt += 1; 
+        
+        /* Each case of this switch statement must move the pointer to the next
+        delimiter */
         switch (type)
         {
         case INT:
@@ -329,24 +264,24 @@ char * parseMessageIntoHashTables(char *msg)
 
             strcpy(param_temp->key, msg_fields[i]);
 
-            /* Everything up to the next delimiter (located at next_pt), is
-            assumed to be a big int represented as a character array */
+            // Get length of field
+            next_pt = getNextKeyChar(current_pt);
             uint8_t len = next_pt - current_pt;
+
+            // Extract into struct
             char *int_as_string = calloc(len + 1, sizeof(char));
             memcpy(int_as_string, current_pt, len * sizeof(char));
             param_temp->value = atoi(int_as_string);
 
             HASH_ADD_STR(msg_ints, key, param_temp);
-            current_pt += len + 1;
+            current_pt = next_pt;
             free(int_as_string);
             break;
         }
         case STR:
         {
-            /* TODO: strings cannot contain '|' or '\r', and this will cause a
-            serious error. Is there a way to safeguard against this on the C
-            side? Probably not, as we wont know whether its actually the end
-            of the string. This can easily be done on the python side though. */
+            /* Strings cannot contain '|' or '\r', or this will cause an 
+            error. */
             StrParams *param_temp;
 
             param_temp = malloc(sizeof(StrParams));
@@ -357,13 +292,15 @@ char * parseMessageIntoHashTables(char *msg)
 
             strcpy(param_temp->key, msg_fields[i]);
 
-            /* Everything up to the next delimiter (located at next_pt), is
-            assumed to be part of the string. */
+            // Get length of field
+            next_pt = getNextKeyChar(current_pt);
             uint16_t len = next_pt - current_pt;
+
+            
             strncpy(param_temp->value, current_pt, len * sizeof(char));
 
             HASH_ADD_STR(msg_strs, key, param_temp);
-            current_pt += len + 1;
+            current_pt = next_pt;
             break;
         }
         case BOOL:
@@ -378,37 +315,32 @@ char * parseMessageIntoHashTables(char *msg)
 
             strcpy(param_temp->key, msg_fields[i]);
 
-            uint8_t len = next_pt - current_pt;
-            if (len != 1){
-                usb_print("Error in USB message parsing. Was a BOOL specified as '1' or '0'?");
-                osDelay(1);
-            }
+            // Get length of field
+            next_pt = getNextKeyChar(current_pt);
+            uint8_t len = next_pt - current_pt; // Should ALWAYS be 1.
+
+            // Extract into struct
             char *bool_as_string = calloc(len + 1,  sizeof(char));
             memcpy(bool_as_string, current_pt, len * sizeof(char));
             param_temp->value = atoi(bool_as_string);
 
             HASH_ADD_STR(msg_bools, key, param_temp);
             free(bool_as_string);
-            current_pt += len + 1;
+            current_pt = next_pt;
             break;
         }
         case FLOAT:
-        {   /* STM32 processors are all LITTLE-ENDIAN. This means, to pack a 
-            single-precision float variable into a compatible array of 4 bytes, 
-            one must use the following on the python side:
+        {   /* This assumes that a float was packed on the python side using
 
              float_bytes = struct.pack("<f", x)
 
-            where x is the python float.
+            where x is the python float. This corresponds to a little-endian 
+            convention, which is what all STM32 processors use.
 
-            A single-precision float requires 4 bytes. Do not send doubles
-            (8 bytes) or you will probably have a hard fault.
-
-            To send doubles, a dedicated data type is probably best.
+            A single-precision float requires 4 bytes.
             */
 
             FloatParams *param_temp;
-            uint8_t len = 4;
 
             param_temp = malloc(sizeof(FloatParams));
             if (param_temp == NULL)
@@ -417,18 +349,15 @@ char * parseMessageIntoHashTables(char *msg)
             } // if the memory has not been allocated, interrupt operations
 
             strcpy(param_temp->key, msg_fields[i]);
+
+            // Get length of field
+            uint8_t len = 4;
+
+            // Extract into struct
             memcpy(&(param_temp->value), current_pt, len);
 
             HASH_ADD_STR(msg_floats, key, param_temp);
-
-            /* For the float and byte fields, the search for the seperator 
-            or terminator characters was possibly wrong as they could have 
-            been part of the field itself. Hence, now that we are through the
-            field, find the location of the next terminator just in case this
-            was the last field. */
             current_pt += len;
-            next_end_pt = strchr(current_pt, '\r'); 
-            current_pt += 1;
 
             break;
         }
@@ -436,7 +365,7 @@ char * parseMessageIntoHashTables(char *msg)
         {
             /* Processing arbitary bytes is a little special. It is slightly
             complicated because the byte array could contain the reserved
-            characters '|', which is our field seperator, and '\0' which is
+            characters '|', '\r', and '\0' which is
             the C string terminator. Therefore, we have no choice to
             also specify the length of the byte array, so that it can be parsed
             properly. We store this length as a 16-bit unsigned integer and it
@@ -450,40 +379,64 @@ char * parseMessageIntoHashTables(char *msg)
             } // if the memory has not been allocated, interrupt operations
             strcpy(param_temp->key, msg_fields[i]);
             
-            // Extract the length of remaining data (in number of bytes) 
-            // as the first two bytes.
+            // Get length of field
             uint16_t len;
-            memcpy(&len, current_pt, sizeof len);
+            memcpy(&len, current_pt, sizeof(len)); // sizeof(len) always 2 bytes
             param_temp->len = len;
 
+            // Move to the actual byte data
             current_pt = current_pt + 2;
+
+            // Extract into struct
             memset(&(param_temp->value[0]), 0, USB_BUFFER_SIZE);
             memcpy(&(param_temp->value[0]), current_pt, len);
 
             HASH_ADD_STR(msg_bytes, key, param_temp);
-
-            /* For the float and byte fields, the search for the seperator 
-            or terminator characters was possibly wrong as they could have 
-            been part of the field itself. Hence, now that we are through the
-            field, find the location of the next terminator just in case this
-            was the last field. */
             current_pt += len;
-            next_end_pt = strchr(current_pt, '\r'); 
-            current_pt += 1;
             break;
         }
         default:
             break;
         }
+    }
+    
+    /* Now that we have gone through all the fields, we definitely expect the 
+    message terminator to be here */
+    char *end_pt = strchr(current_pt, '\r'); 
+    return end_pt;
 
-    }
-    if (next_end_pt == 0){
-        // Should never get here, but you never know.
-        usb_print("Failed to detect end of message. Trying my best.");
-        next_end_pt = current_pt;
-    }
-    return next_end_pt;
 } // end parseMessageIntoHashTables()
+
+char* getNextKeyChar(char* msg){
+    char *next_sep_pt = strchr(msg, '|'); // Index of next seperator
+    char *next_end_pt = strchr(msg, '\r'); // Index of next terminator
+    char *next_pt = NULL;
+
+    if (next_sep_pt == NULL && next_end_pt == NULL){
+        /* We sometimes enter this condition when the next field is
+        either a float or byte. Since those fields could contain the
+        string terminator '\0', then this will prematurely exit the 
+        strchr() functions.
+        */
+        usb_print("No next key character found.");
+        osDelay(1);
+    }
+    else if (next_sep_pt == NULL){
+        next_pt = next_end_pt;
+    }
+    else if (next_end_pt == NULL){
+        next_pt = next_sep_pt;
+    }
+    else if (next_sep_pt < next_end_pt){
+        next_pt = next_sep_pt;
+    }
+    else if (next_end_pt < next_sep_pt)
+    {
+        next_pt = next_end_pt;
+    }
+
+    return next_pt;
+}
 
 
 
