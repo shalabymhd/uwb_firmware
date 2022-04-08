@@ -133,7 +133,7 @@ void readUsb(){
     char *idx_start;
     char *idx_end;
     
-    idx_start = strchr(CdcReceiveBuffer, 'C'); // address where to stop reading the message
+    idx_start = strchr(CdcReceiveBuffer, 'C'); // address where to start reading the message
     if (idx_start != NULL)
     {
         /* -------------- PROCESS COMMUNICATED INFORMATION ------------------ */
@@ -148,7 +148,7 @@ void readUsb(){
             command_number = -1; // Dont attempt executing a command.
         }
 
-        idx_start = strchr(temp_receive_buffer, 'C'); // address where to stop reading the message
+        idx_start = strchr(temp_receive_buffer, 'C'); // address where to start reading the message
         uint16_t len = idx_end - idx_start; // Removing the first entry 
 
         /* --------------------- UPDATE THE BUFFER -------------------------- */
