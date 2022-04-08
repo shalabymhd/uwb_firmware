@@ -133,7 +133,7 @@ void readUsb(){
     char *idx_start;
     char *idx_end;
     
-    idx_start = strstr(CdcReceiveBuffer, "C"); // address where to stop reading the message
+    idx_start = strstr(CdcReceiveBuffer, "C"); // address where to start reading the message
     if (idx_start > 0)
     {
         /* ----------------------- PROCESS COMMUNICATED INFORMATION ----------------------- */
@@ -147,7 +147,7 @@ void readUsb(){
             usb_print("ERROR parsing message from USB.");
             osDelay(1);
         }
-        idx_start = strstr(temp_receive_buffer, "C"); // address where to stop reading the message
+        idx_start = strstr(temp_receive_buffer, "C"); // address where to start reading the message
         uint16_t len = idx_end - idx_start; // Removing the first entry 
 
         /* ------------------------------ UPDATE THE BUFFER ------------------------------ */
