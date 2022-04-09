@@ -163,7 +163,7 @@ void readUsb(){
         // adjust where to continue writing
         CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len - 1; 
     }
-    
+     
     decamutexoff(stat);
     
     /* 
@@ -259,7 +259,8 @@ char * parseMessageIntoHashTables(char *msg)
             param_temp = malloc(sizeof(IntParams));
             if (param_temp == NULL)
             {
-                MemManage_Handler();
+                MemManage_Handler(); /* TODO: should handle this in a better way,
+                                              as well as in other cases. */
             } // if the memory has not been allocated, interrupt operations
 
             strcpy(param_temp->key, msg_fields[i]);
@@ -296,7 +297,6 @@ char * parseMessageIntoHashTables(char *msg)
             next_pt = getNextKeyChar(current_pt);
             uint16_t len = next_pt - current_pt;
 
-            
             strncpy(param_temp->value, current_pt, len * sizeof(char));
 
             HASH_ADD_STR(msg_strs, key, param_temp);
@@ -377,6 +377,7 @@ char * parseMessageIntoHashTables(char *msg)
             {
                 MemManage_Handler();
             } // if the memory has not been allocated, interrupt operations
+
             strcpy(param_temp->key, msg_fields[i]);
             
             // Get length of field
