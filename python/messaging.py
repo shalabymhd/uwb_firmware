@@ -1,35 +1,42 @@
 import time
-from pyuwb import UwbModule, find_uwb_serial_ports
+from pyuwb import UwbModule
 import numpy as np
-import json
+import msgpack
 """
 This script publishes a message to the USB port continuously until terminated.
 """
-ports = find_uwb_serial_ports()
-uwb1 = UwbModule("/dev/ttyACM0", verbose=False)
-uwb2 = UwbModule("/dev/ttyACM1", verbose=False)
+long_msg = False
 
-id = uwb1.get_id()
-uwb1.output(id)
+uwb1 = UwbModule("/dev/ttyACM1", verbose=False)
+uwb2 = UwbModule("/dev/ttyACM2", verbose=False)
 
-id = uwb2.get_id()
-uwb2.output(id)
+print(uwb1.get_id())
+print(uwb2.get_id())
 
-def rx_callback(msg):
-    x = json.loads(msg)
-    print(x)
+def msg_callback(msg):
+    uwb2.output(msgpack.unpackb(msg))
 
-uwb2.register_callback("R06",rx_callback)
+uwb2.register_message_callback(msg_callback)
 
-
-data = {
+if long_msg:
+    test_msg = {
+    "t": 3.14159,
+    "x":[1.0]*15,
+    "P":[[1.0]*i for i in range(1,15+1)],
+    }
+else:
+    test_msg = {
     "t": 3.14159,
     "x":[1,2,3],
     "P":[[1,0,0],[0,1,0],[0,0,1]],
-}
-counter = 0
+    }
+
+counter = 1
 while True:
+    data = msgpack.packb(test_msg)
     uwb1.broadcast(data)
-    time.sleep(0.001)
-    counter += 1
+
     print(counter)
+    counter += 1
+
+    # time.sleep(0.01)
