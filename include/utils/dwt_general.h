@@ -21,6 +21,9 @@ extern "C" {
 
 
 /* Defines -------------------------------------------------------------------*/
+/* Default antenna delay values for 64 MHz PRF. */
+#define TX_ANT_DLY 16436
+#define RX_ANT_DLY 16436
 
 /* Variable Declarations -----------------------------------------------------*/
 

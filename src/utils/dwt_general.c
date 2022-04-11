@@ -30,10 +30,6 @@ static dwt_config_t config = {
 		(129 + 8 - 8) /* SFD timeout (preamble length + 1 + SFD length - PAC size). Used in RX only. */
 };
 
-/* Default antenna delay values for 64 MHz PRF. */
-#define TX_ANT_DLY 16436
-#define RX_ANT_DLY 16436
-
 /**
  * @brief  Initializes DWT_Clock_Cycle_Count for DWT_Delay_us, getInterval functions
  * @return Error DWT counter
