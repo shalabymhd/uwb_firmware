@@ -159,7 +159,7 @@ int writetospi(uint16 headerLength, const uint8 *headerBuffer, uint32 bodylength
 	//allocate a big local buffer
 	const uint32_t size = headerLength + bodylength;
 	uint8_t write_buffer[size];
-
+  // TODO: using memcpy here would simulatenously get rid of the warning.
 	// fill the buffer
 	for(i=0; i<headerLength; i++){
 		write_buffer[i]=headerBuffer[i];
@@ -167,10 +167,12 @@ int writetospi(uint16 headerLength, const uint8 *headerBuffer, uint32 bodylength
 	for(i=headerLength;i<size;i++){
 		write_buffer[i]=bodyBuffer[i-headerLength];
 	}
+
+
 	//begin transmission by enabling CS
 	__HAL_SPI_ENABLE(&hspi1);
 	//transmit
-	HAL_SPI_Transmit(&hspi1,&write_buffer,size,SPI_TIMEOUT);
+	HAL_SPI_Transmit(&hspi1, write_buffer,size,SPI_TIMEOUT);
 	//end tranmission
 	__HAL_SPI_DISABLE(&hspi1);
 
@@ -206,7 +208,7 @@ int readfromspi(uint16 headerLength, const uint8 *headerBuffer, uint32 readlengt
 	//Begin data swapping
 	__HAL_SPI_ENABLE(&hspi1);
 
-	HAL_SPI_TransmitReceive(&hspi1,&TXbuffer,&RXbuffer,size,SPI_TIMEOUT);
+	HAL_SPI_TransmitReceive(&hspi1, TXbuffer, RXbuffer,size,SPI_TIMEOUT);
 
   // End of the transmission
 	__HAL_SPI_DISABLE(&hspi1);

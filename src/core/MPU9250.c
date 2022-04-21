@@ -48,8 +48,12 @@ void imu_main(){
 	uint32_t diff_us;
 	uint32_t previous_ticks[1]={0};
 
-	char imuMsg[100];
-	char tmpMsg[30];
+	char imuMsg[150];
+
+	char accMsg[30];
+	char gyrMsg[30];
+	char magMsg[30];
+	char dtMsg[10];
 
 	while(1){
 		updateValues();
@@ -59,14 +63,12 @@ void imu_main(){
 		imuvals.dt/=1.0e3; // convert in milliseconds
 
 		if (imuvals.acc.x != 0) {
-			convert_elementR3_to_string(tmpMsg, imuvals.acc);
-			sprintf(imuMsg,"Acc: %s",tmpMsg);
-			convert_elementR3_to_string(tmpMsg, imuvals.gyr);
-			sprintf(imuMsg,"%s; Gyr: %s",imuMsg, tmpMsg);
-			convert_elementR3_to_string(tmpMsg, imuvals.mag);
-			sprintf(imuMsg,"%s; Mag: %s",imuMsg, tmpMsg);
-			convert_float_to_string(tmpMsg, imuvals.dt);
-			sprintf(imuMsg,"%s; dt: %s \n",imuMsg, tmpMsg);
+			convert_elementR3_to_string(accMsg, imuvals.acc);
+			convert_elementR3_to_string(gyrMsg, imuvals.gyr);
+			convert_elementR3_to_string(magMsg, imuvals.mag);
+			convert_float_to_string(dtMsg, imuvals.dt);
+			sprintf(imuMsg,"Acc: %s; Gyr: %s; Mag: %s; dt: %s \n",
+					accMsg, gyrMsg, magMsg, dtMsg);
 
 			usb_print(imuMsg);
 		}
@@ -85,7 +87,7 @@ uint8_t get_imu_id(){
 
 void initializeImu(){
 	char imu_id = get_imu_id();
-	usb_print(imu_id);
+	usb_print(&imu_id);
 
 	if(imu_id==0x71){
 		// The MPU is online. Initialize.

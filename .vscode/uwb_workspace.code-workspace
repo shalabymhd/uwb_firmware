@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../../uwb_interface"
+		},
+		{
+			"path": "../../uwb_calibration"
 		}
 	],
 	"settings": {
@@ -27,7 +30,10 @@
 			"usb_interface.h": "c",
 			"stm32f4xx_hal_conf.h": "c",
 			"commands.h": "c",
-			"stdlib.h": "c"
+			"stdlib.h": "c",
+			"limits": "c",
+			"messaging.h": "c",
+			"bias.h": "c"
 		},
 		"cortex-debug.variableUseNaturalFormat": true
 	}
