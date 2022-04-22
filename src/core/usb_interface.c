@@ -149,19 +149,19 @@ void readUsb(){
         }
 
         idx_start = strchr(temp_receive_buffer, 'C'); // address where to start reading the message
-        uint16_t len = idx_end - idx_start + 1; // Removing the first entry 
+        uint16_t len = idx_end - idx_start; // Removing the first entry 
 
         /* --------------------- UPDATE THE BUFFER -------------------------- */
         // clear temp buffer
         memset(temp_receive_buffer, '\0', USB_BUFFER_SIZE); 
         // copy unread buffer into temp memory
-        memcpy(temp_receive_buffer, CdcReceiveBuffer + len + 1, USB_BUFFER_SIZE - len - 1); 
+        memcpy(temp_receive_buffer, CdcReceiveBuffer + len + 2, USB_BUFFER_SIZE - len - 2); 
         // clear the buffer
         memset(CdcReceiveBuffer + 1, '\0', USB_BUFFER_SIZE - 1); 
         // move data back to buffer
         memcpy(CdcReceiveBuffer + 1, temp_receive_buffer, USB_BUFFER_SIZE - len - 1); 
         // adjust where to continue writing
-        CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len; 
+        CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len - 1;  
     }
      
     decamutexoff(stat);
