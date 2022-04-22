@@ -22,6 +22,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc_if.h"
 #include "common.h"
+#include "cmsis_os.h"
 /* USER CODE BEGIN INCLUDE */
 
 /* USER CODE END INCLUDE */
@@ -50,7 +51,10 @@
   */
 
 /* USER CODE BEGIN PRIVATE_TYPES */
-
+osPoolDef(mpool, 16, UsbMsg);                    // Define memory pool
+osPoolId mpool;
+osMessageQDef(MsgBox, 16, UsbMsg);              // Define message queue
+osMessageQId MsgBox;
 /* USER CODE END PRIVATE_TYPES */
 
 /**
@@ -95,7 +99,7 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
-extern volatile uint8_t CdcReceiveBuffer[USB_BUFFER_SIZE];
+
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -110,7 +114,7 @@ extern volatile uint8_t CdcReceiveBuffer[USB_BUFFER_SIZE];
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
-
+extern uint8_t CdcReceiveBuffer[USB_BUFFER_SIZE];
 /* USER CODE END EXPORTED_VARIABLES */
 
 /**
@@ -127,6 +131,7 @@ static int8_t CDC_DeInit_FS(void);
 static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length);
 static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 static int8_t CDC_TransmitCplt_FS(uint8_t *pbuf, uint32_t *Len, uint8_t epnum);
+
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
 
@@ -156,6 +161,8 @@ static int8_t CDC_Init_FS(void)
   /* Set Application Buffers */
   USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, 0);
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, UserRxBufferFS);
+  mpool = osPoolCreate(osPool(mpool));                 // create memory pool
+  MsgBox = osMessageCreate(osMessageQ(MsgBox), NULL);  // create msg queue
   return (USBD_OK);
   /* USER CODE END 3 */
 }
@@ -282,6 +289,15 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
     }
 
     memset(Buf, '\0', len); // clear the temporary buffer
+
+
+    // TODO: potentially delete the above if the below queue works.
+    UsbMsg *msg_ptr;
+    msg_ptr = osPoolAlloc(mpool);                     // Allocate memory for the message
+    msg_ptr->len = len;
+    memcpy(msg_ptr->msg, Buf, len);
+    osMessagePut(MsgBox, (uint32_t) msg_ptr, 0);
+    
   }
   
   return (USBD_OK);
@@ -334,10 +350,17 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
   UNUSED(epnum);
   /* USER CODE END 13 */
   return result;
+  
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
+osMessageQId getMessageQId(void){
+  return MsgBox;
+}
 
+osPoolId getMessageQPoolId(void){
+  return mpool;
+}
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**

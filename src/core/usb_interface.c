@@ -166,6 +166,17 @@ void readUsb(){
      
     decamutexoff(stat);
     
+    osMessageQId MsgBox = getMessageQId();
+    osPoolId mpool = getMessageQPoolId();
+    osEvent evt;
+    UsbMsg *msg_ptr;
+    evt = osMessageGet(MsgBox, osWaitForever);  // wait for message
+    if (evt.status == osEventMessage) {
+        msg_ptr = evt.value.p;
+        osPoolFree(mpool, msg_ptr);                  // free memory allocated for message
+    }
+
+
     /* 
     NOTE: currently ALL commands are endlessly retried until they return a 
     value of 1, or until a new command sent over USB overwrites. This might not 

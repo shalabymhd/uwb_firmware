@@ -29,6 +29,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc.h"
+#include "cmsis_os.h"
 
 /* USER CODE BEGIN INCLUDE */
 
@@ -66,7 +67,10 @@
   */
 
 /* USER CODE BEGIN EXPORTED_TYPES */
-
+typedef struct {
+  uint8_t msg[USB_BUFFER_SIZE];
+  uint16_t len;
+} UsbMsg;
 /* USER CODE END EXPORTED_TYPES */
 
 /**
@@ -110,7 +114,8 @@ extern USBD_CDC_ItfTypeDef USBD_Interface_fops_FS;
 uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
 
 /* USER CODE BEGIN EXPORTED_FUNCTIONS */
-
+osMessageQId getMessageQId(void);
+osPoolId getMessageQPoolId(void);
 /* USER CODE END EXPORTED_FUNCTIONS */
 
 /**
