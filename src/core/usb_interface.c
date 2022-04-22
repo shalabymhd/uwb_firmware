@@ -149,19 +149,19 @@ void readUsb(){
         }
 
         idx_start = strchr(temp_receive_buffer, 'C'); // address where to start reading the message
-        uint16_t len = idx_end - idx_start; // Removing the first entry 
+        uint16_t len = idx_end - idx_start + 1; // Removing the first entry 
 
         /* --------------------- UPDATE THE BUFFER -------------------------- */
         // clear temp buffer
         memset(temp_receive_buffer, '\0', USB_BUFFER_SIZE); 
         // copy unread buffer into temp memory
-        memcpy(temp_receive_buffer, CdcReceiveBuffer + len + 2, USB_BUFFER_SIZE - len - 2); 
+        memcpy(temp_receive_buffer, CdcReceiveBuffer + len + 1, USB_BUFFER_SIZE - len - 1); 
         // clear the buffer
         memset(CdcReceiveBuffer + 1, '\0', USB_BUFFER_SIZE - 1); 
         // move data back to buffer
         memcpy(CdcReceiveBuffer + 1, temp_receive_buffer, USB_BUFFER_SIZE - len - 1); 
         // adjust where to continue writing
-        CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len - 1; 
+        CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len; 
     }
      
     decamutexoff(stat);
@@ -406,6 +406,11 @@ char * parseMessageIntoHashTables(char *msg)
     /* Now that we have gone through all the fields, we definitely expect the 
     message terminator to be here */
     char *end_pt = strchr(current_pt, '\r'); 
+    if (*end_pt != '\r'){
+        usb_print("Failed to detect USB command terminator char! Trying my best");
+        end_pt = current_pt;
+    }
+
     return end_pt;
 
 } // end parseMessageIntoHashTables()

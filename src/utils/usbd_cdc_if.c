@@ -95,7 +95,7 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
-extern uint8_t CdcReceiveBuffer[USB_BUFFER_SIZE];
+extern volatile uint8_t CdcReceiveBuffer[USB_BUFFER_SIZE];
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
