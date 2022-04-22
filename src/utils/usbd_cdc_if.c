@@ -22,7 +22,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc_if.h"
 #include "common.h"
-#include "cmsis_os.h"
+#include "usb_device.h"
 /* USER CODE BEGIN INCLUDE */
 
 /* USER CODE END INCLUDE */
@@ -51,10 +51,7 @@
   */
 
 /* USER CODE BEGIN PRIVATE_TYPES */
-osPoolDef(mpool, 16, UsbMsg);                    // Define memory pool
-osPoolId mpool;
-osMessageQDef(MsgBox, 16, UsbMsg);              // Define message queue
-osMessageQId MsgBox;
+
 /* USER CODE END PRIVATE_TYPES */
 
 /**
@@ -161,8 +158,6 @@ static int8_t CDC_Init_FS(void)
   /* Set Application Buffers */
   USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, 0);
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, UserRxBufferFS);
-  mpool = osPoolCreate(osPool(mpool));                 // create memory pool
-  MsgBox = osMessageCreate(osMessageQ(MsgBox), NULL);  // create msg queue
   return (USBD_OK);
   /* USER CODE END 3 */
 }
@@ -274,29 +269,16 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 
   if (*Len>1 && strcmp((char*)&Buf[0],"~")){ /* prevents the subsequent code from getting triggered by usb_print
                                                 or the serial Python package. */
-    // Copy data to global buffer without overwriting data that hasn't been read yet.
+    
     uint8_t len = (uint8_t)*Len;
-    uint8_t idx = CdcReceiveBuffer[0]; // The first entry of CdcReceiveBuffer stores the
-                                       // index where the previously stored messages end
-
-    /* Check if the CDC Receive Buffer is already full to prevent overflowing */
-    if (idx + len > sizeof(CdcReceiveBuffer)){
-      usb_print("USB receive buffer is full! Message rejected to prevent overflow.\r\n");
-    }
-    else{
-      memcpy(CdcReceiveBuffer + idx + 1, Buf, len);  // copy the data to the buffer
-      CdcReceiveBuffer[0] = idx + len; // Update the first entry 
-    }
-
-    memset(Buf, '\0', len); // clear the temporary buffer
-
-
-    // TODO: potentially delete the above if the below queue works.
+    osMailQId MsgBox = getMailQId();
     UsbMsg *msg_ptr;
-    msg_ptr = osPoolAlloc(mpool);                     // Allocate memory for the message
+    msg_ptr = osMailCAlloc(MsgBox, 0);   // Allocate memory for the Mail
     msg_ptr->len = len;
     memcpy(msg_ptr->msg, Buf, len);
-    osMessagePut(MsgBox, (uint32_t) msg_ptr, 0);
+    osMailPut(MsgBox, msg_ptr);
+
+    memset(Buf, '\0', len); // clear the temporary buffer
     
   }
   
@@ -354,13 +336,6 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
-osMessageQId getMessageQId(void){
-  return MsgBox;
-}
-
-osPoolId getMessageQPoolId(void){
-  return mpool;
-}
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**

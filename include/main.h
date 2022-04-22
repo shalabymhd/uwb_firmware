@@ -72,7 +72,7 @@ void Error_Handler(void);
 #define USB_DP_GPIO_Port GPIOA
 
 #define BOARD_ID (5) // Module's ID.
-#define USB_BUFFER_SIZE (200) // Size of the USB buffer, in bytes.
+#define USB_BUFFER_SIZE (1000) // Size of the USB buffer, in bytes.
                               // TODO: to be modified?? 
 
 /* USER CODE BEGIN Private defines */

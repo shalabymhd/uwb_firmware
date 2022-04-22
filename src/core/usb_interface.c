@@ -16,6 +16,7 @@
 #include "commands.h"
 #include "dwt_iqr.h"
 #include "cmsis_os.h"
+#include "usb_device.h"
 /* Typedefs ------------------------------------------------------------------*/
 typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4, BYTES=5} FieldTypes;
 
@@ -23,7 +24,6 @@ typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4, BYTES=5} FieldTypes;
 // VARIABLE FIELD NAMES MUST BE LESS THAN 10 CHARACTERS
 static int command_number = -1;
 static uint8_t retry_count = 0;
-static char temp_receive_buffer[USB_BUFFER_SIZE];
 
 static const char *c00_fields[1];             // No fields. Empty array of size 1
 static const FieldTypes c00_types[1];         // No fields. Empty array of size 1
@@ -130,51 +130,34 @@ void readUsb(){
   
     decaIrqStatus_t stat;
     stat = decamutexon();
+
     char *idx_start;
     char *idx_end;
-    
-    idx_start = strchr(CdcReceiveBuffer, 'C'); // address where to start reading the message
-    if (idx_start != NULL)
-    {
-        /* -------------- PROCESS COMMUNICATED INFORMATION ------------------ */
-        memset(temp_receive_buffer, '\0', USB_BUFFER_SIZE); // clear temp buffer
+    osMailQId MsgBox = getMailQId();
+    osEvent evt;
+    UsbMsg *msg_ptr;
+    evt = osMailGet(MsgBox, 0);  // Get message on queue
+    if (evt.status == osEventMail) {
+        msg_ptr = evt.value.p;
 
-        // Copy receive buffer into temp buffer.
-        memcpy(temp_receive_buffer, CdcReceiveBuffer + 1, USB_BUFFER_SIZE - 1);
-
-        idx_end = parseMessageIntoHashTables(temp_receive_buffer);   
-        if (*idx_end != '\r'){
-            usb_print("ERROR parsing message from USB.");
-            command_number = -1; // Dont attempt executing a command.
+        
+        idx_start =  memchr(msg_ptr->msg, 'C', 10); // address where to start reading the message
+        while (idx_start != NULL){
+            idx_end = parseMessageIntoHashTables(idx_start); 
+            if (*idx_end != '\r'){
+                usb_print("ERROR parsing message from USB.");
+                command_number = -1; // Dont attempt executing a command.
+                break;
+            }
+            idx_start = memchr(idx_end, 'C', 10); // Go to next message
         }
 
-        idx_start = strchr(temp_receive_buffer, 'C'); // address where to start reading the message
-        uint16_t len = idx_end - idx_start; // Removing the first entry 
-
-        /* --------------------- UPDATE THE BUFFER -------------------------- */
-        // clear temp buffer
-        memset(temp_receive_buffer, '\0', USB_BUFFER_SIZE); 
-        // copy unread buffer into temp memory
-        memcpy(temp_receive_buffer, CdcReceiveBuffer + len + 2, USB_BUFFER_SIZE - len - 2); 
-        // clear the buffer
-        memset(CdcReceiveBuffer + 1, '\0', USB_BUFFER_SIZE - 1); 
-        // move data back to buffer
-        memcpy(CdcReceiveBuffer + 1, temp_receive_buffer, USB_BUFFER_SIZE - len - 1); 
-        // adjust where to continue writing
-        CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len - 1;  
+        osMailFree(MsgBox, msg_ptr);         // free memory allocated for Mail
     }
      
     decamutexoff(stat);
     
-    osMessageQId MsgBox = getMessageQId();
-    osPoolId mpool = getMessageQPoolId();
-    osEvent evt;
-    UsbMsg *msg_ptr;
-    evt = osMessageGet(MsgBox, osWaitForever);  // wait for message
-    if (evt.status == osEventMessage) {
-        msg_ptr = evt.value.p;
-        osPoolFree(mpool, msg_ptr);                  // free memory allocated for message
-    }
+    
 
 
     /* 
