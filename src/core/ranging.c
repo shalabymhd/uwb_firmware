@@ -175,6 +175,9 @@ void uwbFrameHandler(void){
                 dataReceiveCallback(msg_ptr->msg);
                 break;
             }
+            default:{
+                usb_print("Unrecognized UWB message type received.");
+            }
         }
         osMailFree(UwbMsgBox, msg_ptr); // IMPORTANT: free message memory
     }
@@ -674,7 +677,7 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* Pr, bool is_initiato
                     tx1_ts, rx1_ts,
                     tx2_ts, rx2_ts,
                     power1, power2);
-            usb_print(response); // TODO: will this response ever be sent without a USB command?
+            usb_print(response);
             
             dwt_setrxtimeout(0);
             dwt_setpreambledetecttimeout(0);
@@ -1096,8 +1099,12 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data)
     
     /* Clear local RX buffer to avoid having leftovers from previous receptions. 
     This is not necessary but is included here to aid reading the RX
-    buffer. */
-    memset(rx_buffer, 0, MAX_FRAME_LEN);
+    buffer. */  
+    int i;
+    for (i = 0 ; i < MAX_FRAME_LEN; i++ )
+    {
+        rx_buffer[i] = 0;
+    }
 
     /* A frame has been received, copy it to our local buffer. */
     if (cb_data->datalength <= MAX_FRAME_LEN)
@@ -1115,6 +1122,8 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data)
 
         // Send message to the queue
         osMailPut(UwbMsgBox, msg_ptr);
+
+        //CDC_Transmit_FS(rx_buffer, cb_data->datalength); // for debugging
     }
 }
 

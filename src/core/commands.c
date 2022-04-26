@@ -30,6 +30,7 @@
 
 int c00_set_idle(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     usb_print("R00\r\n");
+    osDelay(1);
     return 1;
 }
 
@@ -40,6 +41,7 @@ int c01_get_id(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_boo
     char id_str[10];
     sprintf(id_str, "R01|%u\r\n", my_id); 
     usb_print(id_str);
+    osDelay(1);
     return 1;
 }
 
