@@ -185,20 +185,14 @@ void StartUsbReceive(void const *argument){
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 void uwbInterruptTask(void const *argument){
-  decaIrqStatus_t stat;
 
   dwt_setrxaftertxdelay(40);
 
-  while (1){
-    osThreadSuspend(NULL); // suspend the thread, re-enabled using uwb receive interrupt
-    
-    /* Executes right after a dw1000 receive interrupt */
-    stat = decamutexon(); // disable dw1000 interrupts
-    uwbFrameHandler(); // complete TWR 
-    decamutexoff(stat); // re-enable dw1000 interrupts
+  while (1){ 
+    uwbFrameHandler(); 
     dwt_rxenable(DWT_START_RX_IMMEDIATE); // turn on uwb receiver
   }
-} // end twrInterruptTask()
+} // end uwbInterruptTask()
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

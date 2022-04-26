@@ -113,8 +113,8 @@ static BoolParams *msg_bools;
 static StrParams *msg_strs;
 static ByteParams *msg_bytes;
 
-static osMailQDef(MsgBox, 8, UsbMsg);  // Define message queue (max 8 msgs on queue)       
-static osMailQId MsgBox;               // TODO: make max messages configurable
+static osMailQDef(MsgBox, USB_QUEUE_SIZE, UsbMsg); 
+static osMailQId MsgBox;             
 
 static uint8_t usb_rx_buffer[USB_BUFFER_SIZE]; 
 static uint32_t buffer_len;
@@ -134,7 +134,7 @@ static void slideBuffer(uint8_t*);
  */
 void interfaceInit(void){
   MsgBox = osMailCreate(osMailQ(MsgBox), NULL);  // create msg queue
-  memset(usb_rx_buffer, 0, USB_BUFFER_SIZE);
+  memset(usb_rx_buffer, 0, USB_BUFFER_SIZE); 
   buffer_len = 0;
 }
 
