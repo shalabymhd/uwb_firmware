@@ -127,22 +127,32 @@ static char* getNextKeyChar(char*);
 static void loadBuffer(void);
 static void slideBuffer(uint8_t*);
 
+/**
+ * @brief USB interface initialization procedure. Gets called once on startup. 
+ * Currently used to initialize the USB interrupt queue object.
+ * 
+ */
 void interfaceInit(void){
-
   MsgBox = osMailCreate(osMailQ(MsgBox), NULL);  // create msg queue
   memset(usb_rx_buffer, 0, USB_BUFFER_SIZE);
   buffer_len = 0;
 }
 
-/** 
-  * @brief  Gets the handle to the underlying message queue that is used to 
-  * transfer data from the USB reception interrupt to other threads.
-  * @retval USB message queue handle
-  */
+/**
+ * @brief Gets the handle to the underlying message queue that is used to 
+ * transfer data from the USB reception interrupt to other threads.
+ * 
+ * @return USB message queue handle 
+ */
 osMailQId getMailQId(void){
   return MsgBox;
 }
 
+/**
+ * @brief Consumes all items on the USB message interrupt queue, and 
+ * concats them to a large USB message buffer, which also acts like a queue.
+ * 
+ */
 void loadBuffer(void){
     osMailQId MsgBox = getMailQId();// Get queue handle
     osEvent evt;
@@ -167,7 +177,11 @@ void loadBuffer(void){
     }
 
 }
-
+/**
+ * @brief Consumes part of the buffer and slides the remaining contents up.
+ * 
+ * @param idx Final index of chunk of buffer that is to be consumed.
+ */
 void slideBuffer(uint8_t* idx){
     uint8_t len = idx - &usb_rx_buffer[0] + 1;
 
@@ -184,13 +198,8 @@ void slideBuffer(uint8_t* idx){
 }
 
 
-/*! ----------------------------------------------------------------------------
- * Function: readUsb()
- *
- * The purpose of this function is to read the oldest message at the USB port,
- * and remove the message from the USB-receive buffer.
- * Additionally, this function updates the status and parameters associated with 
- * the finite-state machine.
+/**
+ * @brief  The core USB message processing function and command executor.
  * 
  */
 void readUsb(){
@@ -199,11 +208,10 @@ void readUsb(){
     stat = decamutexon();
 
     uint8_t* msg_start;
-    char* msg_end;
+    char* msg_end; // TODO: to be consistent, change everything to uint8_t?
 
+    // Load buffer from interrupt message queue.
     loadBuffer();
-
-    
 
     /* address where to start reading the message. Search for 'C' char as
     beginning of official message */
@@ -226,8 +234,6 @@ void readUsb(){
         msg_start = memchr(usb_rx_buffer, 'C', USB_BUFFER_SIZE); 
     }
 
-        
-     
     decamutexoff(stat);
 
     /* 
@@ -269,15 +275,14 @@ void readUsb(){
 } // end readUsb()
 
 
-/*! ----------------------------------------------------------------------------
- * @fn: parseMessageIntoHashTables()
- *
- * This is the main message parsing function where the message is split into 
+/**
+ * @brief This is the main message parsing function where the message is split into 
  * its corresponding datatypes.
  * 
- * @param: msg 
- *     a pointer to the very beginning of the message, so it should point to a 
- *     'C' 
+ * @param msg a pointer to the very beginning of the message, 
+ * so it should point to a 'C' 
+ * @return char* a pointer to the last character of the message that was just 
+ * parsed.
  */
 char * parseMessageIntoHashTables(char *msg)
 {
@@ -479,6 +484,14 @@ char * parseMessageIntoHashTables(char *msg)
 
 } // end parseMessageIntoHashTables()
 
+
+/**
+ * @brief Get the next key character (either | or \r) after the current pointer
+ * location.
+ * 
+ * @param msg 
+ * @return char* pointer to the next key character
+ */
 char* getNextKeyChar(char* msg){
     char *next_sep_pt = strchr(msg, '|'); // Index of next seperator
     char *next_end_pt = strchr(msg, '\r'); // Index of next terminator
@@ -511,7 +524,10 @@ char* getNextKeyChar(char* msg){
 }
 
 
-
+/**
+ * @brief Frees memory from the hash tables.
+ * 
+ */
 void deleteOldParams() {
 
     /* Delete int params */
