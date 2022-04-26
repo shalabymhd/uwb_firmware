@@ -48,8 +48,6 @@ USBD_HandleTypeDef hUsbDeviceFS;
  * -- Insert your variables declaration here --
  */
 /* USER CODE BEGIN 0 */
-osMailQDef(MsgBox, 4, UsbMsg);  // Define message queue (max messages 4)       
-osMailQId MsgBox;
 
 /* USER CODE END 0 */
 
@@ -89,16 +87,13 @@ void MX_USB_DEVICE_Init(void)
   }
 
   /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
-  MsgBox = osMailCreate(osMailQ(MsgBox), NULL);  // create msg queue
 
   /* USER CODE END USB_DEVICE_Init_PostTreatment */
 }
 
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
-osMailQId getMailQId(void){
-  return MsgBox;
-}
+
 
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 

@@ -106,6 +106,5 @@ int dataReceiveCallback(uint8_t *rx_data){
 
     // Transmit the final concatenated array over USB
     CDC_Transmit_FS(full_msg, full_len);
-    osDelay(1);
     return 1;
 }

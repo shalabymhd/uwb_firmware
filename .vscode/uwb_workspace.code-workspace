@@ -33,7 +33,8 @@
 			"stdlib.h": "c",
 			"limits": "c",
 			"messaging.h": "c",
-			"bias.h": "c"
+			"bias.h": "c",
+			"usb_device.h": "c"
 		},
 		"cortex-debug.variableUseNaturalFormat": true
 	}

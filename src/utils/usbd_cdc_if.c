@@ -22,7 +22,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc_if.h"
 #include "common.h"
-#include "usb_device.h"
+#include "usb_interface.h"
 /* USER CODE BEGIN INCLUDE */
 
 /* USER CODE END INCLUDE */
@@ -267,15 +267,24 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
 
-  if (*Len>1 && strcmp((char*)&Buf[0],"~")){ /* prevents the subsequent code from getting triggered by usb_print
-                                                or the serial Python package. */
+  /* if statement prevents the subsequent code from getting triggered by 
+  usb_print or the serial Python package. */
+  if (*Len>1 && strcmp((char*)&Buf[0],"~")){ 
     
-    uint8_t len = (uint8_t)*Len;
+    uint32_t len = *Len;
+
+    // Get handle to message queue
     osMailQId MsgBox = getMailQId();
+
+    // Allocate memory for message struct 
     UsbMsg *msg_ptr;
     msg_ptr = osMailCAlloc(MsgBox, 0);   // Allocate memory for the Mail
+
+    // Load data into the message 
     msg_ptr->len = len;
     memcpy(msg_ptr->msg, Buf, len);
+
+    // Send message to the queue
     osMailPut(MsgBox, msg_ptr);
 
     memset(Buf, '\0', len); // clear the temporary buffer

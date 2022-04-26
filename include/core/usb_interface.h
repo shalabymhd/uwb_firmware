@@ -17,16 +17,21 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
 #include "main.h"
-
+#include "cmsis_os.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Function Prototypes -------------------------------------------------------*/
 void readUsb();
+void interfaceInit(void);
+osMailQId getMailQId(void);
+
 /* Variables -----------------------------------------------------------*/
-// TODO: this variable seems to be declared here, defined in freertos.c, 
-// and an identically named variable exists in usbd_cdc_if.c
-// something tells me this isnt best practice.
-extern char CdcReceiveBuffer[USB_BUFFER_SIZE]; 
+typedef struct {
+    uint8_t msg[USB_MSG_BUFFER_SIZE];
+    uint32_t len;
+} UsbMsg;
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -166,7 +166,8 @@ void StartUsbReceive(void const *argument){
   // >> cat /dev/ttyACMx
 
   uint8_t reg_state; // to store the state of the DW receiver
-
+  interfaceInit();
+  
   while (1){
     /* Read the USB buffer */
     readUsb();
