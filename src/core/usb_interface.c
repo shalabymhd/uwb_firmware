@@ -113,7 +113,7 @@ static BoolParams *msg_bools;
 static StrParams *msg_strs;
 static ByteParams *msg_bytes;
 
-static osMailQDef(MsgBox, USB_QUEUE_SIZE, UsbMsg); 
+static osMailQDef(MsgBox, USB_QUEUE_SIZE, UsbMsg); // Define message queue
 static osMailQId MsgBox;             
 
 static uint8_t usb_rx_buffer[USB_BUFFER_SIZE]; 
@@ -171,7 +171,8 @@ void loadBuffer(void){
             memcpy(usb_rx_buffer + buffer_len, msg_ptr->msg, msg_ptr->len);
             buffer_len += msg_ptr->len;
             osMailFree(MsgBox, msg_ptr); // IMPORTANT: free message memory
-            osDelay(5); // Give a bit of time for the queue to fill up
+            osDelay(5); // Give a bit of time for the queue to fill up. 
+                        // TODO: Remove the delay while loading buffer.
             evt = osMailGet(MsgBox, 0); 
         }
     }
@@ -220,11 +221,9 @@ void readUsb(){
     while (msg_start != NULL){
 
         msg_end = parseMessageIntoHashTables((char*) msg_start); 
-        
 
         if (*msg_end != '\r'){
             slideBuffer((uint8_t*) msg_end);
-            usb_print("ERROR parsing message from USB.");
             command_number = -1; // Dont attempt executing a command.
             break;
         }
