@@ -113,8 +113,8 @@ static BoolParams *msg_bools;
 static StrParams *msg_strs;
 static ByteParams *msg_bytes;
 
-static osMailQDef(MsgBox, USB_QUEUE_SIZE, UsbMsg);  // Define message queue (max 8 msgs on queue)       
-static osMailQId MsgBox;               
+static osMailQDef(MsgBox, USB_QUEUE_SIZE, UsbMsg); // Define message queue
+static osMailQId MsgBox;             
 
 static uint8_t usb_rx_buffer[USB_BUFFER_SIZE]; 
 static uint32_t buffer_len;
@@ -134,7 +134,7 @@ static void slideBuffer(uint8_t*);
  */
 void interfaceInit(void){
   MsgBox = osMailCreate(osMailQ(MsgBox), NULL);  // create msg queue
-  memset(usb_rx_buffer, 0, USB_BUFFER_SIZE);
+  memset(usb_rx_buffer, 0, USB_BUFFER_SIZE); 
   buffer_len = 0;
 }
 
@@ -171,8 +171,6 @@ void loadBuffer(void){
             memcpy(usb_rx_buffer + buffer_len, msg_ptr->msg, msg_ptr->len);
             buffer_len += msg_ptr->len;
             osMailFree(MsgBox, msg_ptr); // IMPORTANT: free message memory
-            osDelay(5); // Give a bit of time for the queue to fill up. 
-                        // TODO: Remove the delay while loading buffer.
             evt = osMailGet(MsgBox, 0); 
         }
     }
@@ -307,6 +305,9 @@ char * parseMessageIntoHashTables(char *msg)
     num_fields = all_command_num_fields[command_number];
     current_pt += 3; // Move to the first field.
 
+    // Get anything that has shown up on the queue and put into buffer.
+    // Just in case some chunks of a long USB message took some time to arrive.
+    loadBuffer(); 
     int i;
     FieldTypes type;
     char *next_pt;
