@@ -35,11 +35,8 @@ int c00_set_idle(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_b
 }
 
 int c01_get_id(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
-    uint8_t my_id;
-    dwt_geteui(&my_id);
-
     char id_str[10];
-    sprintf(id_str, "R01|%u\r\n", my_id); 
+    sprintf(id_str, "R01|%u\r\n", BOARD_ID); 
     usb_print(id_str);
     osDelay(1);
     return 1;
