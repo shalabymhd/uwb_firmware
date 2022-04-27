@@ -16,6 +16,7 @@
 #include "commands.h"
 #include "dwt_iqr.h"
 #include "cmsis_os.h"
+#include "usb_device.h"
 /* Typedefs ------------------------------------------------------------------*/
 typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4, BYTES=5} FieldTypes;
 
@@ -23,7 +24,6 @@ typedef enum {INT=1, STR=2, BOOL=3, FLOAT=4, BYTES=5} FieldTypes;
 // VARIABLE FIELD NAMES MUST BE LESS THAN 10 CHARACTERS
 static int command_number = -1;
 static uint8_t retry_count = 0;
-static char temp_receive_buffer[USB_BUFFER_SIZE];
 
 static const char *c00_fields[1];             // No fields. Empty array of size 1
 static const FieldTypes c00_types[1];         // No fields. Empty array of size 1
@@ -113,59 +113,128 @@ static BoolParams *msg_bools;
 static StrParams *msg_strs;
 static ByteParams *msg_bytes;
 
+static osMailQDef(MsgBox, USB_QUEUE_SIZE, UsbMsg);  // Define message queue (max 8 msgs on queue)       
+static osMailQId MsgBox;               
+
+static uint8_t usb_rx_buffer[USB_BUFFER_SIZE]; 
+static uint32_t buffer_len;
+static uint8_t temp_buffer[USB_BUFFER_SIZE];
+
 /* Private Functions ----------------------------------------------------------*/
 static char* parseMessageIntoHashTables(char *msg);
 static void deleteOldParams();
 static char* getNextKeyChar(char*);
-/*! ----------------------------------------------------------------------------
- * Function: readUsb()
- *
- * The purpose of this function is to read the oldest message at the USB port,
- * and remove the message from the USB-receive buffer.
- * Additionally, this function updates the status and parameters associated with 
- * the finite-state machine.
+static void loadBuffer(void);
+static void slideBuffer(uint8_t*);
+
+/**
+ * @brief USB interface initialization procedure. Gets called once on startup. 
+ * Currently used to initialize the USB interrupt queue object.
+ * 
+ */
+void interfaceInit(void){
+  MsgBox = osMailCreate(osMailQ(MsgBox), NULL);  // create msg queue
+  memset(usb_rx_buffer, 0, USB_BUFFER_SIZE);
+  buffer_len = 0;
+}
+
+/**
+ * @brief Gets the handle to the underlying message queue that is used to 
+ * transfer data from the USB reception interrupt to other threads.
+ * 
+ * @return USB message queue handle 
+ */
+osMailQId getMailQId(void){
+  return MsgBox;
+}
+
+/**
+ * @brief Consumes all items on the USB message interrupt queue, and 
+ * concats them to a large USB message buffer, which also acts like a queue.
+ * 
+ */
+void loadBuffer(void){
+    osMailQId MsgBox = getMailQId();// Get queue handle
+    osEvent evt;
+    UsbMsg *msg_ptr;
+
+    evt = osMailGet(MsgBox, 0);  // Get message on queue. No waiting.
+    while (evt.status == osEventMail) {
+        msg_ptr = evt.value.p;
+
+        if (buffer_len + msg_ptr-> len > USB_BUFFER_SIZE){
+            usb_print("USB Buffer full! Message rejected to prevent overflow.");
+            osMailFree(MsgBox, msg_ptr); // IMPORTANT: free message memory
+            break;
+        }
+        else{
+            memcpy(usb_rx_buffer + buffer_len, msg_ptr->msg, msg_ptr->len);
+            buffer_len += msg_ptr->len;
+            osMailFree(MsgBox, msg_ptr); // IMPORTANT: free message memory
+            osDelay(5); // Give a bit of time for the queue to fill up. 
+                        // TODO: Remove the delay while loading buffer.
+            evt = osMailGet(MsgBox, 0); 
+        }
+    }
+
+}
+/**
+ * @brief Consumes part of the buffer and slides the remaining contents up.
+ * 
+ * @param idx Final index of chunk of buffer that is to be consumed.
+ */
+void slideBuffer(uint8_t* idx){
+    uint8_t len = idx - &usb_rx_buffer[0] + 1;
+
+    // copy REMAINING content into temp buffer
+    memcpy(temp_buffer, usb_rx_buffer + len, buffer_len - len);
+
+    // zero-out contents of the buffer
+    memset(usb_rx_buffer, 0, buffer_len);
+    
+    // load remaining contents back in
+    memcpy(usb_rx_buffer, temp_buffer, buffer_len - len); 
+
+    buffer_len -= len;
+}
+
+
+/**
+ * @brief  The core USB message processing function and command executor.
  * 
  */
 void readUsb(){
   
     decaIrqStatus_t stat;
     stat = decamutexon();
-    char *idx_start;
-    char *idx_end;
-    
-    idx_start = strchr(CdcReceiveBuffer, 'C'); // address where to start reading the message
-    if (idx_start != NULL)
-    {
-        /* -------------- PROCESS COMMUNICATED INFORMATION ------------------ */
-        memset(temp_receive_buffer, '\0', USB_BUFFER_SIZE); // clear temp buffer
 
-        // Copy receive buffer into temp buffer.
-        memcpy(temp_receive_buffer, CdcReceiveBuffer + 1, USB_BUFFER_SIZE - 1);
+    uint8_t* msg_start;
+    char* msg_end; // TODO: to be consistent, change everything to uint8_t?
 
-        idx_end = parseMessageIntoHashTables(temp_receive_buffer);   
-        if (*idx_end != '\r'){
-            usb_print("ERROR parsing message from USB.");
+    // Load buffer from interrupt message queue.
+    loadBuffer();
+
+    /* address where to start reading the message. Search for 'C' char as
+    beginning of official message */
+    msg_start =  memchr(usb_rx_buffer, 'C', USB_BUFFER_SIZE); 
+
+    while (msg_start != NULL){
+
+        msg_end = parseMessageIntoHashTables((char*) msg_start); 
+
+        if (*msg_end != '\r'){
+            slideBuffer((uint8_t*) msg_end);
             command_number = -1; // Dont attempt executing a command.
+            break;
         }
 
-        idx_start = strchr(temp_receive_buffer, 'C'); // address where to start reading the message
-        uint16_t len = idx_end - idx_start; // Removing the first entry 
-
-        /* --------------------- UPDATE THE BUFFER -------------------------- */
-        // clear temp buffer
-        memset(temp_receive_buffer, '\0', USB_BUFFER_SIZE); 
-        // copy unread buffer into temp memory
-        memcpy(temp_receive_buffer, CdcReceiveBuffer + len + 2, USB_BUFFER_SIZE - len - 2); 
-        // clear the buffer
-        memset(CdcReceiveBuffer + 1, '\0', USB_BUFFER_SIZE - 1); 
-        // move data back to buffer
-        memcpy(CdcReceiveBuffer + 1, temp_receive_buffer, USB_BUFFER_SIZE - len - 1); 
-        // adjust where to continue writing
-        CdcReceiveBuffer[0] = CdcReceiveBuffer[0] - len - 1; 
+        slideBuffer((uint8_t*) msg_end);
+        // Go to next message. Dont search past end of buffer.
+        msg_start = memchr(usb_rx_buffer, 'C', USB_BUFFER_SIZE); 
     }
-     
+
     decamutexoff(stat);
-    
+
     /* 
     NOTE: currently ALL commands are endlessly retried until they return a 
     value of 1, or until a new command sent over USB overwrites. This might not 
@@ -205,15 +274,14 @@ void readUsb(){
 } // end readUsb()
 
 
-/*! -----------------------------------------------------------------------------------------
- * @fn: parseMessageIntoHashTables()
- *
- * This is the main message parsing function where the message is split into 
+/**
+ * @brief This is the main message parsing function where the message is split into 
  * its corresponding datatypes.
  * 
- * @param: msg 
- *     a pointer to the very beginning of the message, so it should point to a 
- *     'C' 
+ * @param msg a pointer to the very beginning of the message, 
+ * so it should point to a 'C' 
+ * @return char* a pointer to the last character of the message that was just 
+ * parsed.
  */
 char * parseMessageIntoHashTables(char *msg)
 {
@@ -287,7 +355,7 @@ char * parseMessageIntoHashTables(char *msg)
             error. */
             StrParams *param_temp;
 
-            param_temp = malloc(sizeof(StrParams));
+            param_temp = calloc(1, sizeof(StrParams));
             if (param_temp == NULL)
             {
                 MemManage_Handler();
@@ -299,7 +367,7 @@ char * parseMessageIntoHashTables(char *msg)
             next_pt = getNextKeyChar(current_pt);
             uint16_t len = next_pt - current_pt;
 
-            strncpy(param_temp->value, current_pt, len * sizeof(char));
+            memcpy(param_temp->value, current_pt, len * sizeof(char));
 
             HASH_ADD_STR(msg_strs, key, param_temp);
             current_pt = next_pt;
@@ -406,10 +474,23 @@ char * parseMessageIntoHashTables(char *msg)
     /* Now that we have gone through all the fields, we definitely expect the 
     message terminator to be here */
     char *end_pt = strchr(current_pt, '\r'); 
+    if (*end_pt != '\r'){
+        usb_print("Failed to detect USB command terminator char! Trying my best");
+        end_pt = current_pt;
+    }
+
     return end_pt;
 
 } // end parseMessageIntoHashTables()
 
+
+/**
+ * @brief Get the next key character (either | or \r) after the current pointer
+ * location.
+ * 
+ * @param msg 
+ * @return char* pointer to the next key character
+ */
 char* getNextKeyChar(char* msg){
     char *next_sep_pt = strchr(msg, '|'); // Index of next seperator
     char *next_end_pt = strchr(msg, '\r'); // Index of next terminator
@@ -442,7 +523,10 @@ char* getNextKeyChar(char* msg){
 }
 
 
-
+/**
+ * @brief Frees memory from the hash tables.
+ * 
+ */
 void deleteOldParams() {
 
     /* Delete int params */

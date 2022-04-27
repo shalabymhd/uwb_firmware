@@ -71,9 +71,10 @@ void Error_Handler(void);
 #define USB_DP_Pin GPIO_PIN_12
 #define USB_DP_GPIO_Port GPIOA
 
-#define BOARD_ID (1) // Module's ID.
-#define USB_BUFFER_SIZE (200) // Size of the USB buffer, in bytes.
-                              // TODO: to be modified?? 
+#define BOARD_ID (5) // Module's ID.
+#define USB_MSG_BUFFER_SIZE (1000) // Size of single USB message buffer, in bytes.
+#define USB_QUEUE_SIZE 8
+#define USB_BUFFER_SIZE USB_MSG_BUFFER_SIZE*USB_QUEUE_SIZE // Size of total USB buffer, in bytes.
 
 /* USER CODE BEGIN Private defines */
 #define DW_RESET_Pin GPIO_PIN_11

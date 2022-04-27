@@ -1,20 +1,23 @@
 import time
-from pyuwb import UwbModule
+from pyuwb import UwbModule, find_uwb_serial_ports
 import numpy as np
 import msgpack
 """
 This script publishes a message to the USB port continuously until terminated.
 """
-long_msg = False
-
-uwb1 = UwbModule("/dev/ttyACM1", verbose=False)
-uwb2 = UwbModule("/dev/ttyACM2", verbose=False)
+long_msg = True
+ports = find_uwb_serial_ports()
+uwb1 = UwbModule(ports[0], timeout = 1, verbose=True)
+uwb2 = UwbModule(ports[1],  timeout = 1, verbose=True)
 
 print(uwb1.get_id())
 print(uwb2.get_id())
 
-def msg_callback(msg):
-    uwb2.output(msgpack.unpackb(msg))
+def msg_callback(msg, is_valid):
+    try:
+        uwb2.output(msgpack.unpackb(msg))
+    except:
+        pass
 
 uwb2.register_message_callback(msg_callback)
 

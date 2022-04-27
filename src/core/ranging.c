@@ -1027,4 +1027,5 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data)
     }
 
     osThreadResume(twrInterruptTaskHandle);
+    // TODO: we should use a QUEUE here!
 }
