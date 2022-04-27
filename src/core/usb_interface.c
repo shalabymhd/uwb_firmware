@@ -171,8 +171,6 @@ void loadBuffer(void){
             memcpy(usb_rx_buffer + buffer_len, msg_ptr->msg, msg_ptr->len);
             buffer_len += msg_ptr->len;
             osMailFree(MsgBox, msg_ptr); // IMPORTANT: free message memory
-            osDelay(5); // Give a bit of time for the queue to fill up. 
-                        // TODO: Remove the delay while loading buffer.
             evt = osMailGet(MsgBox, 0); 
         }
     }
@@ -307,6 +305,9 @@ char * parseMessageIntoHashTables(char *msg)
     num_fields = all_command_num_fields[command_number];
     current_pt += 3; // Move to the first field.
 
+    // Get anything that has shown up on the queue and put into buffer.
+    // Just in case some chunks of a long USB message took some time to arrive.
+    loadBuffer(); 
     int i;
     FieldTypes type;
     char *next_pt;
