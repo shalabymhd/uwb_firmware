@@ -109,7 +109,7 @@ void uwb_init(void){
 	dwt_settxantennadelay(TX_ANT_DLY);
 
     /* Set the UWB ID */
-    uint8_t unique_id = BOARD_ID; // This is the module's ID.
+    uint8_t unique_id = BOARD_ID(); // This is the module's ID.
     dwt_seteui(&unique_id);
 
     usb_print("UWB tag initialized and configured. \n");

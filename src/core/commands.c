@@ -36,7 +36,7 @@ int c00_set_idle(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_b
 
 int c01_get_id(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     char id_str[10];
-    sprintf(id_str, "R01|%u\r\n", BOARD_ID); 
+    sprintf(id_str, "R01|%u\r\n", BOARD_ID()); 
     usb_print(id_str);
     osDelay(1);
     return 1;
@@ -77,7 +77,7 @@ int c03_do_tests(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_b
     uint8_t my_id;
     uint8_t error_id = 0;
     dwt_geteui(&my_id);
-    if(my_id != BOARD_ID){
+    if(my_id != BOARD_ID()){
         error_id = 1;
     }
     convert_float_to_string(float_as_string, f->value);
@@ -128,7 +128,7 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
     HASH_FIND_STR(msg_ints, "mult_twr", i);
     mult_twr = i->value;
 
-    if (target_ID == BOARD_ID){
+    if (target_ID == BOARD_ID()){
         usb_print("TWR FAIL: The target ID is the same as the initiator's ID.\r\n");
         return 0;
         // TODO: we should not retry!! we will get stuck.
