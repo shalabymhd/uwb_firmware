@@ -169,7 +169,16 @@ uint8_t get_board_id(void){
 void board_id_init(void){
   uint32_t chip_id = HAL_GetUIDw0();
 
-  if (chip_id == 3407938){
+  if (chip_id == 3342378){
+    board_id = 1;
+  }
+  else if (chip_id == 5046331){
+    board_id = 2;
+  }
+  else if (chip_id == 3735640){
+    board_id = 3;
+  }
+  else if (chip_id == 4194380){
     board_id = 4;
   }
   else if (chip_id == 4194378){
@@ -177,6 +186,9 @@ void board_id_init(void){
   }
   else if (chip_id == 3342376){
     board_id = 6;
+  }
+  else if (chip_id == 3407938){
+    board_id = 7;
   }
   else {
     board_id = (uint8_t) chip_id;
