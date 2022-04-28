@@ -34,7 +34,7 @@ typedef signed long long int64;
 typedef unsigned long long uint64;
 
 /* Function Prototypes -------------------------------------------------------*/
-void uwbReceiveInterruptInit(void);
+void ranging_init(void);
 void uwbFrameHandler(void);
 int twrInitiateInstance(uint8_t, bool, uint8_t);
 int twrReceiveCallback(void);

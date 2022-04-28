@@ -56,12 +56,12 @@
 void SystemClock_Config(void);
 void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
-
+void board_id_init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+static uint8_t board_id;
 /* USER CODE END 0 */
 
 /**
@@ -89,15 +89,16 @@ int main(void)
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
-
+  
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C2_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   MX_USB_DEVICE_Init();
+  board_id_init();
   uwb_init();
-  uwbReceiveInterruptInit();
+  ranging_init();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
@@ -161,7 +162,26 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+uint8_t get_board_id(void){
+  return board_id;
+}
 
+void board_id_init(void){
+  uint32_t chip_id = HAL_GetUIDw0();
+
+  if (chip_id == 3407938){
+    board_id = 4;
+  }
+  else if (chip_id == 4194378){
+    board_id = 5;
+  }
+  else if (chip_id == 3342376){
+    board_id = 6;
+  }
+  else {
+    board_id = (uint8_t) chip_id;
+  }
+}
 /* USER CODE END 4 */
 
  /**

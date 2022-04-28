@@ -247,7 +247,7 @@ void readUsb(){
 
     // Call if a valid command number was detected
     int num_commands = sizeof(all_command_funcs) / sizeof(all_command_funcs[0]);
-    if (retry_count > 10){
+    if (retry_count > MAX_COMMAND_RETRIES){
         // Give up re-trying after 10 attempts.
         command_number = -1;
         retry_count = 0;

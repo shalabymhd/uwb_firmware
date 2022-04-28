@@ -58,14 +58,14 @@ static uint32 status_reg = 0;
 #define FINAL_RX_TIMEOUT_UUS 600 //3300
 
 /* Frames used in the ranging process. See NOTE 2 below. */
-static uint8 tx_poll_msg[]  = {0x41, 0x88, 0xA, 0, BOARD_ID, 0, 0, 0, 0, 0};
-static uint8 rx_resp_msg[]  = {0x41, 0x88, 0xB, 0, 0, BOARD_ID, 0, 0};
-static uint8 tx_final_msg[] = {0x41, 0x88, 0xC, 0, BOARD_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static uint8 tx_poll_msg[]  = {0x41, 0x88, 0xA, 0, 0, 0, 0, 0, 0, 0};
+static uint8 rx_resp_msg[]  = {0x41, 0x88, 0xB, 0, 0, 0, 0, 0};
+static uint8 tx_final_msg[] = {0x41, 0x88, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Frames used in the ranging process. See NOTE 2 below. */
-static uint8 rx_poll_msg[]  = {0x41, 0x88, 0xA, 0, 0, BOARD_ID, 0, 0};
-static uint8 tx_resp_msg[]  = {0x41, 0x88, 0xB, 0, BOARD_ID, 0, 0, 0};
-static uint8 rx_final_msg[] = {0x41, 0x88, 0xC, 0, 0, BOARD_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static uint8 rx_poll_msg[]  = {0x41, 0x88, 0xA, 0, 0, 0, 0, 0};
+static uint8 tx_resp_msg[]  = {0x41, 0x88, 0xB, 0, 0, 0, 0, 0};
+static uint8 rx_final_msg[] = {0x41, 0x88, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Length of the common part of the message (up to and including the function code, see NOTE 2 below). */
 #define ALL_MSG_COMMON_LEN (6)
@@ -114,7 +114,17 @@ static osMailQId UwbMsgBox;
  * called once on startup.
  * 
  */
-void uwbReceiveInterruptInit(){
+void ranging_init(){
+
+    /* Load board IDs into ranging frames */
+    tx_poll_msg[ALL_TX_BOARD_IDX]  = BOARD_ID();
+    rx_resp_msg[ALL_RX_BOARD_IDX]  = BOARD_ID();
+    tx_final_msg[ALL_TX_BOARD_IDX] = BOARD_ID();
+
+    rx_poll_msg[ALL_RX_BOARD_IDX]  = BOARD_ID();
+    tx_resp_msg[ALL_TX_BOARD_IDX]  = BOARD_ID();
+    rx_final_msg[ALL_RX_BOARD_IDX] = BOARD_ID();
+
     /* Install DW1000 IRQ handler. */
     port_set_deca_isr(dwt_isr);
 
