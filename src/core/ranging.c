@@ -896,6 +896,8 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
     The transmission time-stamp of Signal 1 is embedded in the received frame */
     // Check if fourth signal is expected.
     if (target_meas_bool){
+        dwt_setpreambledetecttimeout(0);
+        dwt_setrxtimeout(0);
         success = checkReceivedFrame(ALL_TX_BOARD_IDX, initiator_id, ALL_RX_BOARD_IDX, target_id, 0xC);
         if (success){
             /* Extract all the embedded information in the received signal */
@@ -997,6 +999,9 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
     The transmission time-stamp of Signal 1 is embedded in the received frame */
     // Check if fourth signal is expected.
     if (target_meas_bool){
+        dwt_setpreambledetecttimeout(0);
+        dwt_setrxtimeout(0);
+
         success = checkReceivedFrame(ALL_TX_BOARD_IDX, initiator_id, ALL_RX_BOARD_IDX, target_id, 0xC);
         if (success){
             /* Extract all the embedded information in the received signal */
