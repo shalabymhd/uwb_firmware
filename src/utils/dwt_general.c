@@ -31,6 +31,11 @@ static dwt_config_t config = {
 };
 
 /**
+  * @brief  Pulse generator delay, as per Table 38 in the User Manual.
+  */
+int PGdly[8] = {0x00, 0xC9, 0xC2, 0xC5, 0x95, 0xC0, 0x00, 0x93};
+
+/**
  * @brief  Initializes DWT_Clock_Cycle_Count for DWT_Delay_us, getInterval functions
  * @return Error DWT counter
  *         1: clock cycle counter not started
@@ -100,6 +105,12 @@ void uwb_init(void){
         { };
     }
     port_set_dw1000_fastrate();
+
+    /* Set transmission power to maximum */
+    dwt_txconfig_t txrf_config = {.PGdly = PGdly[config.chan],
+                                  .power = 0x1F1F1F1FL};
+    
+    dwt_configuretxrf(&txrf_config);
 
     /* Configure DW1000. */
     dwt_configure(&config);
