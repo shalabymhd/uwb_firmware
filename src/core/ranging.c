@@ -663,11 +663,6 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* Pr, bool is_initiato
             convert_float_to_string(power1,Pr1);
             convert_float_to_string(power2,Pr2);
 
-            /* Reject negative measurements, with some leeway for clock-skew-dependent bias in SS TWR. */
-            if (distance<-1){
-                return 0;
-            }
-
             /* Display computed distance. */
             char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
@@ -793,11 +788,6 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, float* Pr, bool
            
             tof = tof_dtu * DWT_TIME_UNITS;
             distance = tof * SPEED_OF_LIGHT;
-            
-            /* Reject negative measurements. */
-            if (distance<0){
-                return 0;
-            }
 
             /* Display computed distance. */
             char dist_str[10] = {0};
