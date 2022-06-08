@@ -112,6 +112,9 @@ void uwb_init(void){
     
     dwt_configuretxrf(&txrf_config);
 
+    /* Configure LEDs management. See NOTE 6 below. */
+    dwt_setleds(DWT_LEDS_ENABLE);
+
     /* Configure DW1000. */
     dwt_configure(&config);
 
