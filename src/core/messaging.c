@@ -24,17 +24,14 @@ uint8 msg_suffix[] = {0, 0};
 char resp_prefix[] = "S06|";
 char resp_suffix[] = "\r\n";
 
-/*! -------------------------------------------------------------------------
- * @fn broadcast(uint8* msg, size_t msg_len)
- *
+/**
  * @brief Send an arbirary array of bytes over UWB, and do not expect response.
+ * 
+ * @param msg pointer to an array of bytes to send over UWB
+ * @param msg_len  number of bytes in msg to send
  *
- * Parameters
- * ----------
- * @param msg - pointer to an array of bytes to send over UWB
- * @param msg_len - number of bytes in msg to send
+ * @return int 1 if successful
  */
-
 int broadcast(uint8* msg, uint16_t msg_len){
 
     if (msg_len > (MAX_FRAME_LEN - PREFIX_LEN - SUFFIX_LEN - 2)){
@@ -71,17 +68,12 @@ int broadcast(uint8* msg, uint16_t msg_len){
     }
 }
 
-
-/*! -------------------------------------------------------------------------
- * @fn dataReceiveCallback(uint8 *rx_data)
- *
+/**
  * @brief This function gets called whenever a message type of 0xD is 
  * detected.
- *
- * Parameters
- * ----------
- * @param msg - pointer to an array of bytes to send over UWB
- * @param msg_len - number of bytes in msg to send
+ * 
+ * @param rx_data pointer to buffer containing data.
+ * @return int 1 if successful
  */
 int dataReceiveCallback(uint8_t *rx_data){    
 
@@ -106,6 +98,5 @@ int dataReceiveCallback(uint8_t *rx_data){
 
     // Transmit the final concatenated array over USB
     CDC_Transmit_FS(full_msg, full_len);
-    osDelay(1);
     return 1;
 }

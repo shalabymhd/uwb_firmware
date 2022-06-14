@@ -22,6 +22,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc_if.h"
 #include "common.h"
+#include "usb_interface.h"
 /* USER CODE BEGIN INCLUDE */
 
 /* USER CODE END INCLUDE */
@@ -95,7 +96,7 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
-extern uint8_t CdcReceiveBuffer[USB_BUFFER_SIZE];
+
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -110,7 +111,7 @@ extern uint8_t CdcReceiveBuffer[USB_BUFFER_SIZE];
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
-
+extern uint8_t CdcReceiveBuffer[USB_BUFFER_SIZE];
 /* USER CODE END EXPORTED_VARIABLES */
 
 /**
@@ -127,6 +128,7 @@ static int8_t CDC_DeInit_FS(void);
 static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length);
 static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 static int8_t CDC_TransmitCplt_FS(uint8_t *pbuf, uint32_t *Len, uint8_t epnum);
+
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
 
@@ -265,23 +267,28 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
 
-  if (*Len>1 && strcmp((char*)&Buf[0],"~")){ /* prevents the subsequent code from getting triggered by usb_print
-                                                or the serial Python package. */
-    // Copy data to global buffer without overwriting data that hasn't been read yet.
-    uint8_t len = (uint8_t)*Len;
-    uint8_t idx = CdcReceiveBuffer[0]; // The first entry of CdcReceiveBuffer stores the
-                                       // index where the previously stored messages end
+  /* if statement prevents the subsequent code from getting triggered by 
+  usb_print or the serial Python package. */
+  if (*Len>1 && strcmp((char*)&Buf[0],"~")){ 
+    
+    uint32_t len = *Len;
 
-    /* Check if the CDC Receive Buffer is already full to prevent overflowing */
-    if (idx + len > sizeof(CdcReceiveBuffer)){
-      usb_print("USB receive buffer is full! Message rejected to prevent overflow.\r\n");
-    }
-    else{
-      memcpy(CdcReceiveBuffer + idx + 1, Buf, len);  // copy the data to the buffer
-      CdcReceiveBuffer[0] = idx + len; // Update the first entry 
-    }
+    // Get handle to message queue
+    osMailQId MsgBox = getMailQId();
+
+    // Allocate memory for message struct 
+    UsbMsg *msg_ptr;
+    msg_ptr = osMailCAlloc(MsgBox, 0);   // Allocate memory for the Mail
+
+    // Load data into the message 
+    msg_ptr->len = len;
+    memcpy(msg_ptr->msg, Buf, len);
+
+    // Send message to the queue
+    osMailPut(MsgBox, msg_ptr);
 
     memset(Buf, '\0', len); // clear the temporary buffer
+    
   }
   
   return (USBD_OK);
@@ -334,10 +341,10 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
   UNUSED(epnum);
   /* USER CODE END 13 */
   return result;
+  
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
-
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**

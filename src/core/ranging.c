@@ -11,6 +11,7 @@
 #include "bias.h"
 #include "messaging.h"
 #include <assert.h>
+#include "cmsis_os.h"
 
 extern osThreadId twrInterruptTaskHandle;
 
@@ -20,6 +21,11 @@ extern osThreadId twrInterruptTaskHandle;
 /* Inter-ranging delay period, in milliseconds. */
 #define RNG_DELAY_MS 1000
 
+typedef struct {
+    uint8_t msg[MAX_FRAME_LEN];
+    uint32_t len;
+} UwbMsg;
+
 /* Buffer to store received response message.
  * Its size is adjusted to longest frame that this example code is supposed to handle. */
 static uint8 rx_buffer[MAX_FRAME_LEN];
@@ -28,9 +34,11 @@ static uint8 rx_buffer[MAX_FRAME_LEN];
 static uint32 status_reg = 0;
 
 /* Delay between frames, in UWB microseconds. See NOTE 4 below. */
-/* This is the delay from the end of the frame transmission to the enable of the receiver, as programmed for the DW1000's wait for response feature. */
+/* This is the delay from the end of the frame transmission to the enable of the 
+ * receiver, as programmed for the DW1000's wait for response feature. */
 #define POLL_TX_TO_RESP_RX_DLY_UUS 150 //300
-/* This is the delay from Frame RX timestamp to TX reply timestamp used for calculating/setting the DW1000's delayed TX function. This includes the
+/* This is the delay from Frame RX timestamp to TX reply timestamp used for 
+ * calculating/setting the DW1000's delayed TX function. This includes the
  * frame length of approximately 2.66 ms with above configuration. */
 #define RESP_RX_TO_FINAL_TX_DLY_UUS 1500 //3100 TODO: Tune this
 /* Receive response timeout. See NOTE 5 below. */
@@ -39,23 +47,25 @@ static uint32 status_reg = 0;
 #define PRE_TIMEOUT 8
 
 /* Delay between frames, in UWB microseconds. See NOTE 4 below. */
-/* This is the delay from Frame RX timestamp to TX reply timestamp used for calculating/setting the DW1000's delayed TX function. This includes the
+/* This is the delay from Frame RX timestamp to TX reply timestamp used for 
+ * calculating/setting the DW1000's delayed TX function. This includes the
  * frame length of approximately 2.46 ms with above configuration. */
 #define POLL_RX_TO_RESP_TX_DLY_UUS 400 //2750
-/* This is the delay from the end of the frame transmission to the enable of the receiver, as programmed for the DW1000's wait for response feature. */
+/* This is the delay from the end of the frame transmission to the enable of the
+ * receiver, as programmed for the DW1000's wait for response feature. */
 #define RESP_TX_TO_FINAL_RX_DLY_UUS 40 //500
 /* Receive final timeout. See NOTE 5 below. */
 #define FINAL_RX_TIMEOUT_UUS 600 //3300
 
 /* Frames used in the ranging process. See NOTE 2 below. */
-static uint8 tx_poll_msg[]  = {0x41, 0x88, 0xA, 0, BOARD_ID, 0, 0, 0, 0, 0};
-static uint8 rx_resp_msg[]  = {0x41, 0x88, 0xB, 0, 0, BOARD_ID, 0, 0};
-static uint8 tx_final_msg[] = {0x41, 0x88, 0xC, 0, BOARD_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static uint8 tx_poll_msg[]  = {0x41, 0x88, 0xA, 0, 0, 0, 0, 0, 0, 0};
+static uint8 rx_resp_msg[]  = {0x41, 0x88, 0xB, 0, 0, 0, 0, 0};
+static uint8 tx_final_msg[] = {0x41, 0x88, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Frames used in the ranging process. See NOTE 2 below. */
-static uint8 rx_poll_msg[]  = {0x41, 0x88, 0xA, 0, 0, BOARD_ID, 0, 0};
-static uint8 tx_resp_msg[]  = {0x41, 0x88, 0xB, 0, BOARD_ID, 0, 0, 0};
-static uint8 rx_final_msg[] = {0x41, 0x88, 0xC, 0, 0, BOARD_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static uint8 rx_poll_msg[]  = {0x41, 0x88, 0xA, 0, 0, 0, 0, 0};
+static uint8 tx_resp_msg[]  = {0x41, 0x88, 0xB, 0, 0, 0, 0, 0};
+static uint8 rx_final_msg[] = {0x41, 0x88, 0xC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Length of the common part of the message (up to and including the function code, see NOTE 2 below). */
 #define ALL_MSG_COMMON_LEN (6)
@@ -96,28 +106,90 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data);
 /* Passive listening toggle */
 static bool passive_listening = 0;
 
-/* */
-void uwbFrameHandler(void){
-    uint8 msg_type = rx_buffer[ALL_MSG_TYPE_IDX];
+static osMailQDef(UwbMsgBox, USB_QUEUE_SIZE, UwbMsg); 
+static osMailQId UwbMsgBox;  
 
-    switch (msg_type)
-    {
-        case 0xA:{
-            twrReceiveCallback();
-            break;
+/**
+ * @brief Initialization routine for UWB interrupt handling. This function is
+ * called once on startup.
+ * 
+ */
+void ranging_init(){
+
+    /* Load board IDs into ranging frames */
+    tx_poll_msg[ALL_TX_BOARD_IDX]  = BOARD_ID();
+    rx_resp_msg[ALL_RX_BOARD_IDX]  = BOARD_ID();
+    tx_final_msg[ALL_TX_BOARD_IDX] = BOARD_ID();
+
+    rx_poll_msg[ALL_RX_BOARD_IDX]  = BOARD_ID();
+    tx_resp_msg[ALL_TX_BOARD_IDX]  = BOARD_ID();
+    rx_final_msg[ALL_RX_BOARD_IDX] = BOARD_ID();
+
+    /* Install DW1000 IRQ handler. */
+    port_set_deca_isr(dwt_isr);
+
+    /* Register RX call-back. */
+    dwt_setcallbacks(NULL, &rx_ok_cb, NULL, NULL);
+
+    // create msg queue for interrupt
+    UwbMsgBox = osMailCreate(osMailQ(UwbMsgBox), NULL);  
+
+    /* Enable wanted interrupts (TX confirmation, RX good frames, RX timeouts and RX errors). */
+    // dwt_setinterrupt(DWT_INT_RFCG | DWT_INT_RFTO | DWT_INT_RXPTO | DWT_INT_RPHE | DWT_INT_RFCE | DWT_INT_RFSL | DWT_INT_SFDT, 1);
+    dwt_setinterrupt(DWT_INT_RFCG, 1);
+
+    /* Set delay to turn reception on after transmission of the frame. See NOTE 2 below. */
+    dwt_setrxaftertxdelay(60);
+
+    /* Set response frame timeout. */
+    dwt_setrxtimeout(0);
+
+    dwt_rxenable(DWT_START_RX_IMMEDIATE);
+}
+
+/**
+ * @brief The function gets call in an infinite loop, and consumes items from
+ * a message queue that is populated by the interrupt.
+ * 
+ */
+void uwbFrameHandler(void){
+
+    osEvent evt;
+    UwbMsg *msg_ptr;
+    decaIrqStatus_t stat;
+
+
+    evt = osMailGet(UwbMsgBox, osWaitForever);  // Get message on queue. 
+    if (evt.status == osEventMail) {
+        msg_ptr = evt.value.p;
+
+        uint8_t msg_type = msg_ptr->msg[ALL_MSG_TYPE_IDX];
+
+        switch (msg_type)
+        {
+            case 0xA:{
+                stat = decamutexon(); // disable dw1000 interrupts
+                twrReceiveCallback();
+                decamutexoff(stat);
+                break;
+            }
+            case 0xB:{
+                usb_print("WARNING 0xB: TWR message is firing an interrupt when it shouldnt be.\r\n");
+                break;
+            }
+            case 0xC:{
+                usb_print("WARNING 0xC: TWR message is firing an interrupt when it shouldnt be.\r\n");
+                break;
+            }
+            case 0xD:{
+                dataReceiveCallback(msg_ptr->msg);
+                break;
+            }
+            default:{
+                usb_print("Unrecognized UWB message type received.");
+            }
         }
-        case 0xB:{
-            usb_print("WARNING 0xB: TWR message is firing an interrupt when it shouldnt be.\r\n");
-            break;
-        }
-        case 0xC:{
-            usb_print("WARNING 0xC: TWR message is firing an interrupt when it shouldnt be.\r\n");
-            break;
-        }
-        case 0xD:{
-            dataReceiveCallback(rx_buffer);
-            break;
-        }
+        osMailFree(UwbMsgBox, msg_ptr); // IMPORTANT: free message memory
     }
 }
 
@@ -591,11 +663,6 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* Pr, bool is_initiato
             convert_float_to_string(power1,Pr1);
             convert_float_to_string(power2,Pr2);
 
-            /* Reject negative measurements, with some leeway for clock-skew-dependent bias in SS TWR. */
-            if (distance<-1){
-                return 0;
-            }
-
             /* Display computed distance. */
             char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
@@ -615,7 +682,7 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* Pr, bool is_initiato
                     tx1_ts, rx1_ts,
                     tx2_ts, rx2_ts,
                     power1, power2);
-            usb_print(response); // TODO: will this response ever be sent without a USB command?
+            usb_print(response);
             
             dwt_setrxtimeout(0);
             dwt_setpreambledetecttimeout(0);
@@ -721,11 +788,6 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, float* Pr, bool
            
             tof = tof_dtu * DWT_TIME_UNITS;
             distance = tof * SPEED_OF_LIGHT;
-            
-            /* Reject negative measurements. */
-            if (distance<0){
-                return 0;
-            }
 
             /* Display computed distance. */
             char dist_str[10] = {0};
@@ -769,6 +831,18 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, float* Pr, bool
     return 0;
 }
 
+/*! ----------------------------------------------------------------------------
+ * Function: passivelyListenSS()
+ *
+ * @brief Listen passively to other TWR tags and record all timestamps. 
+ * Single-sided version.
+ * 
+ * @param rx_ts1 (uint32_t) The time of reception of the already detected signal 
+ * through interrupt.
+ * @param target_meas_bool (bool) Whether or not a third signal is expected.
+ * 
+ * @return (bool) Success boolean.
+ */
 int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
     /* Have received first signal in a TWR transaction. 1 or 2 more signals expected. */
     bool success;
@@ -812,6 +886,8 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
     The transmission time-stamp of Signal 1 is embedded in the received frame */
     // Check if fourth signal is expected.
     if (target_meas_bool){
+        dwt_setpreambledetecttimeout(0);
+        dwt_setrxtimeout(0);
         success = checkReceivedFrame(ALL_TX_BOARD_IDX, initiator_id, ALL_RX_BOARD_IDX, target_id, 0xC);
         if (success){
             /* Extract all the embedded information in the received signal */
@@ -843,6 +919,18 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
     return 1;
 }
 
+/*! ----------------------------------------------------------------------------
+ * Function: passivelyListenDS()
+ *
+ * @brief Listen passively to other TWR tags and record all timestamps. 
+ * Double-sided version.
+ * 
+ * @param rx_ts1 (uint32_t) The time of reception of the already detected signal 
+ * through interrupt.
+ * @param target_meas_bool (bool) Whether or not a fourth signal is expected.
+ * 
+ * @return (bool) Success boolean.
+ */
 int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
     /* Have received first signal in a TWR transaction. 1 or 2 more signals expected. */
     bool success;
@@ -875,6 +963,12 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
         Pr2 = retrieveFPP();
     }
     else{
+        /* Due to immediate response of Signal 2, this has highest chance of failure.
+           If failed, still communicate the ranging tags' IDs for scheduling purposes. */
+        char output[155];
+        sprintf(output,"S01|%d|%d|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i\r\n",
+                initiator_id,target_id,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+        usb_print(output);
         return 0;
     }
 
@@ -901,6 +995,9 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
     The transmission time-stamp of Signal 1 is embedded in the received frame */
     // Check if fourth signal is expected.
     if (target_meas_bool){
+        dwt_setpreambledetecttimeout(0);
+        dwt_setrxtimeout(0);
+
         success = checkReceivedFrame(ALL_TX_BOARD_IDX, initiator_id, ALL_RX_BOARD_IDX, target_id, 0xC);
         if (success){
             /* Extract all the embedded information in the received signal */
@@ -934,6 +1031,19 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
     return 1;
 }
 
+/*! ----------------------------------------------------------------------------
+ * Function: checkReceivedFrame()
+ *
+ * @brief This function checks if the received frame is the expected one. 
+ * 
+ * @param initator_idx (uint8_t) The index of the initator ID in the received message.
+ * @param initator_id (uint8_t) The ID of the initator board in this TWR transaction. 
+ * @param target_idx (uint8_t) The index of the target ID in the received message.
+ * @param target_id (uint8_t) The ID of the target board in this TWR transaction.
+ * @param msg_type (uint8_t) The type of message expected.
+ * 
+ * @return (bool) Success boolean.
+ */
 bool checkReceivedFrame(uint8_t initiator_idx, uint8_t initiator_id,
                         uint8_t target_idx, uint8_t target_id,
                         uint8_t msg_type){
@@ -975,31 +1085,18 @@ bool checkReceivedFrame(uint8_t initiator_idx, uint8_t initiator_id,
     }
 }
 
+/*! ----------------------------------------------------------------------------
+ * Function: setPassiveToggle()
+ * 
+ * @brief This function sets the passive toggle.
+ * 
+ * @param toggle (bool) 1 if passive toggle is to be turned on, 0 otherwise.
+ */
 void setPassiveToggle(bool toggle){
     passive_listening = toggle;
 }
 
-void uwbReceiveInterruptInit(){
-    /* Install DW1000 IRQ handler. */
-    port_set_deca_isr(dwt_isr);
-
-    /* Register RX call-back. */
-    dwt_setcallbacks(NULL, &rx_ok_cb, NULL, NULL);
-
-    /* Enable wanted interrupts (TX confirmation, RX good frames, RX timeouts and RX errors). */
-    // dwt_setinterrupt(DWT_INT_RFCG | DWT_INT_RFTO | DWT_INT_RXPTO | DWT_INT_RPHE | DWT_INT_RFCE | DWT_INT_RFSL | DWT_INT_SFDT, 1);
-    dwt_setinterrupt(DWT_INT_RFCG, 1);
-
-    /* Set delay to turn reception on after transmission of the frame. See NOTE 2 below. */
-    dwt_setrxaftertxdelay(60);
-
-    /* Set response frame timeout. */
-    dwt_setrxtimeout(0);
-
-    dwt_rxenable(DWT_START_RX_IMMEDIATE);
-}
-
-/*! ------------------------------------------------------------------------------------------------------------------
+/*! ----------------------------------------------------------------------------
  * @fn rx_ok_cb()
  *
  * @brief Callback to process RX good frame events
@@ -1010,11 +1107,11 @@ void uwbReceiveInterruptInit(){
  */
 static void rx_ok_cb(const dwt_cb_data_t *cb_data)
 {
-    int i;
-
+    
     /* Clear local RX buffer to avoid having leftovers from previous receptions. 
     This is not necessary but is included here to aid reading the RX
-    buffer. */
+    buffer. */  
+    int i;
     for (i = 0 ; i < MAX_FRAME_LEN; i++ )
     {
         rx_buffer[i] = 0;
@@ -1023,8 +1120,21 @@ static void rx_ok_cb(const dwt_cb_data_t *cb_data)
     /* A frame has been received, copy it to our local buffer. */
     if (cb_data->datalength <= MAX_FRAME_LEN)
     {
+        // Load data directly into a static buffer.
         dwt_readrxdata(rx_buffer, cb_data->datalength, 0);
-    }
 
-    osThreadResume(twrInterruptTaskHandle);
+        // Allocate memory for message struct 
+        UwbMsg *msg_ptr;
+        msg_ptr = osMailCAlloc(UwbMsgBox, 0);   // Allocate memory for the Mail
+
+        // Load data into the message 
+        msg_ptr->len = cb_data->datalength;
+        dwt_readrxdata(msg_ptr->msg, cb_data->datalength, 0);
+
+        // Send message to the queue
+        osMailPut(UwbMsgBox, msg_ptr);
+
+        //CDC_Transmit_FS(rx_buffer, cb_data->datalength); // for debugging
+    }
 }
+
