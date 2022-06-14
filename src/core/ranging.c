@@ -963,6 +963,12 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
         Pr2 = retrieveFPP();
     }
     else{
+        /* Due to immediate response of Signal 2, this has highest chance of failure.
+           If failed, still communicate the ranging tags' IDs for scheduling purposes. */
+        char output[155];
+        sprintf(output,"S01|%d|%d|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i\r\n",
+                initiator_id,target_id,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+        usb_print(output);
         return 0;
     }
 
