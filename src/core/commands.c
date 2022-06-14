@@ -138,7 +138,6 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
 
     if (success){ 
         // Response is done inside `twrInitiateInstance`
-        usb_print("TWR SUCCESS!\r\n");
         return 1;
     }
     else {
