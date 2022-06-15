@@ -443,7 +443,7 @@ int twrReceiveCallback(void){
                 else{
                     ret = rxTimestampsSS(rx1_ts, initiator_id, &Pr1, 0);
                 }
-                if (ret){ // TODO: allow 4th signal with double-sided TWR   
+                if (ret){
                     dwt_setpreambledetecttimeout(0);
                     dwt_setrxtimeout(0);
                     return 1;
@@ -587,7 +587,6 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3, float* Pr, bool is_immedi
 }
 
 int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* Pr, bool is_initiator){
-    /* String used to display measured distance on UART. */
     uint32 frame_len;
     double Ra, Db;
     uint32 rx1_ts, tx2_ts;
@@ -651,7 +650,6 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* Pr, bool is_initiato
                 Pr1 = *Pr;              
             }
             
-
             /* Compute time of flight. 32-bit subtractions give correct answers even if clock has wrapped. See NOTE 12 below. */            
             Ra = (double)(rx2_ts - tx1_ts);
             Db = (double)(tx2_ts - rx1_ts);
@@ -702,7 +700,6 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* Pr, bool is_initiato
 }
 
 int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, float* Pr, bool is_initiator){
-    /* String used to display measured distance on UART. */
     uint32 frame_len;
     double Ra1, Ra2, Db1, Db2;
     uint32 rx1_ts, tx2_ts, tx3_ts;
@@ -783,8 +780,8 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, float* Pr, bool
             Ra2 = (double)(rx3_ts - rx2_ts);
             Db1 = (double)(tx2_ts - rx1_ts);
             Db2 = (double)(tx3_ts - tx2_ts);
-            tof_dtu = (int64)((Ra1*Db2 - Ra2*Db1) / (Ra2 + Db2)); // Reversed alternative double-sided TWR
-            // tof_dtu = (int64)(0.5*(Ra1 - Ra2/Db2*Db1)); // Reversed alternative double-sided TWR
+            // tof_dtu = (int64)((Ra1*Db2 - Ra2*Db1) / (Ra2 + Db2)); // Reversed alternative double-sided TWR
+            tof_dtu = (int64)(0.5*(Ra1 - Ra2/Db2*Db1)); // Reversed alternative double-sided TWR
            
             tof = tof_dtu * DWT_TIME_UNITS;
             distance = tof * SPEED_OF_LIGHT;
@@ -966,8 +963,8 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
         /* Due to immediate response of Signal 2, this has highest chance of failure.
            If failed, still communicate the ranging tags' IDs for scheduling purposes. */
         char output[155];
-        sprintf(output,"S01|%d|%d|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i\r\n",
-                initiator_id,target_id,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+        sprintf(output,"S01|%d|%d|0|0|0|0|0|0|0|0|0|0|0|0|0|0\r\n",
+                initiator_id,target_id);
         usb_print(output);
         return 0;
     }
