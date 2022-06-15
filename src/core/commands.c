@@ -130,8 +130,7 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
 
     if (target_ID == BOARD_ID()){
         usb_print("TWR FAIL: The target ID is the same as the initiator's ID.\r\n");
-        return 0;
-        // TODO: we should not retry!! we will get stuck.
+        return 1;
     }
 
     success = twrInitiateInstance(target_ID, target_meas_bool, mult_twr);
@@ -141,8 +140,6 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
         return 1;
     }
     else {
-        // TODO: this is worth retrying. need to implement a limit.
-        usb_print("TWR FAIL: No successful response.\r\n");
         return 0;
     }
 }
