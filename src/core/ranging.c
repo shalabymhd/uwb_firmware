@@ -908,18 +908,26 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
     uint32_t tx_ts1_n = 0, tx_ts2_n = 0; // transmission timestamps at neighbouring tags
     uint32_t rx_ts1_n = 0, rx_ts2_n = 0; // reception timestamps at neighbouring tags
     float fpp1 = 0, fpp2 = 0; // received signal power at current tag 
+    float rxp1 = 0, rxp2 = 0;  
+    uint16_t std1 = 0, std2 = 0;  
     float fpp1_n = 0, fpp2_n = 0; // received signal power at neighbouring tags 
-    char power1[10] = {0};
-    char power2[10] = {0};
-    char power1_n[10] = {0};
-    char power2_n[10] = {0};
+    float rxp1_n = 0, rxp2_n = 0;
+    uint16_t std1_n = 0, std2_n = 0;
+    char fpp1_str[10] = {0};
+    char fpp2_str[10] = {0};
+    char rxp1_str[10] = {0};
+    char rxp2_str[10] = {0};
+    char fpp1_n_str[10] = {0};
+    char fpp2_n_str[10] = {0};
+    char rxp1_n_str[10] = {0};
+    char rxp2_n_str[10] = {0};
 
     // Retrieve IDs of tags involved in the TWR transaction
     initiator_id = rx_buffer[ALL_TX_BOARD_IDX];
     target_id = rx_buffer[ALL_RX_BOARD_IDX];
 
     /* Retrieve received signal power */
-    // fpp1 = retrieveDiagnostics();
+    retrieveDiagnostics(&fpp1, &rxp1, &std1);
 
     /* --------------------- SIGNAL 2: Target to Initiator --------------------- */
     success = checkReceivedFrame(ALL_RX_BOARD_IDX, initiator_id, ALL_TX_BOARD_IDX, target_id, 0xC);
@@ -927,13 +935,16 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
         /* Extract all the embedded information in the received signal */
         final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &rx_ts1_n);
         final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &tx_ts2_n);
+
         memcpy(&fpp1_n, &rx_buffer[FINAL_FPP_IDX], sizeof(float)); 
+        memcpy(&rxp1_n, &rx_buffer[FINAL_RXP_IDX], sizeof(float)); 
+        memcpy(&std1_n, &rx_buffer[FINAL_STD_IDX], sizeof(uint16_t)); 
 
         /* Retrieve reception timestamp */
         rx_ts2 = get_rx_timestamp_u64();
 
         /* Retrieve received signal power */
-        // fpp2 = retrieveDiagnostics();
+        retrieveDiagnostics(&fpp2, &rxp2, &std2);
     }
     else{
         return 0;
@@ -950,7 +961,10 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
             /* Extract all the embedded information in the received signal */
             final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &tx_ts1_n);
             final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &rx_ts2_n);
+
             memcpy(&fpp2_n, &rx_buffer[FINAL_FPP_IDX], sizeof(float)); 
+            memcpy(&rxp2_n, &rx_buffer[FINAL_RXP_IDX], sizeof(float)); 
+            memcpy(&std2_n, &rx_buffer[FINAL_STD_IDX], sizeof(uint16_t)); 
         }
         else{
             return 0;
@@ -958,20 +972,37 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
     }
 
     /* --------------------- Output Time-stamps --------------------- */
-    convert_float_to_string(power1,fpp1);
-    convert_float_to_string(power2,fpp2);
-    convert_float_to_string(power1_n,fpp1_n);
-    convert_float_to_string(power2_n,fpp2_n);
+    convert_float_to_string(fpp1_str,fpp1);
+    convert_float_to_string(fpp2_str,fpp2);
+    convert_float_to_string(rxp1_str,rxp1);
+    convert_float_to_string(rxp2_str,rxp2);
+    convert_float_to_string(fpp1_n_str,fpp1_n);
+    convert_float_to_string(fpp2_n_str,fpp2_n);
+    convert_float_to_string(rxp1_n_str,rxp1_n);
+    convert_float_to_string(rxp2_n_str,rxp2_n);
 
-    char output[155];
-    sprintf(output,"S01|%d|%d|%lu|%lu|%d|%lu|%lu|%lu|%lu|%d|%d|%s|%s|%s|%s|%s\r\n",
+    char output[450];
+    sprintf(output,"S01|%d|%d|\
+                    %lu|%lu|0|\
+                    %lu|%lu|\
+                    %lu|%lu|\
+                    0|0|\
+                    %s|%s|0|\
+                    %s|%s|0|\
+                    %u|%u|0|\
+                    %s|%s|\
+                    %s|%s|\
+                    %u|%u\r\n",
             initiator_id, target_id,
-            rx_ts1,rx_ts2,0,
+            rx_ts1,rx_ts2,
             tx_ts1_n,rx_ts1_n,
             tx_ts2_n,rx_ts2_n,
-            0,0,
-            power1,power2,"0",
-            power1_n,power2_n);
+            fpp1_str,fpp2_str,
+            rxp1_str,rxp2_str,
+            std1,std2,
+            fpp1_n_str,fpp2_n_str,
+            rxp1_n_str,rxp2_n_str,
+            std1_n,std2_n);
     usb_print(output);
     return 1;
 }
@@ -996,19 +1027,28 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
     uint32_t tx_ts1_n = 0, tx_ts2_n = 0, tx_ts3_n = 0; // transmission timestamps at neighbouring tags
     uint32_t rx_ts1_n = 0, rx_ts2_n = 0, rx_ts3_n = 0; // reception timestamps at neighbouring tags
     float fpp1 = 0, fpp2 = 0, fpp3 = 0; // received signal power at current tag 
+    float rxp1 = 0, rxp2 = 0, rxp3 = 0;
+    uint16_t std1 = 0, std2 = 0, std3 = 0;
     float fpp1_n = 0, fpp2_n = 0; // received signal power at neighbouring tags 
-    char power1[10] = {0};
-    char power2[10] = {0};
-    char power3[10] = {0};
-    char power1_n[10] = {0};
-    char power2_n[10] = {0};
+    float rxp1_n = 0, rxp2_n = 0;
+    uint16_t std1_n = 0, std2_n = 0;
+    char fpp1_str[10] = {0};
+    char fpp2_str[10] = {0};
+    char fpp3_str[10] = {0};
+    char rxp1_str[10] = {0};
+    char rxp2_str[10] = {0};
+    char rxp3_str[10] = {0};
+    char fpp1_n_str[10] = {0};
+    char fpp2_n_str[10] = {0};
+    char rxp1_n_str[10] = {0};
+    char rxp2_n_str[10] = {0};
 
     // Retrieve IDs of tags involved in the TWR transaction
     initiator_id = rx_buffer[ALL_TX_BOARD_IDX];
     target_id = rx_buffer[ALL_RX_BOARD_IDX];
 
     /* Retrieve received signal power */
-    // fpp1 = retrieveDiagnostics();
+    retrieveDiagnostics(&fpp1, &rxp1, &std1);
 
     /* --------------------- SIGNAL 2: Target to Initiator --------------------- */
     success = checkReceivedFrame(ALL_RX_BOARD_IDX, initiator_id, ALL_TX_BOARD_IDX, target_id, 0xB);
@@ -1017,13 +1057,13 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
         rx_ts2 = get_rx_timestamp_u64();
 
         /* Retrieve received signal power */
-        // fpp2 = retrieveDiagnostics();
+        retrieveDiagnostics(&fpp2, &rxp2, &std2);
     }
     else{
         /* Due to immediate response of Signal 2, this has highest chance of failure.
            If failed, still communicate the ranging tags' IDs for scheduling purposes. */
         char output[155];
-        sprintf(output,"S01|%d|%d|0|0|0|0|0|0|0|0|0|0|0|0|0|0\r\n",
+        sprintf(output,"S01|%d|%d|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0\r\n",
                 initiator_id,target_id);
         usb_print(output);
         return 0;
@@ -1036,13 +1076,16 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
         final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &rx_ts1_n);
         final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &tx_ts2_n);
         final_msg_get_ts(&rx_buffer[FINAL_SIGNAL3_TS_IDX], &tx_ts3_n);
+
         memcpy(&fpp1_n, &rx_buffer[FINAL_FPP_IDX], sizeof(float)); 
+        memcpy(&rxp1_n, &rx_buffer[FINAL_RXP_IDX], sizeof(float)); 
+        memcpy(&std1_n, &rx_buffer[FINAL_STD_IDX], sizeof(uint16_t)); 
 
         /* Retrieve reception timestamp */
         rx_ts3 = get_rx_timestamp_u64();
 
         /* Retrieve received signal power */
-        // fpp3 = retrieveDiagnostics();
+        retrieveDiagnostics(&fpp3, &rxp3, &std3);
     }
     else{
         return 0;
@@ -1061,7 +1104,10 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
             final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &tx_ts1_n);
             final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &rx_ts2_n);
             final_msg_get_ts(&rx_buffer[FINAL_SIGNAL3_TS_IDX], &rx_ts3_n);
+
             memcpy(&fpp2_n, &rx_buffer[FINAL_FPP_IDX], sizeof(float)); 
+            memcpy(&rxp2_n, &rx_buffer[FINAL_RXP_IDX], sizeof(float)); 
+            memcpy(&std2_n, &rx_buffer[FINAL_STD_IDX], sizeof(uint16_t)); 
         }
         else{
             return 0;
@@ -1069,21 +1115,40 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
     }
 
     /* --------------------- Output Time-stamps --------------------- */
-    convert_float_to_string(power1,fpp1);
-    convert_float_to_string(power2,fpp2);
-    convert_float_to_string(power3,fpp3);
-    convert_float_to_string(power1_n,fpp1_n);
-    convert_float_to_string(power2_n,fpp2_n);
+    convert_float_to_string(fpp1_str,fpp1);
+    convert_float_to_string(fpp2_str,fpp2);
+    convert_float_to_string(fpp3_str,fpp3);
+    convert_float_to_string(rxp1_str,rxp1);
+    convert_float_to_string(rxp2_str,rxp2);
+    convert_float_to_string(rxp3_str,rxp3);
+    convert_float_to_string(fpp1_n_str,fpp1_n);
+    convert_float_to_string(fpp2_n_str,fpp2_n);
+    convert_float_to_string(rxp1_n_str,rxp1_n);
+    convert_float_to_string(rxp2_n_str,rxp2_n);
 
-    char output[155];
-    sprintf(output,"S01|%d|%d|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%s|%s|%s|%s|%s\r\n",
+    char output[450];
+    sprintf(output,"S01|%d|%d|\
+                    %lu|%lu|%lu|\
+                    %lu|%lu|\
+                    %lu|%lu|\
+                    %lu|%lu|\
+                    %s|%s|%s|\
+                    %s|%s|%s|\
+                    %u|%u|%u|\
+                    %s|%s|\
+                    %s|%s|\
+                    %u|%u\r\n",
             initiator_id, target_id,
             rx_ts1,rx_ts2,rx_ts3,
             tx_ts1_n,rx_ts1_n,
             tx_ts2_n,rx_ts2_n,
             tx_ts3_n,rx_ts3_n,
-            power1,power2,power3,
-            power1_n,power2_n);
+            fpp1_str,fpp2_str,fpp3_str,
+            rxp1_str,rxp2_str,rxp3_str,
+            std1,std2,std3,
+            fpp1_n_str,fpp2_n_str,
+            rxp1_n_str,rxp2_n_str,
+            std1_n,std2_n);
     usb_print(output);
     return 1;
 }
