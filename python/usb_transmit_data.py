@@ -6,7 +6,7 @@ This script publishes a message to the USB port continuously until terminated.
 
 uwb1 = UwbModule("/dev/ttyACM1", log=False, verbose=False)
 uwb2 = UwbModule("/dev/ttyACM2", log=False, verbose=False)
-uwb3 = UwbModule("/dev/ttyACM3", log=False, verbose=False)
+# uwb3 = UwbModule("/dev/ttyACM3", log=False, verbose=False)
 
 id = uwb1.get_id()
 uwb1.output(id)
@@ -14,10 +14,10 @@ uwb1.output(id)
 id = uwb2.get_id()
 uwb2.output(id)
 
-id = uwb3.get_id()
-uwb3.output(id)
+# id = uwb3.get_id()
+# uwb3.output(id)
 
-uwb3.set_passive_listening()
+# uwb3.set_passive_listening()
 
 # Passive-listening callback.
 def cb_passive(data):
@@ -44,12 +44,12 @@ def cb_target(data):
             "Pr2": data[9]}
     uwb2.output(dict) 
 
-uwb3.register_listening_callback(cb_passive)
+# uwb3.register_listening_callback(cb_passive)
 uwb2.register_range_callback(cb_target)
 
 counter = 0
 while True:
-    data1 = uwb1.do_twr(6,mult_twr=True,meas_at_target=True)
+    data1 = uwb1.do_twr(id['id'],mult_twr=True,meas_at_target=True)
     uwb1.output(data1)
     # time.sleep(0.01)
 

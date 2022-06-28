@@ -24,7 +24,7 @@ extern "C" {
 /* Function Prototypes -------------------------------------------------------*/
 
 /*! ------------------------------------------------------------------------------------------------------------------
- * Function: timestampReceivedFrame()
+ * Function: retrieveDiagnostics()
  *
  * @brief This function retrieves the estimated first path signal power (FPP) as per
  *        Decawave's documentation. The addressed signal is the most recently received. 
@@ -34,7 +34,7 @@ extern "C" {
  * 
  * @return (float) FPP.
  */
-float retrieveFPP(void);
+float retrieveDiagnostics(void);
 
 
 #ifdef __cplusplus
