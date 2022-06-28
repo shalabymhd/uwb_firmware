@@ -26,15 +26,22 @@ extern "C" {
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: retrieveDiagnostics()
  *
- * @brief This function retrieves the estimated first path signal power (FPP) as per
- *        Decawave's documentation. The addressed signal is the most recently received. 
+ * @brief This function retrieves the following three signals as per Decawave's documentation:
+ *          1) first path power (fpp), as per Section 4.7.1,
+ *          2) receive signal power (rxp), as per Section 4.7.2, 
+ *          3) and the standard deviation of the noise (std), as per Register file 0x12.
+ *        The addressed signal is the most recently received. 
  *  
- * NOTE: This function and the corresponding notation is primarily based on Section 4.7.1
+ * @param fpp (float*) A pointer to where the fpp will be stored.
+ * @param rxp (float*) A pointer to where the rxp will be stored. 
+ * @param noise_std (uint16_t*) A pointer to where the noise std will be stored.
+ * 
+ * NOTE: This function and the corresponding notation is primarily based on Section 4.7
  *       in the DW1000 User Manual.
  * 
- * @return (float) FPP.
+ * @return (int) 1.
  */
-float retrieveDiagnostics(void);
+int retrieveDiagnostics(float*, float*, uint16_t*);
 
 
 #ifdef __cplusplus

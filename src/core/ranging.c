@@ -60,12 +60,12 @@ static uint32 status_reg = 0;
 /* Frames used in the ranging process. See NOTE 2 below. */
 static uint8 tx_poll_msg[10]  = {0x41, 0x88, 0xA};
 static uint8 rx_resp_msg[8]  = {0x41, 0x88, 0xB};
-static uint8 tx_final_msg[24] = {0x41, 0x88, 0xC};
+static uint8 tx_final_msg[30] = {0x41, 0x88, 0xC};
 
 /* Frames used in the ranging process. See NOTE 2 below. */
 static uint8 rx_poll_msg[8]  = {0x41, 0x88, 0xA};
 static uint8 tx_resp_msg[8]  = {0x41, 0x88, 0xB};
-static uint8 rx_final_msg[24] = {0x41, 0x88, 0xC};
+static uint8 rx_final_msg[30] = {0x41, 0x88, 0xC};
 
 /* Length of the common part of the message (up to and including the function code, see NOTE 2 below). */
 #define ALL_MSG_COMMON_LEN (6)
@@ -202,7 +202,10 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
     decaIrqStatus_t stat;
     uint64 tx1_ts;
     uint64 rx2_ts, rx3_ts;
+
     float fpp2 = 0; // Received signal power of Signal 1 and Signal 2
+    float rxp2 = 0;
+    uint16_t std2 = 0;
 
     stat = decamutexon();
     dwt_forcetrxoff();
@@ -271,7 +274,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
                 /* Retrieve the reception timestamp */
                 rx2_ts = get_rx_timestamp_u64();
 
-                ret = rxTimestampsDS(tx1_ts, rx2_ts, target_id, &fpp2, 1);
+                ret = rxTimestampsDS(tx1_ts, rx2_ts, target_id, &fpp2, &rxp2, &std2, 1);
 
                 /* Retrieve the reception timestamp */
                 rx3_ts = get_rx_timestamp_u64();
@@ -293,7 +296,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
     }
     else{
         /* Await the return signal and compute the range measurement */
-        ret = rxTimestampsSS(0, target_id, &fpp2, 1);
+        ret = rxTimestampsSS(0, target_id, &fpp2, &rxp2, &std2, 1);
 
         /* Retrieve the transmission timestamp */
         tx1_ts = get_tx_timestamp_u64();
@@ -307,10 +310,10 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
         if (target_meas_bool){ 
             // send the additional signal
             if (mult_twr){
-                ret = txTimestampsDS(tx1_ts, rx2_ts, rx3_ts, &fpp2, 1);
+                ret = txTimestampsDS(tx1_ts, rx2_ts, rx3_ts, &fpp2, &rxp2, &std2, 1);
             }
             else{
-                ret = txTimestampsSS(tx1_ts, rx2_ts, &fpp2, 1);
+                ret = txTimestampsSS(tx1_ts, rx2_ts, &fpp2, &rxp2, &std2, 1);
             }
 
             if (ret){ // TODO: allow additional signal with alternative double-sided TWR
@@ -340,7 +343,10 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
 int twrReceiveCallback(void){
     uint64 tx2_ts;
     uint64 rx1_ts;
+
     float fpp1 = 0;
+    float rxp1 = 0;
+    uint16_t std1 = 0;
 
     /* Set preamble timeout for expected frames. See NOTE 6 below. */
     dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
@@ -424,11 +430,11 @@ int twrReceiveCallback(void){
             frame_seq_nb++;
 
             /* Transmit the delayed signal with the time-stamps */
-            ret = txTimestampsDS(rx1_ts, tx2_ts, 0, &fpp1, 0);
+            ret = txTimestampsDS(rx1_ts, tx2_ts, 0, &fpp1, &rxp1, &std1, 0);
         }
         else{
             /* Transmit the delayed signal with the time-stamps */
-            ret = txTimestampsSS(rx1_ts, 0, &fpp1, 0);
+            ret = txTimestampsSS(rx1_ts, 0, &fpp1, &rxp1, &std1, 0);
         }
 
         if (ret){
@@ -440,10 +446,10 @@ int twrReceiveCallback(void){
 
                 /* Receive the additional signal and calculate the range measurement */
                 if (mult_twr){
-                    ret = rxTimestampsDS(rx1_ts, tx2_ts, initiator_id, &fpp1, 0);
+                    ret = rxTimestampsDS(rx1_ts, tx2_ts, initiator_id, &fpp1, &rxp1, &std1, 0);
                 }
                 else{
-                    ret = rxTimestampsSS(rx1_ts, initiator_id, &fpp1, 0);
+                    ret = rxTimestampsSS(rx1_ts, initiator_id, &fpp1, &rxp1, &std1, 0);
                 }
                 if (ret){
                     dwt_setpreambledetecttimeout(0);
@@ -464,7 +470,9 @@ int twrReceiveCallback(void){
     return 0;
 }
 
-int txTimestampsSS(uint64 ts1, uint64 ts2, float* fpp, bool is_immediate){
+int txTimestampsSS(uint64 ts1, uint64 ts2, 
+                   float* fpp, float* rxp, uint16_t* std, 
+                   bool is_immediate){
     /* Set-up delayed transmission to encode the transmission time-stamp in the final message */
     int ret;
     uint8_t tx_type;
@@ -475,6 +483,8 @@ int txTimestampsSS(uint64 ts1, uint64 ts2, float* fpp, bool is_immediate){
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL2_TS_IDX], ts2); // rx2
         
         memcpy(&tx_final_msg[FINAL_FPP_IDX], fpp, sizeof(float)); // fpp2
+        memcpy(&tx_final_msg[FINAL_RXP_IDX], rxp, sizeof(float)); // rxp2
+        memcpy(&tx_final_msg[FINAL_STD_IDX], std, sizeof(uint16_t)); // std2
         
         tx_type = DWT_START_TX_IMMEDIATE;
     }
@@ -483,12 +493,14 @@ int txTimestampsSS(uint64 ts1, uint64 ts2, float* fpp, bool is_immediate){
         uint64 final_tx_ts;
 
         /* Retrieve fpp1 */
-        *fpp = retrieveDiagnostics();
+        retrieveDiagnostics(fpp, rxp, std);
 
          /* Write all timestamps in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL1_TS_IDX], ts1); // rx1
         
         memcpy(&tx_final_msg[FINAL_FPP_IDX], fpp, sizeof(float)); // fpp1
+        memcpy(&tx_final_msg[FINAL_RXP_IDX], rxp, sizeof(float)); // rxp1
+        memcpy(&tx_final_msg[FINAL_STD_IDX], std, sizeof(uint16_t)); // std1
 
         /* Compute final message transmission time. See NOTE 10 below. */
         final_tx_time = (ts1 + (1500 * UUS_TO_DWT_TIME)) >> 8;
@@ -525,7 +537,9 @@ int txTimestampsSS(uint64 ts1, uint64 ts2, float* fpp, bool is_immediate){
     return 0;
 }
 
-int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3, float* fpp, bool is_immediate){
+int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3,
+                   float* fpp, float* rxp, uint16_t* std, 
+                   bool is_immediate){
     /* Set-up delayed transmission to encode the transmission time-stamp in the final message */
     int ret;
     uint8_t tx_type;
@@ -537,6 +551,8 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3, float* fpp, bool is_immed
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL3_TS_IDX], ts3); // rx3
         
         memcpy(&tx_final_msg[FINAL_FPP_IDX], fpp, sizeof(float)); // fpp2
+        memcpy(&tx_final_msg[FINAL_RXP_IDX], rxp, sizeof(float)); // rxp2
+        memcpy(&tx_final_msg[FINAL_STD_IDX], std, sizeof(uint16_t)); // std2
         
         tx_type = DWT_START_TX_IMMEDIATE;
     }
@@ -545,13 +561,15 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3, float* fpp, bool is_immed
         uint64 final_tx_ts;
 
         /* Retrieve fpp1 */
-        *fpp = retrieveDiagnostics();
+        retrieveDiagnostics(fpp, rxp, std);
 
          /* Write all timestamps in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL1_TS_IDX], ts1); // rx1
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL2_TS_IDX], ts2); // tx2
 
         memcpy(&tx_final_msg[FINAL_FPP_IDX], fpp, sizeof(float)); // fpp1
+        memcpy(&tx_final_msg[FINAL_RXP_IDX], rxp, sizeof(float)); // rxp1
+        memcpy(&tx_final_msg[FINAL_STD_IDX], std, sizeof(uint16_t)); // std1
 
         /* Compute final message transmission time. See NOTE 10 below. */
         final_tx_time = (ts1 + (1500 * UUS_TO_DWT_TIME)) >> 8;
@@ -588,15 +606,21 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3, float* fpp, bool is_immed
     return 0;
 }
 
-int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* fpp, bool is_initiator){
+int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, 
+                   float* fpp, float* rxp, uint16_t* std,
+                   bool is_initiator){
     uint32 frame_len;
     double Ra, Db;
     uint32 rx1_ts, tx2_ts;
     uint32 tx1_ts, rx2_ts;
     int64 tof_dtu;
-    char power1[10] = {0};
-    char power2[10] = {0};
+    char fpp1_str[10] = {0};
+    char fpp2_str[10] = {0};
+    char rxp1_str[10] = {0};
+    char rxp2_str[10] = {0};
     float fpp1, fpp2;
+    float rxp1, rxp2;
+    uint16_t std1, std2;
 
     dwt_setrxtimeout(0);
     // dwt_setpreambledetecttimeout(0);
@@ -632,24 +656,34 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* fpp, bool is_initiat
                 /* Get timestamps embedded in the final message. */
                 final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &rx1_ts);
                 final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &tx2_ts);
+                
                 memcpy(&fpp1, &rx_buffer[FINAL_FPP_IDX], sizeof(float));
+                memcpy(&rxp1, &rx_buffer[FINAL_RXP_IDX], sizeof(float));
+                memcpy(&std1, &rx_buffer[FINAL_STD_IDX], sizeof(uint16_t));
                 
                 tx1_ts = (uint32)get_tx_timestamp_u64();
                 rx2_ts = (uint32)get_rx_timestamp_u64();
 
-                *fpp = retrieveDiagnostics();
+                retrieveDiagnostics(fpp, rxp, std);
                 fpp2 = *fpp;
+                rxp2 = *rxp;
+                std2 = *std;
             }
             else{
                 /* Get timestamps embedded in the final message. */
                 final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &tx1_ts);
                 final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &rx2_ts);
+
                 memcpy(&fpp2, &rx_buffer[FINAL_FPP_IDX], sizeof(float));
+                memcpy(&rxp2, &rx_buffer[FINAL_RXP_IDX], sizeof(float));
+                memcpy(&std2, &rx_buffer[FINAL_STD_IDX], sizeof(uint16_t));
             
                 rx1_ts = (uint32)ts1;
                 tx2_ts = (uint32)get_tx_timestamp_u64();  
 
-                fpp1 = *fpp;              
+                fpp1 = *fpp;  
+                rxp1 = *rxp;
+                std1 = *std;            
             }
             
             /* Compute time of flight. 32-bit subtractions give correct answers even if clock has wrapped. See NOTE 12 below. */            
@@ -660,8 +694,10 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* fpp, bool is_initiat
             tof = tof_dtu * DWT_TIME_UNITS;
             distance = tof * SPEED_OF_LIGHT;
 
-            convert_float_to_string(power1,fpp1);
-            convert_float_to_string(power2,fpp2);
+            convert_float_to_string(fpp1_str,fpp1);
+            convert_float_to_string(fpp2_str,fpp2);
+            convert_float_to_string(rxp1_str,rxp1);
+            convert_float_to_string(rxp2_str,rxp2);
 
             /* Display computed distance. */
             char dist_str[10] = {0};
@@ -676,12 +712,14 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* fpp, bool is_initiat
                 *prefix = "S05";
             }
 
-            sprintf(response, "%s|%d|%s|%lu|%lu|%lu|%lu|0|0|%s|%s\r\n",
+            sprintf(response, "%s|%d|%s|%lu|%lu|%lu|%lu|0|0|%s|%s|%s|%s|%u|%u\r\n",
                     *prefix,
                     neighbour_id, dist_str,
                     tx1_ts, rx1_ts,
                     tx2_ts, rx2_ts,
-                    power1, power2);
+                    fpp1_str, fpp2_str,
+                    rxp1_str, rxp2_str,
+                    std1, std2);
             usb_print(response);
             
             dwt_setrxtimeout(0);
@@ -701,17 +739,23 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, float* fpp, bool is_initiat
     return 0;
 }
 
-int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, float* fpp, bool is_initiator){
+int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, 
+                   float* fpp, float* rxp, uint16_t* std, 
+                   bool is_initiator){
     uint32 frame_len;
     double Ra1, Ra2, Db1, Db2;
     uint32 rx1_ts, tx2_ts, tx3_ts;
     uint32 tx1_ts, rx2_ts, rx3_ts;
     int64 tof_dtu;
-    char power1[10] = {0};
-    char power2[10] = {0};
+    char fpp1_str[10] = {0};
+    char fpp2_str[10] = {0};
+    char rxp1_str[10] = {0};
+    char rxp2_str[10] = {0};
     float fpp1, fpp2;
+    float rxp1, rxp2;
+    uint16_t std1, std2;
     
-    *fpp = retrieveDiagnostics();
+    retrieveDiagnostics(fpp, rxp, std);
 
     dwt_setrxtimeout(0);
     // dwt_setpreambledetecttimeout(0);
@@ -751,7 +795,12 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, float* fpp, boo
                 final_msg_get_ts(&rx_buffer[FINAL_SIGNAL3_TS_IDX], &tx3_ts);
 
                 memcpy(&fpp1, &rx_buffer[FINAL_FPP_IDX], sizeof(float));
+                memcpy(&rxp1, &rx_buffer[FINAL_RXP_IDX], sizeof(float));
+                memcpy(&std1, &rx_buffer[FINAL_STD_IDX], sizeof(uint16_t));
+
                 fpp2 = *fpp;
+                rxp2 = *rxp;
+                std2 = *std;
 
                 tx1_ts = (uint32)ts1;
                 rx2_ts = (uint32)ts2;
@@ -768,7 +817,12 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, float* fpp, boo
                 final_msg_get_ts(&rx_buffer[FINAL_SIGNAL3_TS_IDX], &rx3_ts);
 
                 memcpy(&fpp2, &rx_buffer[FINAL_FPP_IDX], sizeof(float));
+                memcpy(&rxp2, &rx_buffer[FINAL_RXP_IDX], sizeof(float));
+                memcpy(&std2, &rx_buffer[FINAL_STD_IDX], sizeof(uint16_t));
+
                 fpp1 = *fpp;
+                rxp1 = *rxp;
+                std1 = *std;
 
                 rx1_ts = (uint32)ts1;
                 tx2_ts = (uint32)ts2;
@@ -801,16 +855,20 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, float* fpp, boo
                 *prefix = "S05";
             }
 
-            convert_float_to_string(power1,fpp1);
-            convert_float_to_string(power2,fpp2);
+            convert_float_to_string(fpp1_str,fpp1);
+            convert_float_to_string(fpp2_str,fpp2);
+            convert_float_to_string(rxp1_str,rxp1);
+            convert_float_to_string(rxp2_str,rxp2);
 
-            sprintf(response, "%s|%d|%s|%lu|%lu|%lu|%lu|%lu|%lu|%s|%s\r\n",
+            sprintf(response, "%s|%d|%s|%lu|%lu|%lu|%lu|%lu|%lu|%s|%s|%s|%s|%u|%u\r\n",
                     *prefix,
                     neighbour_id, dist_str,
                     tx1_ts, rx1_ts,
                     tx2_ts, rx2_ts,
                     tx3_ts, rx3_ts,
-                    power1, power2);
+                    fpp1_str, fpp2_str,
+                    rxp1_str, rxp2_str,
+                    std1, std2);
             usb_print(response); // TODO: will this response ever be sent without a USB command?
             
             dwt_setrxtimeout(0);
@@ -861,7 +919,7 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
     target_id = rx_buffer[ALL_RX_BOARD_IDX];
 
     /* Retrieve received signal power */
-    fpp1 = retrieveDiagnostics();
+    // fpp1 = retrieveDiagnostics();
 
     /* --------------------- SIGNAL 2: Target to Initiator --------------------- */
     success = checkReceivedFrame(ALL_RX_BOARD_IDX, initiator_id, ALL_TX_BOARD_IDX, target_id, 0xC);
@@ -875,7 +933,7 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
         rx_ts2 = get_rx_timestamp_u64();
 
         /* Retrieve received signal power */
-        fpp2 = retrieveDiagnostics();
+        // fpp2 = retrieveDiagnostics();
     }
     else{
         return 0;
@@ -950,7 +1008,7 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
     target_id = rx_buffer[ALL_RX_BOARD_IDX];
 
     /* Retrieve received signal power */
-    fpp1 = retrieveDiagnostics();
+    // fpp1 = retrieveDiagnostics();
 
     /* --------------------- SIGNAL 2: Target to Initiator --------------------- */
     success = checkReceivedFrame(ALL_RX_BOARD_IDX, initiator_id, ALL_TX_BOARD_IDX, target_id, 0xB);
@@ -959,7 +1017,7 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
         rx_ts2 = get_rx_timestamp_u64();
 
         /* Retrieve received signal power */
-        fpp2 = retrieveDiagnostics();
+        // fpp2 = retrieveDiagnostics();
     }
     else{
         /* Due to immediate response of Signal 2, this has highest chance of failure.
@@ -984,7 +1042,7 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
         rx_ts3 = get_rx_timestamp_u64();
 
         /* Retrieve received signal power */
-        fpp3 = retrieveDiagnostics();
+        // fpp3 = retrieveDiagnostics();
     }
     else{
         return 0;
