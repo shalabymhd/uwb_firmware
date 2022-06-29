@@ -981,7 +981,7 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
     convert_float_to_string(rxp1_n_str,rxp1_n);
     convert_float_to_string(rxp2_n_str,rxp2_n);
 
-    char output[450];
+    char output[150];
     sprintf(output,"S01|%d|%d|%lu|%lu|0|%lu|%lu|%lu|%lu|0|0|%s|%s|0|%s|%s|0|%u|%u|0|%s|%s|%s|%s|%u|%u\r\n",
             initiator_id, target_id,
             rx_ts1,rx_ts2,
@@ -1116,7 +1116,7 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
     convert_float_to_string(rxp1_n_str,rxp1_n);
     convert_float_to_string(rxp2_n_str,rxp2_n);
 
-    char output[450];
+    char output[150];
     sprintf(output,"S01|%d|%d|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%s|%s|%s|%s|%s|%s|%u|%u|%u|%s|%s|%s|%s|%u|%u\r\n",
             initiator_id, target_id,
             rx_ts1,rx_ts2,rx_ts3,
