@@ -61,11 +61,15 @@ while True:
     uwb1.output(data1)
     # time.sleep(0.01)
 
-    # data2 = uwb2.do_twr(id1['id'],mult_twr=True,meas_at_target=True)
-    # uwb2.output(data2) 
+    data2 = uwb2.do_twr(id3['id'],mult_twr=True,meas_at_target=True)
+    uwb2.output(data2) 
     # time.sleep(0.01)
 
-    uwb3.wait_for_messages()
+    data3 = uwb3.do_twr(id1['id'],mult_twr=True,meas_at_target=True)
+    uwb2.output(data3) 
+    # time.sleep(0.01)
+
+    # uwb3.wait_for_messages()
 
     counter += 1
     print(counter)

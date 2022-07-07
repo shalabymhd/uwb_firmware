@@ -123,13 +123,13 @@ void MX_FREERTOS_Init(void) {
   // defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 128);
+  osThreadDef(blink, StartBlinking, osPriorityIdle, 0, 64);
   blinkTaskHandle = osThreadCreate(osThread(blink), NULL);
 
   osThreadDef(usbReceive, StartUsbReceive, osPriorityAboveNormal, 0, 768);
   usbReceiveTaskHandle = osThreadCreate(osThread(usbReceive), NULL);
 
-  osThreadDef(twrInterrupt, uwbInterruptTask, osPriorityRealtime, 0, 512);
+  osThreadDef(twrInterrupt, uwbInterruptTask, osPriorityRealtime, 0, 576);
   twrInterruptTaskHandle = osThreadCreate(osThread(twrInterrupt), NULL);
   /* USER CODE END RTOS_THREADS */
 }

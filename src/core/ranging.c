@@ -746,7 +746,7 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id,
     double Ra1, Ra2, Db1, Db2;
     uint32 rx1_ts, tx2_ts, tx3_ts;
     uint32 tx1_ts, rx2_ts, rx3_ts;
-    int64 tof_dtu;
+    double tof_dtu;
     char fpp1_str[10] = {0};
     char fpp2_str[10] = {0};
     char rxp1_str[10] = {0};
@@ -837,7 +837,7 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id,
             Db1 = (double)(tx2_ts - rx1_ts);
             Db2 = (double)(tx3_ts - tx2_ts);
             // tof_dtu = (int64)((Ra1*Db2 - Ra2*Db1) / (Ra2 + Db2)); // Reversed alternative double-sided TWR
-            tof_dtu = (int64)(0.5*(Ra1 - Ra2/Db2*Db1)); // Reversed alternative double-sided TWR
+            tof_dtu = (double)(0.5*(Ra1 - Ra2/Db2*Db1)); // Reversed alternative double-sided TWR
            
             tof = tof_dtu * DWT_TIME_UNITS;
             distance = tof * SPEED_OF_LIGHT;
@@ -981,7 +981,7 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
     convert_float_to_string(rxp1_n_str,rxp1_n);
     convert_float_to_string(rxp2_n_str,rxp2_n);
 
-    char output[300];
+    char output[200];
     sprintf(output,"S01|%d|%d|%lu|%lu|0|%lu|%lu|%lu|%lu|0|0|%s|%s|0|%s|%s|0|%u|%u|0|%s|%s|%s|%s|%u|%u\r\n",
             initiator_id, target_id,
             rx_ts1,rx_ts2,
@@ -1116,7 +1116,7 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
     convert_float_to_string(rxp1_n_str,rxp1_n);
     convert_float_to_string(rxp2_n_str,rxp2_n);
 
-    char output[300];
+    char output[200];
     sprintf(output,"S01|%d|%d|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%s|%s|%s|%s|%s|%s|%u|%u|%u|%s|%s|%s|%s|%u|%u\r\n",
             initiator_id, target_id,
             rx_ts1,rx_ts2,rx_ts3,
