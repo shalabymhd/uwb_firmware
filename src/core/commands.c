@@ -172,3 +172,16 @@ int c07_get_max_frame_len(IntParams *msg_ints, FloatParams *msg_floats, BoolPara
     usb_print(response);
     return 1;
 }
+
+int c08_set_response_delay(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
+    IntParams *i;
+    
+    /* Extract the toggle */
+    HASH_FIND_STR(msg_ints, "delay", i);
+
+    setResponseDelay(i->value);
+
+    usb_print("R08\r\n");
+    
+    return 1;
+}

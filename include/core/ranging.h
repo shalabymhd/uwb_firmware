@@ -46,6 +46,7 @@ int passivelyListenSS(uint32_t, bool);
 int passivelyListenDS(uint32_t, bool);
 bool checkReceivedFrame(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
 void setPassiveToggle(bool);
+void setResponseDelay(uint16);
 
 #define UUS_TO_DWT_TIME 65536
 #define MAX_FRAME_LEN 100

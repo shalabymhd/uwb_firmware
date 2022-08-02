@@ -15,12 +15,6 @@
 
 extern osThreadId twrInterruptTaskHandle;
 
-/* Inter-frame delay period, in milliseconds. */
-#define TX_DELAY_MS 1000
-
-/* Inter-ranging delay period, in milliseconds. */
-#define RNG_DELAY_MS 1000
-
 typedef struct {
     uint8_t msg[MAX_FRAME_LEN];
     uint32_t len;
@@ -33,24 +27,9 @@ static uint8 rx_buffer[MAX_FRAME_LEN];
 /* Hold copy of status register state here for reference so that it can be examined at a debug breakpoint. */
 static uint32 status_reg = 0;
 
-/* Delay between frames, in UWB microseconds. See NOTE 4 below. */
-/* This is the delay from the end of the frame transmission to the enable of the 
- * receiver, as programmed for the DW1000's wait for response feature. */
-#define POLL_TX_TO_RESP_RX_DLY_UUS 150 //300
-/* This is the delay from Frame RX timestamp to TX reply timestamp used for 
- * calculating/setting the DW1000's delayed TX function. This includes the
- * frame length of approximately 2.66 ms with above configuration. */
-#define RESP_RX_TO_FINAL_TX_DLY_UUS 1500 //3100 TODO: Tune this
-/* Receive response timeout. See NOTE 5 below. */
-#define RESP_RX_TIMEOUT_UUS 2000 //2700
 /* Preamble timeout, in multiple of PAC size. See NOTE 6 below. */
 #define PRE_TIMEOUT 8
 
-/* Delay between frames, in UWB microseconds. See NOTE 4 below. */
-/* This is the delay from Frame RX timestamp to TX reply timestamp used for 
- * calculating/setting the DW1000's delayed TX function. This includes the
- * frame length of approximately 2.46 ms with above configuration. */
-#define POLL_RX_TO_RESP_TX_DLY_UUS 400 //2750
 /* This is the delay from the end of the frame transmission to the enable of the
  * receiver, as programmed for the DW1000's wait for response feature. */
 #define RESP_TX_TO_FINAL_RX_DLY_UUS 40 //500
@@ -96,17 +75,11 @@ static double distance;
 /* Declaration of static functions. */
 static void rx_ok_cb(const dwt_cb_data_t *cb_data);
 
-/* Default inter-frame delay period, in milliseconds. */
-#define DFLT_TX_DELAY_MS 1000
-/* Inter-frame delay period in case of RX timeout, in milliseconds.
- * In case of RX timeout, assume the receiver is not present and lower the rate of blink transmission. */
-#define RX_TO_TX_DELAY_MS 3000
-/* Inter-frame delay period in case of RX error, in milliseconds.
- * In case of RX error, assume the receiver is present but its response has not been received for any reason and retry blink transmission immediately. */
-#define RX_ERR_TX_DELAY_MS 0
-
 /* Passive listening toggle */
 static bool passive_listening = 0;
+
+/* Second-response delay in DS-TWR */
+static uint16 tx3_delay = 1500;
 
 static osMailQDef(UwbMsgBox, USB_QUEUE_SIZE, UwbMsg); 
 static osMailQId UwbMsgBox;  
@@ -572,7 +545,7 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3,
         memcpy(&tx_final_msg[FINAL_STD_IDX], std, sizeof(uint16_t)); // std1
 
         /* Compute final message transmission time. See NOTE 10 below. */
-        final_tx_time = (ts1 + (1500 * UUS_TO_DWT_TIME)) >> 8;
+        final_tx_time = (ts1 + (tx3_delay * UUS_TO_DWT_TIME)) >> 8;
 
         dwt_setdelayedtrxtime(final_tx_time);
 
@@ -1196,6 +1169,17 @@ bool checkReceivedFrame(uint8_t initiator_idx, uint8_t initiator_id,
  */
 void setPassiveToggle(bool toggle){
     passive_listening = toggle;
+}
+
+/*! ----------------------------------------------------------------------------
+ * Function: setResponseDelay()
+ * 
+ * @brief This function sets the tx3 response delay.
+ * 
+ * @param delay (uint16) the delay in microseconds between tx2 and tx3.
+ */
+void setResponseDelay(uint16 delay){
+    tx3_delay = delay;
 }
 
 /*! ----------------------------------------------------------------------------
