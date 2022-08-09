@@ -191,7 +191,7 @@ int c07_get_max_frame_len(IntParams *msg_ints, FloatParams *msg_floats, BoolPara
 int c08_jump_to_bootloader(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     
     
-    usb_print("R99\r\n");
+    usb_print("R08\r\n");
     osDelay(100);
     jump_to_bootloader();
     return 0; // should never get here.
