@@ -19,7 +19,16 @@ for port in ports:
 
     if response == b"R09\r\n":
         # If valid response was obtained, flash firmware.
-        upload_command = "dfu-util -a 0 --dfuse-address 0x08000000:leave -D ./build/firmware.bin"
+
+        # First we will add a "DFU suffix" which specifies the vendor/product ID
+        # of the STM32F405 so that we are protected against flashing to something 
+        # else.
+        suffix_command = "dfu-suffix --vid 0483 --pid df11 --add ./build/firmware.bin"
+        print(">> " + suffix_command)
+        os.system(suffix_command)
+
+        # Upload the new firmware.
+        upload_command = "dfu-util --device 0483:5740,0483:df11 -a 0 --dfuse-address 0x08000000:leave -D ./build/firmware.bin"
         print(">> " + upload_command)
         os.system(upload_command)
 
