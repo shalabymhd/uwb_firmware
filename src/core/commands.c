@@ -132,20 +132,16 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
 
     if (target_ID == BOARD_ID()){
         usb_print("TWR FAIL: The target ID is the same as the initiator's ID.\r\n");
-        return 0;
-        // TODO: we should not retry!! we will get stuck.
+        return 1;
     }
 
     success = twrInitiateInstance(target_ID, target_meas_bool, mult_twr);
 
     if (success){ 
         // Response is done inside `twrInitiateInstance`
-        usb_print("TWR SUCCESS!\r\n");
         return 1;
     }
     else {
-        // TODO: this is worth retrying. need to implement a limit.
-        usb_print("TWR FAIL: No successful response.\r\n");
         return 0;
     }
 }
@@ -179,6 +175,19 @@ int c07_get_max_frame_len(IntParams *msg_ints, FloatParams *msg_floats, BoolPara
     return 1;
 }
 
+int c08_set_response_delay(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
+    IntParams *i;
+    
+    /* Extract the toggle */
+    HASH_FIND_STR(msg_ints, "delay", i);
+
+    setResponseDelay(i->value);
+
+    usb_print("R08\r\n");
+    
+    return 1;
+}
+
 /* ************************************************************************** */
 /**
  * @brief Jump to the bootloader system memory from software. This will put the
@@ -188,10 +197,10 @@ int c07_get_max_frame_len(IntParams *msg_ints, FloatParams *msg_floats, BoolPara
  * https://stm32f4-discovery.net/2017/04/tutorial-jump-system-memory-software-stm32/
  * 
  */
-int c08_jump_to_bootloader(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
+int c09_jump_to_bootloader(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     
     
-    usb_print("R08\r\n");
+    usb_print("R09\r\n");
     osDelay(100);
     jump_to_bootloader();
     return 0; // should never get here.
