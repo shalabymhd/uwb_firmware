@@ -65,6 +65,8 @@ int c04_toggle_passive(IntParams*, FloatParams*, BoolParams*, StrParams*, BytePa
 int c05_initiate_twr(IntParams*, FloatParams*, BoolParams*, StrParams*, ByteParams*);
 int c06_broadcast(IntParams*, FloatParams*, BoolParams*, StrParams*, ByteParams*);
 int c07_get_max_frame_len(IntParams*, FloatParams*, BoolParams*, StrParams*, ByteParams*);
+int c08_jump_to_bootloader(IntParams*, FloatParams*, BoolParams*, StrParams*, ByteParams*);
+void jump_to_bootloader(void);
 
 
 /* Variables -----------------------------------------------------------*/
