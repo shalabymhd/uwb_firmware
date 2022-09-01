@@ -212,6 +212,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
         enabled automatically after the frame is sent and the delay set by 
         dwt_setrxaftertxdelay() has elapsed. */
     dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
+    dwt_setrxtimeout(0);
     
     if (mult_twr){
         /* We assume that the transmission is achieved correctly, poll for reception of a frame or error/timeout. See NOTE 9 below. */
@@ -376,10 +377,14 @@ int twrReceiveCallback(void){
 
         if (mult_twr){
             /* Write and send the response message. See NOTE 10 below.*/
+            uint32 tx_time;
+            tx_time = (rx1_ts + (1500 * UUS_TO_DWT_TIME)) >> 8;
+            dwt_setdelayedtrxtime(tx_time);
+
             tx_resp_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
             dwt_writetxdata(sizeof(tx_resp_msg), tx_resp_msg, 0); /* Zero offset in TX buffer. */
             dwt_writetxfctrl(sizeof(tx_resp_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
-            ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
+            ret = dwt_starttx(DWT_START_TX_DELAYED);
 
             /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one.*/
             if (ret == DWT_ERROR)
@@ -545,7 +550,7 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3,
         memcpy(&tx_final_msg[FINAL_STD_IDX], std, sizeof(uint16_t)); // std1
 
         /* Compute final message transmission time. See NOTE 10 below. */
-        final_tx_time = (ts1 + (tx3_delay * UUS_TO_DWT_TIME)) >> 8;
+        final_tx_time = (ts2 + (tx3_delay * UUS_TO_DWT_TIME)) >> 8;
 
         dwt_setdelayedtrxtime(final_tx_time);
 
