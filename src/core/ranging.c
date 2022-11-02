@@ -377,14 +377,10 @@ int twrReceiveCallback(void){
 
         if (mult_twr){
             /* Write and send the response message. See NOTE 10 below.*/
-            uint32 tx_time;
-            tx_time = (rx1_ts + (1500 * UUS_TO_DWT_TIME)) >> 8;
-            dwt_setdelayedtrxtime(tx_time);
-
             tx_resp_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
             dwt_writetxdata(sizeof(tx_resp_msg), tx_resp_msg, 0); /* Zero offset in TX buffer. */
             dwt_writetxfctrl(sizeof(tx_resp_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
-            ret = dwt_starttx(DWT_START_TX_DELAYED);
+            ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
 
             /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one.*/
             if (ret == DWT_ERROR)
