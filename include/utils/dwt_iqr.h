@@ -23,7 +23,7 @@ typedef void (*port_deca_isr_t)(void); // DW1000 IRQ (EXTI9_5_IRQ) handler type.
 /* Defines -------------------------------------------------------------------*/
 
 /* Variable Declarations -----------------------------------------------------*/
-port_deca_isr_t port_deca_isr; // DW1000 IRQ handler declaration.
+// port_deca_isr_t port_deca_isr; // DW1000 IRQ handler declaration.
 
 /* Function Prototypes -------------------------------------------------------*/
 void port_DisableEXT_IRQ(void);
