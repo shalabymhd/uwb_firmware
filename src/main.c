@@ -193,7 +193,7 @@ void board_id_init(void){
   else if (chip_id == 2818133){
     board_id = 8;
   }
-  else if (chip_id == 3211323){
+  else if (chip_id == 4194372){
     board_id = 9;
   }
   else {
