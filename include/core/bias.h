@@ -42,6 +42,7 @@ extern "C" {
  * @return (int) 1.
  */
 int retrieveDiagnostics(float*, float*, uint16_t*);
+int retrieveSkew(float*);
 
 
 #ifdef __cplusplus

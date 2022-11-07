@@ -39,12 +39,12 @@ static uint32 status_reg = 0;
 /* Frames used in the ranging process. See NOTE 2 below. */
 static uint8 tx_poll_msg[10]  = {0x41, 0x88, 0xA};
 static uint8 rx_resp_msg[8]  = {0x41, 0x88, 0xB};
-static uint8 tx_final_msg[30] = {0x41, 0x88, 0xC};
+static uint8 tx_final_msg[34] = {0x41, 0x88, 0xC};
 
 /* Frames used in the ranging process. See NOTE 2 below. */
 static uint8 rx_poll_msg[8]  = {0x41, 0x88, 0xA};
 static uint8 tx_resp_msg[8]  = {0x41, 0x88, 0xB};
-static uint8 rx_final_msg[30] = {0x41, 0x88, 0xC};
+static uint8 rx_final_msg[34] = {0x41, 0x88, 0xC};
 
 /* Length of the common part of the message (up to and including the function code, see NOTE 2 below). */
 #define ALL_MSG_COMMON_LEN (6)
@@ -61,6 +61,8 @@ static uint8 rx_final_msg[30] = {0x41, 0x88, 0xC};
 #define FINAL_FPP_IDX (18) // First path power, as per Section 4.7.1 in the User Manual. Float. 
 #define FINAL_RXP_IDX (22) // Received power, as per Section 4.7.2 in the User Manual. Float.
 #define FINAL_STD_IDX (26) // Standard deviation of RX noise, from Register 0x12. 2 bits only
+#define FINAL_SKEW_IDX (28) // Clock skew measurement from the carrier integrator, 
+                            // Section 5.86 in the DW software API guide.
 
 /* Frame sequence number, incremented after each transmission. */
 static uint8 frame_seq_nb = 0;
@@ -179,6 +181,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
     float fpp2 = 0; // Received signal power of Signal 1 and Signal 2
     float rxp2 = 0;
     uint16_t std2 = 0;
+    float skew2 = 0;
 
     stat = decamutexon();
     dwt_forcetrxoff();
@@ -248,7 +251,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
                 /* Retrieve the reception timestamp */
                 rx2_ts = get_rx_timestamp_u64();
 
-                ret = rxTimestampsDS(tx1_ts, rx2_ts, target_id, &fpp2, &rxp2, &std2, 1);
+                ret = rxTimestampsDS(tx1_ts, rx2_ts, target_id, &fpp2, &rxp2, &std2, &skew2, 1);
 
                 /* Retrieve the reception timestamp */
                 rx3_ts = get_rx_timestamp_u64();
@@ -284,7 +287,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
         if (target_meas_bool){ 
             // send the additional signal
             if (mult_twr){
-                ret = txTimestampsDS(tx1_ts, rx2_ts, rx3_ts, &fpp2, &rxp2, &std2, 1);
+                ret = txTimestampsDS(tx1_ts, rx2_ts, rx3_ts, &fpp2, &rxp2, &std2, &skew2, 1);
             }
             else{
                 ret = txTimestampsSS(tx1_ts, rx2_ts, &fpp2, &rxp2, &std2, 1);
@@ -321,6 +324,7 @@ int twrReceiveCallback(void){
     float fpp1 = 0;
     float rxp1 = 0;
     uint16_t std1 = 0;
+    float skew1 = 0;
 
     /* Set preamble timeout for expected frames. See NOTE 6 below. */
     dwt_setpreambledetecttimeout(PRE_TIMEOUT*100);
@@ -404,7 +408,7 @@ int twrReceiveCallback(void){
             frame_seq_nb++;
 
             /* Transmit the delayed signal with the time-stamps */
-            ret = txTimestampsDS(rx1_ts, tx2_ts, 0, &fpp1, &rxp1, &std1, 0);
+            ret = txTimestampsDS(rx1_ts, tx2_ts, 0, &fpp1, &rxp1, &std1, &skew1, 0);
         }
         else{
             /* Transmit the delayed signal with the time-stamps */
@@ -420,7 +424,7 @@ int twrReceiveCallback(void){
 
                 /* Receive the additional signal and calculate the range measurement */
                 if (mult_twr){
-                    ret = rxTimestampsDS(rx1_ts, tx2_ts, initiator_id, &fpp1, &rxp1, &std1, 0);
+                    ret = rxTimestampsDS(rx1_ts, tx2_ts, initiator_id, &fpp1, &rxp1, &std1, &skew1, 0);
                 }
                 else{
                     ret = rxTimestampsSS(rx1_ts, initiator_id, &fpp1, &rxp1, &std1, 0);
@@ -512,7 +516,7 @@ int txTimestampsSS(uint64 ts1, uint64 ts2,
 }
 
 int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3,
-                   float* fpp, float* rxp, uint16_t* std, 
+                   float* fpp, float* rxp, uint16_t* std, float* skew,
                    bool is_immediate){
     /* Set-up delayed transmission to encode the transmission time-stamp in the final message */
     int ret;
@@ -527,6 +531,7 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3,
         memcpy(&tx_final_msg[FINAL_FPP_IDX], fpp, sizeof(float)); // fpp2
         memcpy(&tx_final_msg[FINAL_RXP_IDX], rxp, sizeof(float)); // rxp2
         memcpy(&tx_final_msg[FINAL_STD_IDX], std, sizeof(uint16_t)); // std2
+        memcpy(&tx_final_msg[FINAL_SKEW_IDX], skew, sizeof(float)); // skew2
         
         tx_type = DWT_START_TX_IMMEDIATE;
     }
@@ -536,6 +541,7 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3,
 
         /* Retrieve fpp1 */
         retrieveDiagnostics(fpp, rxp, std);
+        retrieveSkew(skew);
 
          /* Write all timestamps in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL1_TS_IDX], ts1); // rx1
@@ -544,6 +550,7 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3,
         memcpy(&tx_final_msg[FINAL_FPP_IDX], fpp, sizeof(float)); // fpp1
         memcpy(&tx_final_msg[FINAL_RXP_IDX], rxp, sizeof(float)); // rxp1
         memcpy(&tx_final_msg[FINAL_STD_IDX], std, sizeof(uint16_t)); // std1
+        memcpy(&tx_final_msg[FINAL_SKEW_IDX], skew, sizeof(float)); // skew1
 
         /* Compute final message transmission time. See NOTE 10 below. */
         final_tx_time = (ts2 + (tx3_delay * UUS_TO_DWT_TIME)) >> 8;
@@ -714,7 +721,7 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id,
 }
 
 int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, 
-                   float* fpp, float* rxp, uint16_t* std, 
+                   float* fpp, float* rxp, uint16_t* std, float* skew,
                    bool is_initiator){
     uint32 frame_len;
     double Ra1, Ra2, Db1, Db2;
@@ -725,11 +732,15 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id,
     char fpp2_str[10] = {0};
     char rxp1_str[10] = {0};
     char rxp2_str[10] = {0};
+    char skew1_str[10] = {0};
+    char skew2_str[10] = {0};
     float fpp1, fpp2;
     float rxp1, rxp2;
     uint16_t std1, std2;
+    float skew1, skew2;
     
     retrieveDiagnostics(fpp, rxp, std);
+    retrieveSkew(skew);
 
     dwt_setrxtimeout(0);
     // dwt_setpreambledetecttimeout(0);
@@ -771,10 +782,12 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id,
                 memcpy(&fpp1, &rx_buffer[FINAL_FPP_IDX], sizeof(float));
                 memcpy(&rxp1, &rx_buffer[FINAL_RXP_IDX], sizeof(float));
                 memcpy(&std1, &rx_buffer[FINAL_STD_IDX], sizeof(uint16_t));
+                memcpy(&skew1, &rx_buffer[FINAL_SKEW_IDX], sizeof(float));
 
                 fpp2 = *fpp;
                 rxp2 = *rxp;
                 std2 = *std;
+                skew2 = *skew;
 
                 tx1_ts = (uint32)ts1;
                 rx2_ts = (uint32)ts2;
@@ -793,10 +806,12 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id,
                 memcpy(&fpp2, &rx_buffer[FINAL_FPP_IDX], sizeof(float));
                 memcpy(&rxp2, &rx_buffer[FINAL_RXP_IDX], sizeof(float));
                 memcpy(&std2, &rx_buffer[FINAL_STD_IDX], sizeof(uint16_t));
+                memcpy(&skew2, &rx_buffer[FINAL_SKEW_IDX], sizeof(float));
 
                 fpp1 = *fpp;
                 rxp1 = *rxp;
                 std1 = *std;
+                skew1 = *skew;
 
                 rx1_ts = (uint32)ts1;
                 tx2_ts = (uint32)ts2;
@@ -833,8 +848,10 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id,
             convert_float_to_string(fpp2_str,fpp2);
             convert_float_to_string(rxp1_str,rxp1);
             convert_float_to_string(rxp2_str,rxp2);
+            convert_float_to_string(skew1_str,skew1);
+            convert_float_to_string(skew2_str,skew2);
 
-            sprintf(response, "%s|%d|%s|%lu|%lu|%lu|%lu|%lu|%lu|%s|%s|%s|%s|%u|%u\r\n",
+            sprintf(response, "%s|%d|%s|%lu|%lu|%lu|%lu|%lu|%lu|%s|%s|%s|%s|%u|%u|%s|%s\r\n",
                     *prefix,
                     neighbour_id, dist_str,
                     tx1_ts, rx1_ts,
@@ -842,7 +859,8 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id,
                     tx3_ts, rx3_ts,
                     fpp1_str, fpp2_str,
                     rxp1_str, rxp2_str,
-                    std1, std2);
+                    std1, std2,
+                    skew1_str, skew2_str);
             usb_print(response); // TODO: will this response ever be sent without a USB command?
             
             dwt_setrxtimeout(0);

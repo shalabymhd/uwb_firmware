@@ -16,7 +16,6 @@
 #include <math.h>
 
 /* MAIN BIAS FUNCTIONS ---------------------------------------- */ 
-
 int retrieveDiagnostics(float* fpp, float* rxp, uint16_t* noise_std){
     uint8_t F_reg_data[RX_FQUAL_LEN] = {0};
     uint16_t F1, F2, F3, cir_pr;
@@ -50,5 +49,10 @@ int retrieveDiagnostics(float* fpp, float* rxp, uint16_t* noise_std){
     /* Compute the receive signal power */ 
     *rxp = 10*log10((cir_pr * pow(2,17))/(N*N)) - A_CONSTANT;
 
+    return 1;
+}
+
+int retrieveSkew(float* skew){
+    *skew = - dwt_readcarrierintegrator() * (FREQ_OFFSET_MULTIPLIER * HERTZ_TO_PPM_MULTIPLIER_CHAN_2 );
     return 1;
 }
