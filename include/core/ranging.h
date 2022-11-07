@@ -38,14 +38,15 @@ void ranging_init(void);
 void uwbFrameHandler(void);
 int twrInitiateInstance(uint8_t, bool, uint8_t);
 int twrReceiveCallback(void);
-int txTimestampsSS(uint64_t, uint64_t, float*, bool);
-int txTimestampsDS(uint64_t, uint64_t, uint64_t, float*, bool);
-int rxTimestampsSS(uint64_t, uint8_t, float*, bool);
-int rxTimestampsDS(uint64_t, uint64_t, uint8_t, float*, bool);
+int txTimestampsSS(uint64_t, uint64_t, float*, float*, uint16_t*, bool);
+int txTimestampsDS(uint64_t, uint64_t, uint64_t, float*, float*, uint16_t*, bool);
+int rxTimestampsSS(uint64_t, uint8_t, float*, float*, uint16_t*, bool);
+int rxTimestampsDS(uint64_t, uint64_t, uint8_t, float*, float*, uint16_t*, bool);
 int passivelyListenSS(uint32_t, bool);
 int passivelyListenDS(uint32_t, bool);
 bool checkReceivedFrame(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
 void setPassiveToggle(bool);
+void setResponseDelay(uint16);
 
 #define UUS_TO_DWT_TIME 65536
 #define MAX_FRAME_LEN 100

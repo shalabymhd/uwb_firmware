@@ -34,7 +34,11 @@
 			"limits": "c",
 			"messaging.h": "c",
 			"bias.h": "c",
-			"usb_device.h": "c"
+			"usb_device.h": "c",
+			"usbd_cdc.h": "c",
+			"usbd_desc.h": "c",
+			"usbd_core.h": "c",
+			"spi.h": "c"
 		},
 		"cortex-debug.variableUseNaturalFormat": true
 	}

@@ -42,6 +42,7 @@ void MX_SPI1_Init(void);
 /* USER CODE BEGIN Prototypes */
 void port_set_dw1000_slowrate(void);
 void port_set_dw1000_fastrate(void);
+void SPI1_DeInit(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

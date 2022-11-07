@@ -14,7 +14,7 @@
             "request": "launch",
             "servertype": "openocd",
             "cwd": "${workspaceFolder}",
-            "executable": "./build/config_stm32f4.elf",
+            "executable": "./build/firmware.elf",
             "device": "STM32F405RGT6",
             "svdFile": "${workspaceFolder}/.vscode/STM32F405.svd",
             "configFiles": [
@@ -30,7 +30,7 @@
             "request": "launch",
             "servertype": "openocd",
             "cwd": "${workspaceFolder}",
-            "executable": "build/config_stm32f4.elf",
+            "executable": "build/firmware.elf",
             "configFiles": [
                 "/usr/share/openocd/scripts/board/stm32f4discovery.cfg"
             ],
