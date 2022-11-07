@@ -273,7 +273,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
     }
     else{
         /* Await the return signal and compute the range measurement */
-        ret = rxTimestampsSS(0, target_id, &fpp2, &rxp2, &std2, 1);
+        ret = rxTimestampsSS(0, target_id, &fpp2, &rxp2, &std2, &skew2, 1);
 
         /* Retrieve the transmission timestamp */
         tx1_ts = get_tx_timestamp_u64();
@@ -290,7 +290,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
                 ret = txTimestampsDS(tx1_ts, rx2_ts, rx3_ts, &fpp2, &rxp2, &std2, &skew2, 1);
             }
             else{
-                ret = txTimestampsSS(tx1_ts, rx2_ts, &fpp2, &rxp2, &std2, 1);
+                ret = txTimestampsSS(tx1_ts, rx2_ts, &fpp2, &rxp2, &std2, &skew2, 1);
             }
 
             if (ret){ // TODO: allow additional signal with alternative double-sided TWR
@@ -412,7 +412,7 @@ int twrReceiveCallback(void){
         }
         else{
             /* Transmit the delayed signal with the time-stamps */
-            ret = txTimestampsSS(rx1_ts, 0, &fpp1, &rxp1, &std1, 0);
+            ret = txTimestampsSS(rx1_ts, 0, &fpp1, &rxp1, &std1, &skew1, 0);
         }
 
         if (ret){
@@ -427,7 +427,7 @@ int twrReceiveCallback(void){
                     ret = rxTimestampsDS(rx1_ts, tx2_ts, initiator_id, &fpp1, &rxp1, &std1, &skew1, 0);
                 }
                 else{
-                    ret = rxTimestampsSS(rx1_ts, initiator_id, &fpp1, &rxp1, &std1, 0);
+                    ret = rxTimestampsSS(rx1_ts, initiator_id, &fpp1, &rxp1, &std1, &skew1, 0);
                 }
                 if (ret){
                     dwt_setpreambledetecttimeout(0);
@@ -449,7 +449,7 @@ int twrReceiveCallback(void){
 }
 
 int txTimestampsSS(uint64 ts1, uint64 ts2, 
-                   float* fpp, float* rxp, uint16_t* std, 
+                   float* fpp, float* rxp, uint16_t* std, float* skew,
                    bool is_immediate){
     /* Set-up delayed transmission to encode the transmission time-stamp in the final message */
     int ret;
@@ -463,6 +463,7 @@ int txTimestampsSS(uint64 ts1, uint64 ts2,
         memcpy(&tx_final_msg[FINAL_FPP_IDX], fpp, sizeof(float)); // fpp2
         memcpy(&tx_final_msg[FINAL_RXP_IDX], rxp, sizeof(float)); // rxp2
         memcpy(&tx_final_msg[FINAL_STD_IDX], std, sizeof(uint16_t)); // std2
+        memcpy(&tx_final_msg[FINAL_SKEW_IDX], skew, sizeof(float)); // skew2
         
         tx_type = DWT_START_TX_IMMEDIATE;
     }
@@ -472,6 +473,7 @@ int txTimestampsSS(uint64 ts1, uint64 ts2,
 
         /* Retrieve fpp1 */
         retrieveDiagnostics(fpp, rxp, std);
+        retrieveSkew(skew);
 
          /* Write all timestamps in the final message.*/
         final_msg_set_ts(&tx_final_msg[FINAL_SIGNAL1_TS_IDX], ts1); // rx1
@@ -479,6 +481,7 @@ int txTimestampsSS(uint64 ts1, uint64 ts2,
         memcpy(&tx_final_msg[FINAL_FPP_IDX], fpp, sizeof(float)); // fpp1
         memcpy(&tx_final_msg[FINAL_RXP_IDX], rxp, sizeof(float)); // rxp1
         memcpy(&tx_final_msg[FINAL_STD_IDX], std, sizeof(uint16_t)); // std1
+        memcpy(&tx_final_msg[FINAL_SKEW_IDX], skew, sizeof(float)); // skew1
 
         /* Compute final message transmission time. See NOTE 10 below. */
         final_tx_time = (ts1 + (1500 * UUS_TO_DWT_TIME)) >> 8;
@@ -588,7 +591,7 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3,
 }
 
 int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, 
-                   float* fpp, float* rxp, uint16_t* std,
+                   float* fpp, float* rxp, uint16_t* std, float* skew,
                    bool is_initiator){
     uint32 frame_len;
     double Ra, Db;
@@ -599,9 +602,12 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id,
     char fpp2_str[10] = {0};
     char rxp1_str[10] = {0};
     char rxp2_str[10] = {0};
+    char skew1_str[10] = {0};
+    char skew2_str[10] = {0};
     float fpp1, fpp2;
     float rxp1, rxp2;
     uint16_t std1, std2;
+    float skew1, skew2;
 
     dwt_setrxtimeout(0);
     // dwt_setpreambledetecttimeout(0);
@@ -641,14 +647,18 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id,
                 memcpy(&fpp1, &rx_buffer[FINAL_FPP_IDX], sizeof(float));
                 memcpy(&rxp1, &rx_buffer[FINAL_RXP_IDX], sizeof(float));
                 memcpy(&std1, &rx_buffer[FINAL_STD_IDX], sizeof(uint16_t));
+                memcpy(&skew1, &rx_buffer[FINAL_SKEW_IDX], sizeof(float));
                 
                 tx1_ts = (uint32)get_tx_timestamp_u64();
                 rx2_ts = (uint32)get_rx_timestamp_u64();
 
                 retrieveDiagnostics(fpp, rxp, std);
+                retrieveSkew(skew);
+
                 fpp2 = *fpp;
                 rxp2 = *rxp;
                 std2 = *std;
+                skew2 = *skew;
             }
             else{
                 /* Get timestamps embedded in the final message. */
@@ -658,13 +668,15 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id,
                 memcpy(&fpp2, &rx_buffer[FINAL_FPP_IDX], sizeof(float));
                 memcpy(&rxp2, &rx_buffer[FINAL_RXP_IDX], sizeof(float));
                 memcpy(&std2, &rx_buffer[FINAL_STD_IDX], sizeof(uint16_t));
+                memcpy(&skew2, &rx_buffer[FINAL_SKEW_IDX], sizeof(float));
             
                 rx1_ts = (uint32)ts1;
                 tx2_ts = (uint32)get_tx_timestamp_u64();  
 
                 fpp1 = *fpp;  
                 rxp1 = *rxp;
-                std1 = *std;            
+                std1 = *std;
+                skew1 = *skew;            
             }
             
             /* Compute time of flight. 32-bit subtractions give correct answers even if clock has wrapped. See NOTE 12 below. */            
@@ -679,11 +691,13 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id,
             convert_float_to_string(fpp2_str,fpp2);
             convert_float_to_string(rxp1_str,rxp1);
             convert_float_to_string(rxp2_str,rxp2);
+            convert_float_to_string(skew1_str,skew1);
+            convert_float_to_string(skew2_str,skew2);
 
             /* Display computed distance. */
             char dist_str[10] = {0};
             convert_float_to_string(dist_str,distance);
-            char response[100];
+            char response[120];
             
             char* prefix[4];
             if (is_initiator){
@@ -693,14 +707,15 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id,
                 *prefix = "S05";
             }
 
-            sprintf(response, "%s|%d|%s|%lu|%lu|%lu|%lu|0|0|%s|%s|%s|%s|%u|%u\r\n",
+            sprintf(response, "%s|%d|%s|%lu|%lu|%lu|%lu|0|0|%s|%s|%s|%s|%u|%u|%s|%s\r\n",
                     *prefix,
                     neighbour_id, dist_str,
                     tx1_ts, rx1_ts,
                     tx2_ts, rx2_ts,
                     fpp1_str, fpp2_str,
                     rxp1_str, rxp2_str,
-                    std1, std2);
+                    std1, std2,
+                    skew1_str, skew2_str);
             usb_print(response);
             
             dwt_setrxtimeout(0);
