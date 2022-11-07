@@ -38,7 +38,7 @@
                 "-f",
                 "target/stm32f4x.cfg",
                 "-c",
-                "'program ./build/config_stm32f4.elf verify reset exit'"
+                "'program ./build/firmware.elf verify reset exit'"
             ]
         },
         {
@@ -49,7 +49,16 @@
                 "-f",
                 "board/stm32f4discovery.cfg",
                 "-c",
-                "'program build/config_stm32f4.elf verify reset exit'"
+                "'program build/firmware.elf verify reset exit'"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Upload Firmware by USB",
+            "type": "shell",
+            "command": "/usr/bin/python3",
+            "args": [
+                "./python/flash.py"
             ],
             "problemMatcher": []
         }

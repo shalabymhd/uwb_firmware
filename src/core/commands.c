@@ -27,6 +27,8 @@
 #include "common.h"
 #include "usbd_cdc_if.h"
 #include <stdlib.h>
+#include "usb_device.h"
+#include "spi.h"
 
 int c00_set_idle(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     usb_print("R00\r\n");
@@ -184,4 +186,126 @@ int c08_set_response_delay(IntParams *msg_ints, FloatParams *msg_floats, BoolPar
     usb_print("R08\r\n");
     
     return 1;
+}
+
+/* ************************************************************************** */
+/**
+ * @brief Jump to the bootloader system memory from software. This will put the
+ * board in a bootloading state, ready to accept new firmware from USB. 
+ * 
+ * This function was taken from 
+ * https://stm32f4-discovery.net/2017/04/tutorial-jump-system-memory-software-stm32/
+ * 
+ */
+int c09_jump_to_bootloader(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
+    
+    
+    usb_print("R09\r\n");
+    osDelay(100);
+    jump_to_bootloader();
+    return 0; // should never get here.
+}
+
+void jump_to_bootloader(void){
+
+    
+    /**
+     * Step: Set system memory address.
+     *
+     *       For STM32F429, system memory is on 0x1FFF 0000
+     *       For other families, check AN2606 document table 159 with descriptions of memory addresses
+     */
+    volatile uint32_t addr = 0x1FFF0000;
+
+    /**
+     * Step: Disable RCC, set it to default (after reset) settings
+     *       Internal clock, no PLL, etc.
+     */
+    decamutexon();
+    reset_DW1000();
+    SPI1_DeInit(); // Disable SPI
+    HAL_NVIC_DisableIRQ(DECAIRQ_EXTI_IRQn); // Disable decawave interrupt.
+    USB_DEVICE_DeInit(); // Disable USB
+#if defined(USE_HAL_DRIVER)
+    HAL_RCC_DeInit();
+    HAL_DeInit(); // add by ctien
+#endif /* defined(USE_HAL_DRIVER) */
+#if defined(USE_STDPERIPH_DRIVER)
+    RCC_DeInit();
+#endif /* defined(USE_STDPERIPH_DRIVER) */
+
+    /**
+     * Step: Disable systick timer and reset it to default values
+     */
+    SysTick->CTRL = 0;
+    SysTick->LOAD = 0;
+    SysTick->VAL = 0;
+
+    /**
+     * Step: Disable all interrupts
+     * Charles Cossette: ACTUALLY, this will stop USB from working. 
+     * so we cannot disable all interrupts. 
+     */
+    //__disable_irq(); // changed by ctien
+
+    /**
+     * Step: Remap system memory to address 0x0000 0000 in address space
+     *       For each family registers may be different.
+     *       Check reference manual for each family.
+     *
+     *       For STM32F4xx, MEMRMP register in SYSCFG is used (bits[1:0])
+     *       For STM32F0xx, CFGR1 register in SYSCFG is used (bits[1:0])
+     *       For others, check family reference manual
+     */
+    //Remap by hand... {
+// #if defined(STM32F4)
+//    SYSCFG->MEMRMP = 0x01;
+// #endif
+// #if defined(STM32F0)
+//     SYSCFG->CFGR1 = 0x01;
+// #endif
+    //} ...or if you use HAL drivers
+    __HAL_RCC_SYSCFG_CLK_ENABLE(); //make sure syscfg clocked
+    __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();    //Call HAL macro to do this for you
+    SCB->VTOR = 0; //set vector table offset to 0
+    
+    /**
+     * Step: Set main stack pointer.
+     *       This step must be done last otherwise local variables in this function
+     *       don't have proper value since stack pointer is located on different position
+     *
+     *       Set direct address location which specifies stack pointer in SRAM location
+     */
+    __set_MSP(*(uint32_t *)addr);
+
+
+    void (*SysMemBootJump)(void);
+    /**
+     * Step: Set jump memory location for system memory
+     *       Use address with 4 bytes offset which specifies jump location where program starts
+     */
+    SysMemBootJump = (void (*)(void)) (*((uint32_t *)(0x1FFF0004)));
+
+
+    /**
+     * Step: Actually call our function to jump to set location
+     *       This will start system memory execution
+     */
+    
+    SysMemBootJump();
+
+    
+    /**
+     * Step: Connect USB cable to computer and flash using either STM32 Cube 
+     * Programmer or with dfu-util using 
+     * 
+     * dfu-util -a 0 --dfuse-address 0x08000000:leave -D ./build/firmware.bin 
+     */
+
+
+    // Should never get here. blink at high frequency if you did.
+    while (1){
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
+        HAL_Delay(50);
+    }
 }

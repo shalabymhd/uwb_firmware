@@ -129,8 +129,8 @@ void uwb_init(void){
     usb_print("UWB tag initialized and configured. \n");
 }
 
-/* @fn      reset_DW1000
- * @brief   DW_RESET pin on DW1000 has 2 functions
+/** @fn      reset_DW1000
+ *  @brief   DW_RESET pin on DW1000 has 2 functions
  *          In general it is output, but it also can be used to reset the digital
  *          part of DW1000 by driving this pin low.
  *          Note, the DW_RESET pin should not be driven high externally.
