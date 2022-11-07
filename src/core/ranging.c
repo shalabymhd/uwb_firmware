@@ -212,6 +212,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
         enabled automatically after the frame is sent and the delay set by 
         dwt_setrxaftertxdelay() has elapsed. */
     dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
+    dwt_setrxtimeout(0);
     
     if (mult_twr){
         /* We assume that the transmission is achieved correctly, poll for reception of a frame or error/timeout. See NOTE 9 below. */
@@ -545,7 +546,7 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3,
         memcpy(&tx_final_msg[FINAL_STD_IDX], std, sizeof(uint16_t)); // std1
 
         /* Compute final message transmission time. See NOTE 10 below. */
-        final_tx_time = (ts1 + (tx3_delay * UUS_TO_DWT_TIME)) >> 8;
+        final_tx_time = (ts2 + (tx3_delay * UUS_TO_DWT_TIME)) >> 8;
 
         dwt_setdelayedtrxtime(final_tx_time);
 
