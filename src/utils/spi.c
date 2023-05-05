@@ -21,6 +21,7 @@
 #include "spi.h"
 #include "deca_types.h"
 #include "deca_device_api.h"
+#include "common.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -123,7 +124,8 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5);
 
   /* USER CODE BEGIN SPI1_MspDeInit 1 */
-
+  usb_print("Deinitializing SPI interface.\n");
+  osDelay(1);
   /* USER CODE END SPI1_MspDeInit 1 */
   }
 }
@@ -139,6 +141,11 @@ void port_set_dw1000_fastrate(void)
 {
     hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
     HAL_SPI_Init(&hspi1);
+}
+
+void SPI1_DeInit(void){
+  __HAL_SPI_DISABLE(&hspi1);
+  HAL_SPI_DeInit(&hspi1);
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
@@ -159,7 +166,7 @@ int writetospi(uint16 headerLength, const uint8 *headerBuffer, uint32 bodylength
 	//allocate a big local buffer
 	const uint32_t size = headerLength + bodylength;
 	uint8_t write_buffer[size];
-  // TODO: using memcpy here would simulatenously get rid of the warning.
+  
 	// fill the buffer
 	for(i=0; i<headerLength; i++){
 		write_buffer[i]=headerBuffer[i];
@@ -208,7 +215,7 @@ int readfromspi(uint16 headerLength, const uint8 *headerBuffer, uint32 readlengt
 	//Begin data swapping
 	__HAL_SPI_ENABLE(&hspi1);
 
-	HAL_SPI_TransmitReceive(&hspi1, TXbuffer, RXbuffer,size,SPI_TIMEOUT);
+	HAL_SPI_TransmitReceive(&hspi1, TXbuffer, RXbuffer, size, SPI_TIMEOUT);
 
   // End of the transmission
 	__HAL_SPI_DISABLE(&hspi1);

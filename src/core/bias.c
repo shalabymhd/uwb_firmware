@@ -16,16 +16,17 @@
 #include <math.h>
 
 /* MAIN BIAS FUNCTIONS ---------------------------------------- */ 
-
-float retrieveFPP(void){
+int retrievePower(float* fpp){
     uint8_t F_reg_data[RX_FQUAL_LEN] = {0};
     uint16_t F1, F2, F3;
 
+    /* Read the diagnostics register and save to local memory */
+    dwt_readfromdevice(RX_FQUAL_ID, RX_FQUAL_OFFSET, RX_FQUAL_LEN, F_reg_data);
+
     /* Get the first path amplitudes */
     F1 = dwt_read16bitoffsetreg(RX_TIME_ID, RX_TIME_FP_AMPL1_OFFSET); // Point 1
-    dwt_readfromdevice(RX_FQUAL_ID, RX_FQUAL_OFFSET, RX_FQUAL_LEN, F_reg_data); // Read the entire register
-    F2 = (*(uint64_t*)F_reg_data & FP_AMPL2_MASK) >> FP_AMPL2_SHIFT; // retrieve the subregister for Point 2
-    F3 = (*(uint64_t*)F_reg_data & FP_AMPL3_MASK) >> FP_AMPL3_SHIFT; // retrieve the subregister for Point 3
+    F2 = (*(uint64_t*)F_reg_data & FP_AMPL2_MASK) >> FP_AMPL2_SHIFT; // Point 2
+    F3 = (*(uint64_t*)F_reg_data & FP_AMPL3_MASK) >> FP_AMPL3_SHIFT; // Point 3
 
     /* Get the Preamble Accumulation Count */
     uint8_t N_reg_data[RX_FINFO_LEN];
@@ -36,5 +37,13 @@ float retrieveFPP(void){
     N = N + N_ADJUSTMENT; // This is the adjustment for the SFD accumulation as per the manual.
                           // TODO: compare to RXPACC_NOSAT before implementing?
 
-    return 10*log10((F1*F1 + F2*F2 + F3*F3)/(N*N)) - A_CONSTANT;
+    /* Compute the first path power */
+    *fpp = 10*log10((F1*F1 + F2*F2 + F3*F3)/(N*N)) - A_CONSTANT;
+
+    return 1;
+}
+
+int retrieveSkew(float* skew){
+    *skew = - dwt_readcarrierintegrator() * (FREQ_OFFSET_MULTIPLIER * HERTZ_TO_PPM_MULTIPLIER_CHAN_2 );
+    return 1;
 }

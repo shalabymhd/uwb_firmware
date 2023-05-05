@@ -24,17 +24,21 @@ extern "C" {
 /* Function Prototypes -------------------------------------------------------*/
 
 /*! ------------------------------------------------------------------------------------------------------------------
- * Function: timestampReceivedFrame()
+ * Function: retrievePower()
  *
- * @brief This function retrieves the estimated first path signal power (FPP) as per
- *        Decawave's documentation. The addressed signal is the most recently received. 
+ * @brief This function retrieves the following metric as per Decawave's documentation:
+ *          1) first path power (fpp), as per Section 4.7.1,
+ *        The addressed signal is the most recently received. 
  *  
- * NOTE: This function and the corresponding notation is primarily based on Section 4.7.1
+ * @param fpp (float*) A pointer to where the fpp will be stored.
+ * 
+ * NOTE: This function and the corresponding notation is primarily based on Section 4.7
  *       in the DW1000 User Manual.
  * 
- * @return (float) FPP.
+ * @return (int) 1.
  */
-float retrieveFPP(void);
+int retrievePower(float*);
+int retrieveSkew(float*);
 
 
 #ifdef __cplusplus

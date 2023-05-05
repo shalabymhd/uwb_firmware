@@ -93,7 +93,21 @@ void MX_USB_DEVICE_Init(void)
 
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
+void USB_DEVICE_DeInit(void)
+{
+  if (USBD_DeInit(&hUsbDeviceFS) != USBD_OK)
+  {
+    Error_Handler();
+  }
+  if (USBD_Stop(&hUsbDeviceFS) != USBD_OK)
+  {
+    Error_Handler();
+  }
 
+  // Force pins low to make it seem like the USB is disconnected.
+  HAL_GPIO_WritePin(GPIOC, USB_DM_Pin | USB_DP_Pin, GPIO_PIN_RESET);
+  HAL_Delay(125);
+}
 
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 

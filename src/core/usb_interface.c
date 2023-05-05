@@ -57,6 +57,16 @@ static const char *c07_fields[1];     // No fields. Empty array of size 1
 static const FieldTypes c07_types[1]; // No fields. Empty array of size 1
 static const int c07_num_fields = 0;
 
+static const char *c08_fields[] = {"delay"};
+static const FieldTypes c08_types[] = {INT};
+static const int c08_num_fields = 1;
+
+static const char *c09_fields[1];     // No fields. Empty array of size 1
+static const FieldTypes c09_types[1]; // No fields. Empty array of size 1
+static const int c09_num_fields = 0;
+
+// TODO: would be cleaner to use a struct to represent all the relevant info 
+// about a command.
 static const char **all_command_fields[] = {
     c00_fields,
     c01_fields,
@@ -66,6 +76,8 @@ static const char **all_command_fields[] = {
     c05_fields,
     c06_fields,
     c07_fields,
+    c08_fields,
+    c09_fields,
 };
 
 static const FieldTypes *all_command_types[] = {
@@ -77,6 +89,8 @@ static const FieldTypes *all_command_types[] = {
     c05_types,
     c06_types,
     c07_types,
+    c08_types,
+    c09_types,
 };
 
 static const int (*all_command_funcs[])(IntParams *, FloatParams *, BoolParams *, StrParams *, ByteParams *) = {
@@ -88,6 +102,8 @@ static const int (*all_command_funcs[])(IntParams *, FloatParams *, BoolParams *
     c05_initiate_twr,
     c06_broadcast,
     c07_get_max_frame_len,
+    c08_set_response_delay,
+    c09_jump_to_bootloader,
 };
 
 static const int all_command_num_fields[] = {
@@ -99,6 +115,8 @@ static const int all_command_num_fields[] = {
     c05_num_fields,
     c06_num_fields,
     c07_num_fields,
+    c08_num_fields,
+    c09_num_fields,
 };
 
 
@@ -248,7 +266,8 @@ void readUsb(){
     // Call if a valid command number was detected
     int num_commands = sizeof(all_command_funcs) / sizeof(all_command_funcs[0]);
     if (retry_count > MAX_COMMAND_RETRIES){
-        // Give up re-trying after 10 attempts.
+        // Give up re-trying after 5 attempts.
+        usb_print("COMMANDED TASK FAILED AFTER 5 ATTEMPTS.\r\n");
         command_number = -1;
         retry_count = 0;
     }
