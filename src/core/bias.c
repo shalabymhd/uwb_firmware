@@ -16,10 +16,9 @@
 #include <math.h>
 
 /* MAIN BIAS FUNCTIONS ---------------------------------------- */ 
-
-int retrieveDiagnostics(float* fpp, float* rxp, uint16_t* noise_std){
+int retrievePower(float* fpp){
     uint8_t F_reg_data[RX_FQUAL_LEN] = {0};
-    uint16_t F1, F2, F3, cir_pr;
+    uint16_t F1, F2, F3;
 
     /* Read the diagnostics register and save to local memory */
     dwt_readfromdevice(RX_FQUAL_ID, RX_FQUAL_OFFSET, RX_FQUAL_LEN, F_reg_data);
@@ -28,12 +27,6 @@ int retrieveDiagnostics(float* fpp, float* rxp, uint16_t* noise_std){
     F1 = dwt_read16bitoffsetreg(RX_TIME_ID, RX_TIME_FP_AMPL1_OFFSET); // Point 1
     F2 = (*(uint64_t*)F_reg_data & FP_AMPL2_MASK) >> FP_AMPL2_SHIFT; // Point 2
     F3 = (*(uint64_t*)F_reg_data & FP_AMPL3_MASK) >> FP_AMPL3_SHIFT; // Point 3
-
-    /* Get the CIR power */
-    cir_pr = (*(uint64_t*)F_reg_data & CIR_MXG_MASK) >> CIR_MXG_SHIFT;
-
-    /* Get the noise STD */
-    *noise_std = (*(uint64_t*)F_reg_data & STD_NOISE_MASK) >> STD_NOISE_SHIFT;
 
     /* Get the Preamble Accumulation Count */
     uint8_t N_reg_data[RX_FINFO_LEN];
@@ -47,8 +40,10 @@ int retrieveDiagnostics(float* fpp, float* rxp, uint16_t* noise_std){
     /* Compute the first path power */
     *fpp = 10*log10((F1*F1 + F2*F2 + F3*F3)/(N*N)) - A_CONSTANT;
 
-    /* Compute the receive signal power */ 
-    *rxp = 10*log10((cir_pr * pow(2,17))/(N*N)) - A_CONSTANT;
+    return 1;
+}
 
+int retrieveSkew(float* skew){
+    *skew = - dwt_readcarrierintegrator() * (FREQ_OFFSET_MULTIPLIER * HERTZ_TO_PPM_MULTIPLIER_CHAN_2 );
     return 1;
 }
