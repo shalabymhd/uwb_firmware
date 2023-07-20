@@ -207,8 +207,6 @@ int c09_jump_to_bootloader(IntParams *msg_ints, FloatParams *msg_floats, BoolPar
 }
 
 void jump_to_bootloader(void){
-
-    
     /**
      * Step: Set system memory address.
      *
@@ -226,13 +224,13 @@ void jump_to_bootloader(void){
     SPI1_DeInit(); // Disable SPI
     HAL_NVIC_DisableIRQ(DECAIRQ_EXTI_IRQn); // Disable decawave interrupt.
     USB_DEVICE_DeInit(); // Disable USB
-#if defined(USE_HAL_DRIVER)
-    HAL_RCC_DeInit();
-    HAL_DeInit(); // add by ctien
-#endif /* defined(USE_HAL_DRIVER) */
-#if defined(USE_STDPERIPH_DRIVER)
-    RCC_DeInit();
-#endif /* defined(USE_STDPERIPH_DRIVER) */
+    #if defined(USE_HAL_DRIVER)
+        HAL_RCC_DeInit();
+        HAL_DeInit(); // add by ctien
+    #endif /* defined(USE_HAL_DRIVER) */
+    #if defined(USE_STDPERIPH_DRIVER)
+        RCC_DeInit();
+    #endif /* defined(USE_STDPERIPH_DRIVER) */
 
     /**
      * Step: Disable systick timer and reset it to default values
@@ -257,14 +255,6 @@ void jump_to_bootloader(void){
      *       For STM32F0xx, CFGR1 register in SYSCFG is used (bits[1:0])
      *       For others, check family reference manual
      */
-    //Remap by hand... {
-// #if defined(STM32F4)
-//    SYSCFG->MEMRMP = 0x01;
-// #endif
-// #if defined(STM32F0)
-//     SYSCFG->CFGR1 = 0x01;
-// #endif
-    //} ...or if you use HAL drivers
     __HAL_RCC_SYSCFG_CLK_ENABLE(); //make sure syscfg clocked
     __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();    //Call HAL macro to do this for you
     SCB->VTOR = 0; //set vector table offset to 0
