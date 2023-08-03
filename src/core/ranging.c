@@ -12,6 +12,7 @@
 #include "messaging.h"
 #include <assert.h>
 #include "cmsis_os.h"
+#include <cir.h>
 
 extern osThreadId twrInterruptTaskHandle;
 
@@ -292,6 +293,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
             if (ret){ // TODO: allow additional signal with alternative double-sided TWR
                 dwt_setpreambledetecttimeout(0);
                 dwt_setrxtimeout(0);
+                read_cir();
                 dwt_rxenable(DWT_START_RX_IMMEDIATE);
                 decamutexoff(stat);
                 return 1;
@@ -300,6 +302,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
         else{
             dwt_setpreambledetecttimeout(0);
             dwt_setrxtimeout(0);
+            read_cir();
             dwt_rxenable(DWT_START_RX_IMMEDIATE);
             decamutexoff(stat);
             return 1;
@@ -605,7 +608,6 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id,
     if (status_reg & SYS_STATUS_RXFCG)
     {
         /* Clear good RX frame event and TX frame sent in the DW1000 status register. */
-        // dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
         dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG | SYS_STATUS_TXFRS);
 
         /* A frame has been received, read it into the local buffer. */
@@ -614,6 +616,10 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id,
         if (frame_len <= 1024)
         {
             dwt_readrxdata(rx_buffer, frame_len, 0);
+        }
+
+        if (!is_initiator){
+            read_cir();
         }
 
         /* Check that the frame is a final message sent by "DS TWR initiator" example.
@@ -745,6 +751,10 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id,
         if (frame_len <= 1024)
         {
             dwt_readrxdata(rx_buffer, frame_len, 0);
+        }
+
+        if (!is_initiator){
+            read_cir();
         }
 
         /* Check that the frame is a final message sent by "DS TWR initiator" example.

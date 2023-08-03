@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include "usb_device.h"
 #include "spi.h"
+#include "cir.h"
 
 int c00_set_idle(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     usb_print("R00\r\n");
@@ -198,8 +199,6 @@ int c08_set_response_delay(IntParams *msg_ints, FloatParams *msg_floats, BoolPar
  * 
  */
 int c09_jump_to_bootloader(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
-    
-    
     usb_print("R09\r\n");
     osDelay(100);
     jump_to_bootloader();
@@ -213,6 +212,7 @@ void jump_to_bootloader(void){
      *       For STM32F429, system memory is on 0x1FFF 0000
      *       For other families, check AN2606 document table 159 with descriptions of memory addresses
      */
+    // TODO: move this somewhere else to keep this file clean.
     volatile uint32_t addr = 0x1FFF0000;
 
     /**

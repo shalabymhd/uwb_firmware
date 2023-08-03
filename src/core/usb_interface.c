@@ -512,7 +512,7 @@ char * parseMessageIntoHashTables(char *msg)
  * @return char* pointer to the next key character
  */
 char* getNextKeyChar(char* msg){
-    char *next_sep_pt = strchr(msg, '|'); // Index of next seperator
+    char *next_sep_pt = strchr(msg, '|'); // Index of next separator
     char *next_end_pt = strchr(msg, '\r'); // Index of next terminator
     char *next_pt = NULL;
 
