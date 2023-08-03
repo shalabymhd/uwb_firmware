@@ -38,7 +38,7 @@ static uint32 status_reg = 0;
 #define FINAL_RX_TIMEOUT_UUS 600 //3300
 
 /* Frames used in the ranging process. See NOTE 2 below. */
-static uint8 tx_poll_msg[10]  = {0x41, 0x88, 0xA};
+static uint8 tx_poll_msg[11]  = {0x41, 0x88, 0xA};
 static uint8 rx_resp_msg[8]  = {0x41, 0x88, 0xB};
 static uint8 tx_final_msg[28] = {0x41, 0x88, 0xC};
 
@@ -56,6 +56,7 @@ static uint8 rx_final_msg[28] = {0x41, 0x88, 0xC};
 #define ALL_RX_BOARD_IDX (5)
 #define TX_POLL_TARG_MEAS_IDX (6) // the index associated with the target meas boolean
 #define TX_POLL_MULT_TWR_IDX (7) // the index associated with the multiplicative TWR boolean
+#define TX_POLL_GET_CIR_IDX (8) // the index associated with the get-CIR boolean
 #define FINAL_SIGNAL1_TS_IDX (6)
 #define FINAL_SIGNAL2_TS_IDX (10)
 #define FINAL_SIGNAL3_TS_IDX (14)
@@ -171,7 +172,7 @@ void uwbFrameHandler(void){
 
 
 /* MAIN RANGING FUNCTIONS ---------------------------------------- */ 
-int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_twr){
+int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_twr, bool get_cir){
     int ret;
     decaIrqStatus_t stat;
     uint64 tx1_ts;
@@ -201,6 +202,9 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
 
     /* Indicate whether the multiplicative TWR will be used */
     tx_poll_msg[TX_POLL_MULT_TWR_IDX] = mult_twr;    
+
+    /* Indicate whether the CIR will be output */
+    tx_poll_msg[TX_POLL_GET_CIR_IDX] = get_cir;    
 
     /* Write frame data to DW1000 and prepare transmission. See NOTE 8 below. */
     tx_poll_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
@@ -248,7 +252,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
                 /* Retrieve the reception timestamp */
                 rx2_ts = get_rx_timestamp_u64();
 
-                ret = rxTimestampsDS(tx1_ts, rx2_ts, target_id, &fpp2, &skew2, 1);
+                ret = rxTimestampsDS(tx1_ts, rx2_ts, target_id, &fpp2, &skew2, true, false);
 
                 /* Retrieve the reception timestamp */
                 rx3_ts = get_rx_timestamp_u64();
@@ -270,7 +274,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
     }
     else{
         /* Await the return signal and compute the range measurement */
-        ret = rxTimestampsSS(0, target_id, &fpp2, &skew2, 1);
+        ret = rxTimestampsSS(0, target_id, &fpp2, &skew2, true, false);
 
         /* Retrieve the transmission timestamp */
         tx1_ts = get_tx_timestamp_u64();
@@ -284,16 +288,18 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
         if (target_meas_bool){ 
             // send the additional signal
             if (mult_twr){
-                ret = txTimestampsDS(tx1_ts, rx2_ts, rx3_ts, &fpp2, &skew2, 1);
+                ret = txTimestampsDS(tx1_ts, rx2_ts, rx3_ts, &fpp2, &skew2, true);
             }
             else{
-                ret = txTimestampsSS(tx1_ts, rx2_ts, &fpp2, &skew2, 1);
+                ret = txTimestampsSS(tx1_ts, rx2_ts, &fpp2, &skew2, true);
             }
 
             if (ret){ // TODO: allow additional signal with alternative double-sided TWR
                 dwt_setpreambledetecttimeout(0);
                 dwt_setrxtimeout(0);
-                read_cir();
+                if (get_cir){
+                    read_cir();
+                }
                 dwt_rxenable(DWT_START_RX_IMMEDIATE);
                 decamutexoff(stat);
                 return 1;
@@ -302,7 +308,9 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
         else{
             dwt_setpreambledetecttimeout(0);
             dwt_setrxtimeout(0);
-            read_cir();
+            if (get_cir){
+                read_cir();
+            }
             dwt_rxenable(DWT_START_RX_IMMEDIATE);
             decamutexoff(stat);
             return 1;
@@ -340,6 +348,9 @@ int twrReceiveCallback(void){
 
     /* Retrieve the boolean defining whether a 4th signal is expected */
     bool target_meas_bool = rx_buffer[TX_POLL_TARG_MEAS_IDX];
+
+    /* Retrieve the boolean defining whether a 4th signal is expected */
+    bool get_cir = rx_buffer[TX_POLL_GET_CIR_IDX];
 
     /* Retrieve the boolean defining whether the multiplicative TWR will be used */
     uint8_t mult_twr = rx_buffer[TX_POLL_MULT_TWR_IDX];
@@ -421,10 +432,10 @@ int twrReceiveCallback(void){
 
                 /* Receive the additional signal and calculate the range measurement */
                 if (mult_twr){
-                    ret = rxTimestampsDS(rx1_ts, tx2_ts, initiator_id, &fpp1, &skew1, 0);
+                    ret = rxTimestampsDS(rx1_ts, tx2_ts, initiator_id, &fpp1, &skew1, false, get_cir);
                 }
                 else{
-                    ret = rxTimestampsSS(rx1_ts, initiator_id, &fpp1, &skew1, 0);
+                    ret = rxTimestampsSS(rx1_ts, initiator_id, &fpp1, &skew1, false, get_cir);
                 }
                 if (ret){
                     dwt_setpreambledetecttimeout(0);
@@ -581,7 +592,7 @@ int txTimestampsDS(uint64 ts1, uint64 ts2, uint64 ts3,
 
 int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id, 
                    float* fpp, float* skew,
-                   bool is_initiator){
+                   bool is_initiator, bool get_cir){
     uint32 frame_len;
     double Ra, Db;
     uint32 rx1_ts, tx2_ts;
@@ -618,7 +629,7 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id,
             dwt_readrxdata(rx_buffer, frame_len, 0);
         }
 
-        if (!is_initiator){
+        if (get_cir){
             read_cir();
         }
 
@@ -713,7 +724,7 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id,
 
 int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id, 
                    float* fpp, float* skew,
-                   bool is_initiator){
+                   bool is_initiator, bool get_cir){
     uint32 frame_len;
     double Ra1, Ra2, Db1, Db2;
     uint32 rx1_ts, tx2_ts, tx3_ts;
@@ -753,7 +764,7 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id,
             dwt_readrxdata(rx_buffer, frame_len, 0);
         }
 
-        if (!is_initiator){
+        if (get_cir){
             read_cir();
         }
 

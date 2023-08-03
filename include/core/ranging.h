@@ -36,12 +36,12 @@ typedef unsigned long long uint64;
 /* Function Prototypes -------------------------------------------------------*/
 void ranging_init(void);
 void uwbFrameHandler(void);
-int twrInitiateInstance(uint8_t, bool, uint8_t);
+int twrInitiateInstance(uint8_t, bool, uint8_t, bool);
 int twrReceiveCallback(void);
 int txTimestampsSS(uint64_t, uint64_t, float*, float*, bool);
 int txTimestampsDS(uint64_t, uint64_t, uint64_t, float*, float*, bool);
-int rxTimestampsSS(uint64_t, uint8_t, float*, float*, bool);
-int rxTimestampsDS(uint64_t, uint64_t, uint8_t, float*, float*, bool);
+int rxTimestampsSS(uint64_t, uint8_t, float*, float*, bool, bool);
+int rxTimestampsDS(uint64_t, uint64_t, uint8_t, float*, float*, bool, bool);
 int passivelyListenSS(uint32_t, bool);
 int passivelyListenDS(uint32_t, bool);
 bool checkReceivedFrame(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
