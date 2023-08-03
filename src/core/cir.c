@@ -9,7 +9,7 @@ static uint32 accum_data[ACCUM_DATA_LEN];
 #define NUM_SYMBOLS 50
 char buf[NUM_SYMBOLS*6 + NUM_SYMBOLS + 10], *pos = buf;
 
-int read_cir(){
+int read_cir(uint8_t initiator_id, uint8_t target_id){
 	for(int i = 0;i<NUM_CIR_POINTS;i++)
 	{
 		uint8 *cir; cir = (uint8 *)malloc(5*sizeof(uint8));
@@ -23,11 +23,11 @@ int read_cir(){
 		free(cir);
 	}
 	osDelay(1);
-	output_cir();
+	output_cir(initiator_id, target_id);
 	return 1;
 }
 
-int output_cir(){
+int output_cir(uint8_t initiator_id, uint8_t target_id){
 	char response[30];
 	char* ptr = buf;
 
@@ -35,7 +35,7 @@ int output_cir(){
 		ptr = pos;
 		for (int lv1=lv0; lv1<lv0+NUM_SYMBOLS && lv1<NUM_CIR_POINTS; ++lv1){
 			if (lv1 == 0) {
-				sprintf(response, "%s", "R10");
+				sprintf(response, "%s|%d|%d", "R10", initiator_id, target_id);
 				strcpy(ptr, response);
 				ptr += strlen(response);
 			}

@@ -151,11 +151,11 @@ void uwbFrameHandler(void){
                 break;
             }
             case 0xB:{
-                usb_print("WARNING 0xB: TWR message is firing an interrupt when it shouldnt be.\r\n");
+                usb_print("WARNING 0xB: TWR message is firing an interrupt when it shouldn't be.\r\n");
                 break;
             }
             case 0xC:{
-                usb_print("WARNING 0xC: TWR message is firing an interrupt when it shouldnt be.\r\n");
+                usb_print("WARNING 0xC: TWR message is firing an interrupt when it shouldn't be.\r\n");
                 break;
             }
             case 0xD:{
@@ -298,7 +298,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
                 dwt_setpreambledetecttimeout(0);
                 dwt_setrxtimeout(0);
                 if (get_cir){
-                    read_cir();
+                    read_cir(BOARD_ID(), target_id);
                 }
                 dwt_rxenable(DWT_START_RX_IMMEDIATE);
                 decamutexoff(stat);
@@ -309,7 +309,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
             dwt_setpreambledetecttimeout(0);
             dwt_setrxtimeout(0);
             if (get_cir){
-                read_cir();
+                read_cir(BOARD_ID(), target_id);
             }
             dwt_rxenable(DWT_START_RX_IMMEDIATE);
             decamutexoff(stat);
@@ -349,7 +349,7 @@ int twrReceiveCallback(void){
     /* Retrieve the boolean defining whether a 4th signal is expected */
     bool target_meas_bool = rx_buffer[TX_POLL_TARG_MEAS_IDX];
 
-    /* Retrieve the boolean defining whether a 4th signal is expected */
+    /* Retrieve the boolean defining whether the CIR output is expected */
     bool get_cir = rx_buffer[TX_POLL_GET_CIR_IDX];
 
     /* Retrieve the boolean defining whether the multiplicative TWR will be used */
@@ -370,10 +370,10 @@ int twrReceiveCallback(void){
         if (bool_target && bool_msg_type && passive_listening){
             
             if (mult_twr){
-                ret = passivelyListenDS(rx1_ts, target_meas_bool);
+                ret = passivelyListenDS(rx1_ts, target_meas_bool, get_cir);
             }
             else{
-                ret = passivelyListenSS(rx1_ts, target_meas_bool);
+                ret = passivelyListenSS(rx1_ts, target_meas_bool, get_cir);
             }
 
             // Infinite timeout for interrupt receiver running in the background 
@@ -630,7 +630,12 @@ int rxTimestampsSS(uint64 ts1, uint8_t neighbour_id,
         }
 
         if (get_cir){
-            read_cir();
+            if (is_initiator){
+                read_cir(BOARD_ID(), neighbour_id);
+            }
+            else{
+                read_cir(neighbour_id, BOARD_ID());
+            }
         }
 
         /* Check that the frame is a final message sent by "DS TWR initiator" example.
@@ -765,7 +770,12 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id,
         }
 
         if (get_cir){
-            read_cir();
+            if (is_initiator){
+                read_cir(BOARD_ID(), neighbour_id);
+            }
+            else{
+                read_cir(neighbour_id, BOARD_ID());
+            }
         }
 
         /* Check that the frame is a final message sent by "DS TWR initiator" example.
@@ -882,7 +892,7 @@ int rxTimestampsDS(uint64 ts1, uint64 ts2, uint8_t neighbour_id,
  * 
  * @return (bool) Success boolean.
  */
-int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
+int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool, bool get_cir){
     /* Have received first signal in a TWR transaction. 1 or 2 more signals expected. */
     bool success;
     uint8_t initiator_id, target_id;
@@ -913,6 +923,10 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
     /* --------------------- SIGNAL 2: Target to Initiator --------------------- */
     success = checkReceivedFrame(ALL_RX_BOARD_IDX, initiator_id, ALL_TX_BOARD_IDX, target_id, 0xC);
     if (success){
+        if (get_cir && !target_meas_bool){
+            read_cir(initiator_id, target_id);
+        }
+
         /* Extract all the embedded information in the received signal */
         final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &rx_ts1_n);
         final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &tx_ts2_n);
@@ -939,6 +953,10 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
         dwt_setrxtimeout(0);
         success = checkReceivedFrame(ALL_TX_BOARD_IDX, initiator_id, ALL_RX_BOARD_IDX, target_id, 0xC);
         if (success){
+            if (get_cir){
+                read_cir(initiator_id, target_id);
+            }
+            
             /* Extract all the embedded information in the received signal */
             final_msg_get_ts(&rx_buffer[FINAL_SIGNAL1_TS_IDX], &tx_ts1_n);
             final_msg_get_ts(&rx_buffer[FINAL_SIGNAL2_TS_IDX], &rx_ts2_n);
@@ -987,7 +1005,7 @@ int passivelyListenSS(uint32_t rx_ts1, bool target_meas_bool){
  * 
  * @return (bool) Success boolean.
  */
-int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
+int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool, bool get_cir){
     /* Have received first signal in a TWR transaction. 1 or 2 more signals expected. */
     bool success;
     uint8_t initiator_id, target_id;
@@ -1055,6 +1073,10 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
         /* Retrieve received signal power and skew */
         retrievePower(&fpp3);
         retrieveSkew(&skew3);
+
+        if (get_cir && !target_meas_bool){
+            read_cir(initiator_id, target_id);
+        }
     }
     else{
         return 0;
@@ -1076,6 +1098,10 @@ int passivelyListenDS(uint32_t rx_ts1, bool target_meas_bool){
 
             memcpy(&fpp2_n, &rx_buffer[FINAL_FPP_IDX], sizeof(float)); 
             memcpy(&skew2_n, &rx_buffer[FINAL_SKEW_IDX], sizeof(float)); 
+
+            if (get_cir){
+                read_cir(initiator_id, target_id);
+            }
         }
         else{
             return 0;
