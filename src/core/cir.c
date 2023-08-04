@@ -54,7 +54,7 @@ int output_cir(uint8_t initiator_id, uint8_t target_id){
 
 	osDelay(1);
 
-	usb_print("\r");
+	usb_print("\r\n");
 
 	return 1;
 }
