@@ -3,13 +3,15 @@ from pyuwb import UwbModule, find_uwb_serial_ports
 import time
 
 ports = find_uwb_serial_ports()
-uwb1 = UwbModule(ports[0], verbose=False, timeout=0.1)
-uwb2 = UwbModule(ports[1], verbose=False, timeout=0.1)
-uwb3 = UwbModule(ports[2], verbose=False, timeout=0.1)
+uwb1 = UwbModule(ports[0], verbose=True, timeout=0.1)
+uwb2 = UwbModule(ports[1], verbose=True, timeout=0.1)
+uwb3 = UwbModule(ports[2], verbose=True, timeout=0.1)
+# uwb4 = UwbModule(ports[3], verbose=True, timeout=0.1)
 
 id1 = uwb1.get_id()
 id2 = uwb2.get_id()
 id3 = uwb3.get_id()
+# id4 = uwb4.get_id()
 
 # if id1['id'] == 9:
 #     uwb3, uwb1 = uwb1, uwb3
@@ -46,17 +48,20 @@ def listening_callback(data, my_id):
 uwb1.register_cir_callback(lambda x: print("CIR 1: ", x))
 uwb2.register_cir_callback(lambda x: print("CIR 2: ", x))
 uwb3.register_cir_callback(lambda x: print("CIR 3: ", x))
+# uwb4.register_cir_callback(lambda x: print("CIR 4: ", x))
 
 uwb1.toggle_passive(True)
 uwb2.toggle_passive(True)
 uwb3.toggle_passive(True)
+# uwb4.toggle_passive(True)
 
 uwb1.register_listening_callback(listening_callback, id1['id'])
 uwb2.register_listening_callback(listening_callback, id2['id'])
 uwb3.register_listening_callback(listening_callback, id3['id'])
+# uwb4.register_listening_callback(listening_callback, id4['id'])
 
 start = time.time()
-n = 10
+n = 4
 i = 0
 while i < n:
     data = uwb2.do_twr(
@@ -66,9 +71,10 @@ while i < n:
         get_cir=True,
     )
 
-    uwb1.wait_for_messages()
-    uwb2.wait_for_messages()
-    uwb3.wait_for_messages()
+    uwb1.wait_for_messages(timeout=0.1)
+    uwb2.wait_for_messages(timeout=0.1)
+    uwb3.wait_for_messages(timeout=0.1)
+    # uwb4.wait_for_messages(timeout=0.1)
 
     
     # time.sleep(0.1)
@@ -81,9 +87,10 @@ while i < n:
         get_cir=True,
     )
 
-    uwb1.wait_for_messages()
-    uwb2.wait_for_messages()
-    uwb3.wait_for_messages()
+    uwb1.wait_for_messages(timeout=0.1)
+    uwb2.wait_for_messages(timeout=0.1)
+    uwb3.wait_for_messages(timeout=0.1)
+    # uwb4.wait_for_messages(timeout=0.1)
     
     # time.sleep(0.1)
     print(data)
@@ -95,9 +102,10 @@ while i < n:
         get_cir=True,
     )
 
-    uwb1.wait_for_messages()
-    uwb2.wait_for_messages()
-    uwb3.wait_for_messages()
+    uwb1.wait_for_messages(timeout=0.1)
+    uwb2.wait_for_messages(timeout=0.1)
+    uwb3.wait_for_messages(timeout=0.1)
+    # uwb4.wait_for_messages(timeout=0.1)
 
     # # time.sleep(0.1)
     print(data)
@@ -109,9 +117,22 @@ while i < n:
         get_cir=True,
     )
 
-    uwb1.wait_for_messages()
-    uwb2.wait_for_messages()
-    uwb3.wait_for_messages()
+    uwb1.wait_for_messages(timeout=0.1)
+    uwb2.wait_for_messages(timeout=0.1)
+    uwb3.wait_for_messages(timeout=0.1)
+    # uwb4.wait_for_messages(timeout=0.1)
+
+    # data = uwb1.do_twr(
+    #     target_id = id4['id'],
+    #     mult_twr = True,
+    #     meas_at_target=True,
+    #     get_cir=True,
+    # )
+
+    # uwb1.wait_for_messages(timeout=0.1)
+    # uwb2.wait_for_messages(timeout=0.1)
+    # uwb3.wait_for_messages(timeout=0.1)
+    # uwb4.wait_for_messages(timeout=0.1)
     
     i += 1
 
