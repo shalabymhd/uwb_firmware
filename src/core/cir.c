@@ -6,20 +6,24 @@
 #define ACCUM_DATA_LEN (NUM_CIR_POINTS)
 static uint32 accum_data[ACCUM_DATA_LEN];
 
+#define READ_SIZE 25
 #define NUM_SYMBOLS 50
 char buf[NUM_SYMBOLS*5], *pos = buf;
 
 int read_cir(uint8_t initiator_id, uint8_t target_id){
-	uint8 *cir; cir = (uint8 *)malloc(5*sizeof(uint8));
+	uint8 *cir; cir = (uint8 *)malloc((1+READ_SIZE*4)*sizeof(uint8));
 	int16 real;
 	int16 imag;
-	for(int i = 0;i<NUM_CIR_POINTS;i++)
+	for(int i = 0;i<NUM_CIR_POINTS;i+=READ_SIZE)
 	{
-		dwt_readaccdata(cir, 5, 0 + 4*i);
-		real =  (int16)cir[2] << 8 | (int16)cir[1];
-		imag =  (int16)cir[4] << 8 | (int16)cir[3];
+		dwt_readaccdata(cir, (1+READ_SIZE*4), 0 + 4*i);
 		// accum_data[i] = (uint32)sqrt(pow(real,2) + pow(imag,2));
-		accum_data[i] = (uint32)(fmax(abs(real),abs(imag)) + fmin(abs(real),abs(imag))/4);
+		for (int j=0; j<READ_SIZE && j+i<NUM_CIR_POINTS; j++){
+			real =  (int16)cir[4*j+2] << 8 | (int16)cir[4*j+1];
+			imag =  (int16)cir[4*j+4] << 8 | (int16)cir[4*j+3];
+			accum_data[j+i] = (uint32)(fmax(abs(real),abs(imag)) + fmin(abs(real),abs(imag))/4);
+		}
+		
 	}
 	free(cir);
 	// osDelay(1);
