@@ -45,9 +45,9 @@ static const char *c04_fields[] = {"toggle"};
 static const FieldTypes c04_types[] = {BOOL};
 static const int c04_num_fields = 1;
 
-static const char *c05_fields[] = {"target", "targ_meas", "mult_twr"}; 
-static const FieldTypes c05_types[] = {INT, BOOL, INT};
-static const int c05_num_fields = 3;
+static const char *c05_fields[] = {"target", "targ_meas", "mult_twr", "get_cir"}; 
+static const FieldTypes c05_types[] = {INT, BOOL, INT, BOOL};
+static const int c05_num_fields = 4;
 
 static const char *c06_fields[] = {"data"}; 
 static const FieldTypes c06_types[] = {BYTES};
@@ -512,7 +512,7 @@ char * parseMessageIntoHashTables(char *msg)
  * @return char* pointer to the next key character
  */
 char* getNextKeyChar(char* msg){
-    char *next_sep_pt = strchr(msg, '|'); // Index of next seperator
+    char *next_sep_pt = strchr(msg, '|'); // Index of next separator
     char *next_end_pt = strchr(msg, '\r'); // Index of next terminator
     char *next_pt = NULL;
 

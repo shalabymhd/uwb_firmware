@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include "usb_device.h"
 #include "spi.h"
+#include "cir.h"
 
 int c00_set_idle(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     usb_print("R00\r\n");
@@ -116,6 +117,7 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
     uint8_t target_ID, mult_twr;
     IntParams *i;
     bool target_meas_bool;
+    bool get_cir;
     BoolParams *b;
 
     /* Extract the target */
@@ -130,12 +132,16 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
     HASH_FIND_STR(msg_ints, "mult_twr", i);
     mult_twr = i->value;
 
+    /* Extract the toggle that dictates if the target computes range measurements */
+    HASH_FIND_STR(msg_bools, "get_cir", b);
+    get_cir = b->value;
+
     if (target_ID == BOARD_ID()){
         usb_print("TWR FAIL: The target ID is the same as the initiator's ID.\r\n");
         return 1;
     }
 
-    success = twrInitiateInstance(target_ID, target_meas_bool, mult_twr);
+    success = twrInitiateInstance(target_ID, target_meas_bool, mult_twr, get_cir);
 
     if (success){ 
         // Response is done inside `twrInitiateInstance`
@@ -198,8 +204,6 @@ int c08_set_response_delay(IntParams *msg_ints, FloatParams *msg_floats, BoolPar
  * 
  */
 int c09_jump_to_bootloader(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
-    
-    
     usb_print("R09\r\n");
     osDelay(100);
     jump_to_bootloader();
@@ -213,6 +217,7 @@ void jump_to_bootloader(void){
      *       For STM32F429, system memory is on 0x1FFF 0000
      *       For other families, check AN2606 document table 159 with descriptions of memory addresses
      */
+    // TODO: move this somewhere else to keep this file clean.
     volatile uint32_t addr = 0x1FFF0000;
 
     /**
