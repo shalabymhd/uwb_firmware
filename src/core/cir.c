@@ -49,7 +49,7 @@ void output_cir(uint8_t initiator_id, uint8_t target_id, uint16_t first_path_idx
 			if (lv1 == 0) {
 				sprintf(
 					response, "%s|%d|%d|%u|%u",
-					"R10", initiator_id, target_id, 
+					"S10", initiator_id, target_id, 
 					first_path_idx/64, (first_path_idx%64)*1000/64
 				);
 				strcpy(ptr, response);
