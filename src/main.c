@@ -181,6 +181,9 @@ void board_id_init(void){
   else if (chip_id == 4194374){
     board_id = 3;
   }
+  else if (chip_id == 5046330){
+    board_id = 4;
+  }
   else if (chip_id == 3342378){
     board_id = 5;
   }
