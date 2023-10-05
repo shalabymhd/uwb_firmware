@@ -40,7 +40,7 @@ int read_cir(uint8_t initiator_id, uint8_t target_id){
 }
 
 void output_cir(uint8_t initiator_id, uint8_t target_id, uint16_t first_path_idx){
-	char response[20];
+	char response[21];
 	char* ptr = buf;
 
 	for (int lv0=0; lv0<NUM_CIR_POINTS; lv0+=NUM_SYMBOLS){
