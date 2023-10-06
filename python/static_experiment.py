@@ -14,7 +14,7 @@ id2 = uwb2.get_id()['id']
 while True:
     data = uwb1.do_twr(
         target_id = id2,
-        mult_twr = True,
+        ds_twr = True,
     )
     t = time.time()
     with open(timestr+".txt", "a") as myfile:

@@ -57,15 +57,15 @@ uwb2.register_range_callback(cb_target)
 
 counter = 0
 while True:
-    data1 = uwb1.do_twr(id2['id'],mult_twr=True,meas_at_target=True)
+    data1 = uwb1.do_twr(id2['id'],ds_twr=True,meas_at_target=True)
     uwb1.output(data1)
     # time.sleep(0.01)
 
-    data2 = uwb2.do_twr(id3['id'],mult_twr=True,meas_at_target=True)
+    data2 = uwb2.do_twr(id3['id'],ds_twr=True,meas_at_target=True)
     uwb2.output(data2) 
     # time.sleep(0.01)
 
-    data3 = uwb3.do_twr(id1['id'],mult_twr=True,meas_at_target=True)
+    data3 = uwb3.do_twr(id1['id'],ds_twr=True,meas_at_target=True)
     uwb2.output(data3) 
     # time.sleep(0.01)
 

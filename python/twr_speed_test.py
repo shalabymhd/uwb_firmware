@@ -14,7 +14,7 @@ uwb1 = UwbModule(port, verbose=True)
 counter = 0
 start_time = time.time()
 for i in range(num_trials):
-    data = uwb1.do_twr(target_id, mult_twr=True, meas_at_target=True)
+    data = uwb1.do_twr(target_id, ds_twr=True, meas_at_target=True)
     print(counter)
     counter += 1
 

@@ -74,7 +74,7 @@ i = 0
 while i < n:
     data = uwb2.do_twr(
         target_id = id1['id'],
-        mult_twr = True,
+        ds_twr = True,
         meas_at_target=True,
         get_cir=True,
     )
@@ -90,7 +90,7 @@ while i < n:
 
     # data = uwb3.do_twr(
     #     target_id = id2['id'],
-    #     mult_twr = True,
+    #     ds_twr = True,
     #     meas_at_target=True,
     #     get_cir=True,
     # )
@@ -105,7 +105,7 @@ while i < n:
 
     data = uwb1.do_twr(
         target_id = id2['id'],
-        mult_twr = True,
+        ds_twr = True,
         meas_at_target=True,
         get_cir=True,
     )
@@ -120,7 +120,7 @@ while i < n:
 
     # data = uwb1.do_twr(
     #     target_id = id3['id'],
-    #     mult_twr = True,
+    #     ds_twr = True,
     #     meas_at_target=True,
     #     get_cir=True,
     # )
@@ -132,7 +132,7 @@ while i < n:
 
     # data = uwb1.do_twr(
     #     target_id = id4['id'],
-    #     mult_twr = True,
+    #     ds_twr = True,
     #     meas_at_target=True,
     #     get_cir=True,
     # )

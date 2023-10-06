@@ -18,11 +18,11 @@ uwb2.output(id2)
 
 target_id = id2['id']
 meas_at_target = False
-mult_twr = False
+ds_twr = False
 
 command_key = "C05"
 command_key = command_key.encode(uwb1._encoding)
-msg = uwb1.packer.pack([target_id, meas_at_target, mult_twr],
+msg = uwb1.packer.pack([target_id, meas_at_target, ds_twr],
                        uwb1._c_format_dict[command_key])
 msg = command_key + msg
 
