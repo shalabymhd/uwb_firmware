@@ -55,7 +55,7 @@ static uint8 rx_final_msg[28] = {0x41, 0x88, 0xC};
 #define ALL_TX_BOARD_IDX (4)
 #define ALL_RX_BOARD_IDX (5)
 #define TX_POLL_TARG_MEAS_IDX (6) // the index associated with the target meas boolean
-#define TX_POLL_MULT_TWR_IDX (7) // the index associated with the multiplicative TWR boolean
+#define TX_POLL_ds_twr_IDX (7) // the index associated with the DS-TWR boolean
 #define TX_POLL_GET_CIR_IDX (8) // the index associated with the get-CIR boolean
 #define FINAL_SIGNAL1_TS_IDX (6)
 #define FINAL_SIGNAL2_TS_IDX (10)
@@ -172,7 +172,7 @@ void uwbFrameHandler(void){
 
 
 /* MAIN RANGING FUNCTIONS ---------------------------------------- */ 
-int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_twr, bool get_cir){
+int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t ds_twr, bool get_cir){
     int ret;
     decaIrqStatus_t stat;
     uint64 tx1_ts;
@@ -200,8 +200,8 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
     /* Indicate whether the Target board will also compute the range measurement */
     tx_poll_msg[TX_POLL_TARG_MEAS_IDX] = target_meas_bool;    
 
-    /* Indicate whether the multiplicative TWR will be used */
-    tx_poll_msg[TX_POLL_MULT_TWR_IDX] = mult_twr;    
+    /* Indicate whether DS-TWR will be used */
+    tx_poll_msg[TX_POLL_ds_twr_IDX] = ds_twr;    
 
     /* Indicate whether the CIR will be output */
     tx_poll_msg[TX_POLL_GET_CIR_IDX] = get_cir;    
@@ -218,7 +218,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
     dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
     dwt_setrxtimeout(0);
     
-    if (mult_twr){
+    if (ds_twr){
         /* We assume that the transmission is achieved correctly, poll for reception of a frame or error/timeout. See NOTE 9 below. */
         while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)))
         { };
@@ -287,7 +287,7 @@ int twrInitiateInstance(uint8_t target_id, bool target_meas_bool, uint8_t mult_t
         // check if an additional signal is expected
         if (target_meas_bool){ 
             // send the additional signal
-            if (mult_twr){
+            if (ds_twr){
                 ret = txTimestampsDS(tx1_ts, rx2_ts, rx3_ts, &fpp2, &skew2, true);
             }
             else{
@@ -352,8 +352,8 @@ int twrReceiveCallback(void){
     /* Retrieve the boolean defining whether the CIR output is expected */
     bool get_cir = rx_buffer[TX_POLL_GET_CIR_IDX];
 
-    /* Retrieve the boolean defining whether the multiplicative TWR will be used */
-    uint8_t mult_twr = rx_buffer[TX_POLL_MULT_TWR_IDX];
+    /* Retrieve the boolean defining whether DS-TWR will be used */
+    uint8_t ds_twr = rx_buffer[TX_POLL_ds_twr_IDX];
 
     /* Check that the frame is a poll sent by "DS TWR initiator" example. */
     rx_buffer[ALL_MSG_SEQ_IDX] = 0;
@@ -369,7 +369,7 @@ int twrReceiveCallback(void){
         bool bool_msg_type = (rx_buffer[ALL_MSG_TYPE_IDX] == rx_poll_msg[ALL_MSG_TYPE_IDX]);
         if (bool_target && bool_msg_type && passive_listening){
             
-            if (mult_twr){
+            if (ds_twr){
                 ret = passivelyListenDS(rx1_ts, target_meas_bool, get_cir);
             }
             else{
@@ -387,7 +387,7 @@ int twrReceiveCallback(void){
             return 0;
         }
 
-        if (mult_twr){
+        if (ds_twr){
             /* Write and send the response message. See NOTE 10 below.*/
             tx_resp_msg[ALL_MSG_SEQ_IDX] = frame_seq_nb;
             dwt_writetxdata(sizeof(tx_resp_msg), tx_resp_msg, 0); /* Zero offset in TX buffer. */
@@ -431,7 +431,7 @@ int twrReceiveCallback(void){
                 dwt_setrxtimeout(FINAL_RX_TIMEOUT_UUS);
 
                 /* Receive the additional signal and calculate the range measurement */
-                if (mult_twr){
+                if (ds_twr){
                     ret = rxTimestampsDS(rx1_ts, tx2_ts, initiator_id, &fpp1, &skew1, false, get_cir);
                 }
                 else{

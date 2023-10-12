@@ -114,7 +114,7 @@ int c04_toggle_passive(IntParams *msg_ints, FloatParams *msg_floats, BoolParams 
 
 int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *msg_bools, StrParams *msg_strs, ByteParams *msg_bytes){
     bool success;
-    uint8_t target_ID, mult_twr;
+    uint8_t target_ID, ds_twr;
     IntParams *i;
     bool target_meas_bool;
     bool get_cir;
@@ -128,9 +128,9 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
     HASH_FIND_STR(msg_bools, "targ_meas", b);
     target_meas_bool = b->value;
 
-    /* Extract the toggle that dictates if the multiplicative TWR will be used */
-    HASH_FIND_STR(msg_ints, "mult_twr", i);
-    mult_twr = i->value;
+    /* Extract the toggle that dictates if DS-TWR will be used */
+    HASH_FIND_STR(msg_ints, "ds_twr", i);
+    ds_twr = i->value;
 
     /* Extract the toggle that dictates if the target computes range measurements */
     HASH_FIND_STR(msg_bools, "get_cir", b);
@@ -141,7 +141,7 @@ int c05_initiate_twr(IntParams *msg_ints, FloatParams *msg_floats, BoolParams *m
         return 1;
     }
 
-    success = twrInitiateInstance(target_ID, target_meas_bool, mult_twr, get_cir);
+    success = twrInitiateInstance(target_ID, target_meas_bool, ds_twr, get_cir);
 
     if (success){ 
         // Response is done inside `twrInitiateInstance`

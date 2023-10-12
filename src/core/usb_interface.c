@@ -45,7 +45,7 @@ static const char *c04_fields[] = {"toggle"};
 static const FieldTypes c04_types[] = {BOOL};
 static const int c04_num_fields = 1;
 
-static const char *c05_fields[] = {"target", "targ_meas", "mult_twr", "get_cir"}; 
+static const char *c05_fields[] = {"target", "targ_meas", "ds_twr", "get_cir"}; 
 static const FieldTypes c05_types[] = {INT, BOOL, INT, BOOL};
 static const int c05_num_fields = 4;
 
